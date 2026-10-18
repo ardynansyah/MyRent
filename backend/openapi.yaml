@@ -1,0 +1,783 @@
+openapi: 3.0.3
+info:
+  title: MyRent API
+  version: 1.0.0
+  description: |
+    API manajemen rental untuk platform **MyRent** (properti, kendaraan, dan peralatan).
+
+    ## Konvensi
+    - Semua response sukses dibungkus `data` (list juga menyertakan `meta` pagination).
+    - Semua error berformat `{ "error": { "code", "message", "details"? } }`.
+    - Harga (`price`) adalah angka Rupiah tanpa formatting, contoh: `8500000` = Rp 8.500.000.
+    - Penyimpanan saat ini in-memory dengan data seed; struktur route terpisah dari store sehingga mudah diganti database.
+  contact:
+    name: MyRent Team
+servers:
+  - url: http://localhost:3000
+    description: Development lokal
+tags:
+  - name: Health
+    description: Status service
+  - name: Rentals
+    description: CRUD unit rental
+  - name: Categories
+    description: Kategori unit
+  - name: Stats
+    description: Ringkasan dashboard
+
+paths:
+  /api/health:
+    get:
+      tags: [Health]
+      summary: Cek status server
+      description: Mengembalikan status service, versi, dan uptime. Cocok untuk readiness/liveness probe.
+      operationId: getHealth
+      responses:
+        '200':
+          description: Server sehat
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Health'
+              example:
+                status: ok
+                service: myrent-api
+                version: 1.0.0
+                uptimeSeconds: 120
+                timestamp: '2026-10-19T04:00:00.000Z'
+
+  /api/rentals:
+    get:
+      tags: [Rentals]
+      summary: Daftar unit rental
+      description: |
+        Mengembalikan daftar unit rental dengan filter, pencarian, sorting, dan pagination.
+
+        `search` mencocokkan (case-insensitive) sebagian dari `title`, `category`, nama `tenant`, dan `tags`.
+
+        ### Pagination
+        Kirim `page` (mulai dari 1) dan `limit` (1-100, default 20). Response menyertakan `meta`:
+        - `meta.total`: total item setelah filter
+        - `meta.totalPages`: halaman terakhir yang valid
+        - `meta.page`: halaman yang dikembalikan
+
+        Contoh: `?page=2&limit=20` mengembalikan item ke-21 sampai ke-40.
+        Jika `meta.page` sudah sama dengan `meta.totalPages`, tidak ada halaman berikutnya.
+      operationId: listRentals
+      parameters:
+        - name: category
+          in: query
+          description: Filter kategori
+          schema:
+            type: string
+            enum: [Properti, Kendaraan, Peralatan]
+          example: Properti
+        - name: status
+          in: query
+          description: Filter status ketersediaan
+          schema:
+            type: string
+            enum: [Tersedia, Disewa, Perawatan]
+          example: Tersedia
+        - name: search
+          in: query
+          description: Kata kunci pencarian (maks 100 karakter)
+          schema:
+            type: string
+            maxLength: 100
+          example: sudirman
+        - name: sort
+          in: query
+          description: Field untuk sorting
+          schema:
+            type: string
+            enum: [createdAt, price, rating, title]
+            default: createdAt
+        - name: order
+          in: query
+          description: Arah sorting
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: desc
+        - name: page
+          in: query
+          description: Halaman (mulai dari 1)
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: limit
+          in: query
+          description: Jumlah item per halaman
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+      responses:
+        '200':
+          description: Daftar unit rental
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RentalListResponse'
+              example:
+                data:
+                  - id: 1
+                    title: Apartemen Sudirman Suites 2BR
+                    category: Properti
+                    price: 8500000
+                    period: bulan
+                    status: Tersedia
+                    tenant: null
+                    rating: 4.9
+                    image: 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=600&q=80'
+                    tags: [Furnished, Pool Access, Gym]
+                    createdAt: '2026-05-10T08:00:00.000Z'
+                    updatedAt: '2026-05-10T08:00:00.000Z'
+                  - id: 2
+                    title: Honda CR-V Turbo Prestige 2023
+                    category: Kendaraan
+                    price: 750000
+                    period: hari
+                    status: Disewa
+                    tenant:
+                      name: Budi Santoso
+                      until: '2026-10-22'
+                      verified: true
+                    rating: 5
+                    image: 'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&w=600&q=80'
+                    tags: [Automatic, Lepas Kunci, Asuransi All Risk]
+                    createdAt: '2026-06-02T08:00:00.000Z'
+                    updatedAt: '2026-06-02T08:00:00.000Z'
+                meta:
+                  total: 8
+                  page: 1
+                  limit: 20
+                  totalPages: 1
+        '422':
+          $ref: '#/components/responses/ValidationError'
+    post:
+      tags: [Rentals]
+      summary: Tambah unit rental baru
+      operationId: createRental
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RentalCreate'
+            example:
+              title: Tenda Camping 4P Waterproof
+              category: Peralatan
+              price: 150000
+              period: hari
+              tags: [Waterproof, 4 Orang]
+      responses:
+        '201':
+          description: Unit rental dibuat. Header `Location` berisi URL unit baru.
+          headers:
+            Location:
+              description: URL unit yang baru dibuat
+              schema:
+                type: string
+              example: /api/rentals/9
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RentalResponse'
+              example:
+                data:
+                  id: 9
+                  title: Tenda Camping 4P Waterproof
+                  category: Peralatan
+                  price: 150000
+                  period: hari
+                  status: Tersedia
+                  tenant: null
+                  rating: null
+                  image: null
+                  tags: [Waterproof, 4 Orang]
+                  createdAt: '2026-10-19T04:00:00.000Z'
+                  updatedAt: '2026-10-19T04:00:00.000Z'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /api/rentals/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        description: ID unit rental
+        schema:
+          type: integer
+          minimum: 1
+        example: 1
+    get:
+      tags: [Rentals]
+      summary: Detail satu unit rental
+      operationId: getRental
+      responses:
+        '200':
+          description: Detail unit rental
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RentalResponse'
+              example:
+                data:
+                  id: 1
+                  title: Apartemen Sudirman Suites 2BR
+                  category: Properti
+                  price: 8500000
+                  period: bulan
+                  status: Tersedia
+                  tenant: null
+                  rating: 4.9
+                  image: 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=600&q=80'
+                  tags: [Furnished, Pool Access, Gym]
+                  createdAt: '2026-05-10T08:00:00.000Z'
+                  updatedAt: '2026-05-10T08:00:00.000Z'
+        '400':
+          $ref: '#/components/responses/InvalidId'
+        '404':
+          $ref: '#/components/responses/RentalNotFound'
+    patch:
+      tags: [Rentals]
+      summary: Update sebagian field unit rental
+      description: Kirim hanya field yang ingin diubah. Minimal satu field harus dikirim.
+      operationId: updateRental
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RentalUpdate'
+            example:
+              status: Disewa
+              tenant:
+                name: Andi Wijaya
+                until: '2026-11-01'
+                verified: true
+      responses:
+        '200':
+          description: Unit rental setelah diupdate
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RentalResponse'
+        '400':
+          $ref: '#/components/responses/InvalidId'
+        '404':
+          $ref: '#/components/responses/RentalNotFound'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+    delete:
+      tags: [Rentals]
+      summary: Hapus unit rental
+      operationId: deleteRental
+      responses:
+        '204':
+          description: Unit rental dihapus (tanpa body)
+        '400':
+          $ref: '#/components/responses/InvalidId'
+        '404':
+          $ref: '#/components/responses/RentalNotFound'
+
+  /api/categories:
+    get:
+      tags: [Categories]
+      summary: Daftar kategori beserta jumlah unit
+      operationId: listCategories
+      responses:
+        '200':
+          description: Daftar kategori
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Category'
+              example:
+                data:
+                  - name: Properti
+                    count: 3
+                  - name: Kendaraan
+                    count: 2
+                  - name: Peralatan
+                    count: 3
+
+  /api/stats:
+    get:
+      tags: [Stats]
+      summary: Ringkasan dashboard
+      description: |
+        Statistik dihitung dari data terkini. `monthlyRevenueEstimate` menormalisasi unit
+        harian/malaman dengan asumsi 30 hari per bulan dan hanya menghitung unit berstatus `Disewa`.
+      operationId: getStats
+      responses:
+        '200':
+          description: Ringkasan dashboard
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Stats'
+              example:
+                data:
+                  totalAssets: 8
+                  activeRentals: 3
+                  availableAssets: 4
+                  occupancyRate: 37.5
+                  monthlyRevenueEstimate: 61500000
+                  activeTenants: 3
+                  totalTenants: 3
+                  verifiedTenantsPct: 100
+                  newThisMonth: 2
+                  byStatus:
+                    Tersedia: 4
+                    Disewa: 3
+                    Perawatan: 1
+                  byCategory:
+                    Properti: 3
+                    Kendaraan: 2
+                    Peralatan: 3
+
+  /:
+    get:
+      tags: [Health]
+      summary: Info API dan daftar endpoint
+      operationId: getApiInfo
+      responses:
+        '200':
+          description: Info API
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  name:
+                    type: string
+                    example: MyRent API
+                  version:
+                    type: string
+                    example: 1.0.0
+                  docs:
+                    type: string
+                    example: /openapi.yaml
+                  endpoints:
+                    type: array
+                    items:
+                      type: string
+                    example:
+                      - GET /api/rentals
+                      - POST /api/rentals
+
+components:
+  schemas:
+    Health:
+      type: object
+      required: [status, service, version, uptimeSeconds, timestamp]
+      properties:
+        status:
+          type: string
+          enum: [ok]
+        service:
+          type: string
+          example: myrent-api
+        version:
+          type: string
+          example: 1.0.0
+        uptimeSeconds:
+          type: integer
+          minimum: 0
+          example: 120
+        timestamp:
+          type: string
+          format: date-time
+
+    Tenant:
+      type: object
+      description: Data penyewa pada unit yang sedang Disewa
+      required: [name, until, verified]
+      properties:
+        name:
+          type: string
+          minLength: 3
+          maxLength: 80
+          example: Budi Santoso
+        until:
+          type: string
+          pattern: '^\d{4}-\d{2}-\d{2}'
+          description: Perkiraan tanggal berakhir sewa (ISO date)
+          example: '2026-10-22'
+        verified:
+          type: boolean
+          description: Status verifikasi KTP penyewa
+          example: true
+
+    Rental:
+      type: object
+      required: [id, title, category, price, period, status, tags, createdAt, updatedAt]
+      properties:
+        id:
+          type: integer
+          minimum: 1
+          example: 1
+        title:
+          type: string
+          minLength: 3
+          maxLength: 120
+          example: Apartemen Sudirman Suites 2BR
+        category:
+          type: string
+          enum: [Properti, Kendaraan, Peralatan]
+          example: Properti
+        price:
+          type: number
+          minimum: 0
+          exclusiveMinimum: true
+          description: Harga sewa per periode, angka Rupiah tanpa formatting
+          example: 8500000
+        period:
+          type: string
+          enum: [bulan, hari, malam]
+          description: Satuan periode harga
+          example: bulan
+        status:
+          type: string
+          enum: [Tersedia, Disewa, Perawatan]
+          example: Tersedia
+        tenant:
+          nullable: true
+          allOf:
+            - $ref: '#/components/schemas/Tenant'
+        rating:
+          type: number
+          nullable: true
+          minimum: 0
+          maximum: 5
+          example: 4.9
+        image:
+          type: string
+          nullable: true
+          format: uri
+          example: 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=600&q=80'
+        tags:
+          type: array
+          maxItems: 8
+          items:
+            type: string
+            maxLength: 40
+          example: [Furnished, Pool Access, Gym]
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      example:
+        id: 1
+        title: Apartemen Sudirman Suites 2BR
+        category: Properti
+        price: 8500000
+        period: bulan
+        status: Tersedia
+        tenant: null
+        rating: 4.9
+        image: 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=600&q=80'
+        tags: [Furnished, Pool Access, Gym]
+        createdAt: '2026-05-10T08:00:00.000Z'
+        updatedAt: '2026-05-10T08:00:00.000Z'
+
+    RentalCreate:
+      type: object
+      required: [title, category, price, period]
+      properties:
+        title:
+          type: string
+          minLength: 3
+          maxLength: 120
+          example: Tenda Camping 4P Waterproof
+        category:
+          type: string
+          enum: [Properti, Kendaraan, Peralatan]
+          example: Peralatan
+        price:
+          type: number
+          minimum: 0
+          exclusiveMinimum: true
+          description: Angka Rupiah tanpa titik/koma
+          example: 150000
+        period:
+          type: string
+          enum: [bulan, hari, malam]
+          example: hari
+        status:
+          type: string
+          enum: [Tersedia, Disewa, Perawatan]
+          default: Tersedia
+          description: Default `Tersedia`. Jika `Disewa`, `tenant` wajib diisi.
+        image:
+          type: string
+          nullable: true
+          format: uri
+        tags:
+          type: array
+          maxItems: 8
+          items:
+            type: string
+            maxLength: 40
+          example: [Waterproof, 4 Orang]
+        rating:
+          type: number
+          nullable: true
+          minimum: 0
+          maximum: 5
+        tenant:
+          nullable: true
+          description: Wajib diisi (bukan null) jika `status` bernilai `Disewa`
+          allOf:
+            - $ref: '#/components/schemas/Tenant'
+
+    RentalUpdate:
+      type: object
+      description: Semua field opsional, minimal satu field harus dikirim
+      minProperties: 1
+      properties:
+        title:
+          type: string
+          minLength: 3
+          maxLength: 120
+        category:
+          type: string
+          enum: [Properti, Kendaraan, Peralatan]
+        price:
+          type: number
+          minimum: 0
+          exclusiveMinimum: true
+        period:
+          type: string
+          enum: [bulan, hari, malam]
+        status:
+          type: string
+          enum: [Tersedia, Disewa, Perawatan]
+          description: Jika diubah menjadi `Disewa`, unit harus memiliki `tenant`
+        image:
+          type: string
+          nullable: true
+          format: uri
+        tags:
+          type: array
+          maxItems: 8
+          items:
+            type: string
+            maxLength: 40
+        rating:
+          type: number
+          nullable: true
+          minimum: 0
+          maximum: 5
+        tenant:
+          nullable: true
+          allOf:
+            - $ref: '#/components/schemas/Tenant'
+
+    RentalResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/Rental'
+
+    RentalListResponse:
+      type: object
+      required: [data, meta]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Rental'
+        meta:
+          type: object
+          required: [total, page, limit, totalPages]
+          properties:
+            total:
+              type: integer
+              description: Total item setelah filter
+              example: 8
+            page:
+              type: integer
+              example: 1
+            limit:
+              type: integer
+              example: 20
+            totalPages:
+              type: integer
+              example: 1
+
+    Category:
+      type: object
+      required: [name, count]
+      properties:
+        name:
+          type: string
+          enum: [Properti, Kendaraan, Peralatan]
+        count:
+          type: integer
+          minimum: 0
+          example: 3
+
+    Stats:
+      type: object
+      required:
+        - totalAssets
+        - activeRentals
+        - availableAssets
+        - occupancyRate
+        - monthlyRevenueEstimate
+        - activeTenants
+        - totalTenants
+        - verifiedTenantsPct
+        - newThisMonth
+        - byStatus
+        - byCategory
+      properties:
+        totalAssets:
+          type: integer
+          description: Total unit rental
+          example: 8
+        activeRentals:
+          type: integer
+          description: Unit berstatus Disewa
+          example: 3
+        availableAssets:
+          type: integer
+          description: Unit berstatus Tersedia
+          example: 4
+        occupancyRate:
+          type: number
+          description: Persentase unit tersewa (activeRentals / totalAssets * 100)
+          example: 37.5
+        monthlyRevenueEstimate:
+          type: number
+          description: Estimasi pendapatan bulanan dari unit Disewa (harian/malaman dinormalisasi 30 hari)
+          example: 61500000
+        activeTenants:
+          type: integer
+          example: 3
+        totalTenants:
+          type: integer
+          example: 3
+        verifiedTenantsPct:
+          type: number
+          example: 100
+        newThisMonth:
+          type: integer
+          description: Unit yang ditambahkan pada bulan berjalan
+          example: 2
+        byStatus:
+          type: object
+          description: Jumlah unit per status
+          additionalProperties:
+            type: integer
+          example:
+            Tersedia: 4
+            Disewa: 3
+            Perawatan: 1
+        byCategory:
+          type: object
+          description: Jumlah unit per kategori
+          additionalProperties:
+            type: integer
+          example:
+            Properti: 3
+            Kendaraan: 2
+            Peralatan: 3
+
+    Error:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: object
+          required: [code, message]
+          properties:
+            code:
+              type: string
+              description: Kode error machine-readable
+              enum:
+                - VALIDATION_ERROR
+                - INVALID_ID
+                - RENTAL_NOT_FOUND
+                - NOT_FOUND
+                - INVALID_JSON
+                - INTERNAL_ERROR
+            message:
+              type: string
+              description: Pesan error untuk manusia
+            details:
+              type: array
+              description: Detail per-field (biasanya pada VALIDATION_ERROR)
+              items:
+                type: object
+                required: [field, message]
+                properties:
+                  field:
+                    type: string
+                    example: price
+                  message:
+                    type: string
+                    example: price wajib berupa angka > 0 (Rupiah, tanpa titik/koma)
+      example:
+        error:
+          code: VALIDATION_ERROR
+          message: Data yang dikirim tidak valid
+          details:
+            - field: category
+              message: 'category wajib salah satu dari: Properti, Kendaraan, Peralatan'
+            - field: price
+              message: price wajib berupa angka > 0 (Rupiah, tanpa titik/koma)
+
+  responses:
+    ValidationError:
+      description: Data request tidak valid (422)
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error:
+              code: VALIDATION_ERROR
+              message: Data yang dikirim tidak valid
+              details:
+                - field: price
+                  message: price wajib berupa angka > 0 (Rupiah, tanpa titik/koma)
+    InvalidId:
+      description: ID bukan angka bulat positif (400)
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error:
+              code: INVALID_ID
+              message: "ID rental 'abc' tidak valid — gunakan angka bulat positif"
+    RentalNotFound:
+      description: Unit rental tidak ditemukan (404)
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error:
+              code: RENTAL_NOT_FOUND
+              message: Rental dengan id 999 tidak ditemukan
