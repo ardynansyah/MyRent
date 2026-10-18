@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import StepIndicator from './StepIndicator'
 import {
   Check,
   CheckCircle2,
@@ -94,7 +95,15 @@ function getStoredDraft() {
   return null
 }
 
-export default function RegisterPenyewaAlat({ onNavigateLogin, onRegisterSuccess }) {
+export default function RegisterPenyewaAlat({
+  onNavigateLogin,
+  onBackToLogin,
+  onRegisterSuccess,
+  onFinish
+}) {
+  const handleBack = onBackToLogin || onNavigateLogin
+  const handleFinish = onFinish || onRegisterSuccess
+
   const [currentStep, setCurrentStep] = useState(1)
   const [formData, setFormData] = useState(() => {
     const draft = getStoredDraft()
@@ -303,8 +312,8 @@ export default function RegisterPenyewaAlat({ onNavigateLogin, onRegisterSuccess
     if (currentStep > 1) {
       setCurrentStep((prev) => prev - 1)
       window.scrollTo({ top: 0, behavior: 'smooth' })
-    } else if (onNavigateLogin) {
-      onNavigateLogin()
+    } else if (handleBack) {
+      handleBack()
     }
   }
 
@@ -318,8 +327,8 @@ export default function RegisterPenyewaAlat({ onNavigateLogin, onRegisterSuccess
       } catch {
         // Abaikan
       }
-      if (onRegisterSuccess) {
-        onRegisterSuccess({
+      if (handleFinish) {
+        handleFinish({
           email: formData.email,
           fullName: formData.fullName,
           businessName: formData.businessName,
@@ -335,7 +344,7 @@ export default function RegisterPenyewaAlat({ onNavigateLogin, onRegisterSuccess
       <div className="min-h-screen w-full bg-[#F8FAFC] flex flex-col justify-between items-center text-slate-800 font-sans selection:bg-blue-100 selection:text-blue-700">
         <header className="w-full max-w-[1440px] px-5 sm:px-10 py-5 sm:py-6 flex items-center justify-between border-b border-[#E2E8F0] bg-white">
           <div
-            onClick={onNavigateLogin}
+            onClick={handleBack}
             className="text-[20px] text-[#2563EB] font-extrabold tracking-[-0.3px] select-none cursor-pointer flex items-center gap-2"
           >
             MyRent
@@ -380,7 +389,7 @@ export default function RegisterPenyewaAlat({ onNavigateLogin, onRegisterSuccess
             <div className="pt-2 flex flex-col sm:flex-row gap-3 justify-center">
               <button
                 type="button"
-                onClick={onNavigateLogin}
+                onClick={handleBack}
                 className="w-full sm:w-auto px-6 py-3 bg-[#2563EB] hover:bg-blue-700 active:scale-[0.99] text-white text-xs sm:text-sm font-bold rounded-xl transition-all shadow-md cursor-pointer flex items-center justify-center gap-2"
               >
                 <span>Masuk ke Halaman Login</span>
@@ -396,42 +405,6 @@ export default function RegisterPenyewaAlat({ onNavigateLogin, onRegisterSuccess
       </div>
     )
   }
-
-  // Teks Stepper Col kiri yang adaptif sesuai langkah aktif
-  const STEP_METAS = [
-    {
-      num: 1,
-      title: 'Buat akun & kredensial usaha.',
-      desc: 'Lengkapi informasi dasar penanggung jawab dan akun untuk mulai menyewa alat produksi.',
-      name: 'Buat Akun'
-    },
-    {
-      num: 2,
-      title: 'Verifikasi identitas pemilik usaha.',
-      desc: 'Data KTP dipakai untuk kontrak sewa digital dan proses klaim deposit bila terjadi sengketa.',
-      name: 'Identitas & KTP'
-    },
-    {
-      num: 3,
-      title: 'Profil usaha & daya listrik.',
-      desc: 'Daya listrik usaha dipakai untuk memfilter katalog agar Anda hanya melihat alat yang aman dipakai.',
-      name: 'Profil UMKM'
-    },
-    {
-      num: 4,
-      title: 'Alamat usaha & rekening refund.',
-      desc: 'Rekening ini dipakai untuk mengembalikan security deposit Anda setelah alat dikembalikan dengan aman.',
-      name: 'Alamat & Rekening'
-    },
-    {
-      num: 5,
-      title: 'Cek sekali lagi, lalu kirim verifikasi.',
-      desc: 'Setelah dikirim, Admin meninjau data Anda dalam 1 × 24 jam. Anda akan menerima notifikasi WhatsApp.',
-      name: 'Review & Kirim'
-    }
-  ]
-
-  const currentMeta = STEP_METAS[currentStep - 1]
 
   return (
     <div className="min-h-screen w-full bg-[#F8FAFC] flex flex-col justify-between items-center text-slate-800 font-sans selection:bg-blue-100 selection:text-blue-700">
@@ -449,7 +422,7 @@ export default function RegisterPenyewaAlat({ onNavigateLogin, onRegisterSuccess
           <div className="flex items-center gap-3">
             <button
               type="button"
-              onClick={onNavigateLogin}
+              onClick={handleBack}
               className="text-[18px] text-[#2563EB] font-extrabold tracking-[-0.3px] select-none hover:opacity-90 cursor-pointer"
             >
               MyRent
@@ -476,7 +449,7 @@ export default function RegisterPenyewaAlat({ onNavigateLogin, onRegisterSuccess
               <span className="text-[#475569] hidden sm:inline">Sudah punya akun?</span>
               <button
                 type="button"
-                onClick={onNavigateLogin}
+                onClick={handleBack}
                 className="text-[#2563EB] font-bold hover:underline cursor-pointer"
               >
                 Masuk di sini
@@ -490,106 +463,8 @@ export default function RegisterPenyewaAlat({ onNavigateLogin, onRegisterSuccess
       <main className="w-full max-w-[1240px] flex-1 px-4 sm:px-8 py-6 sm:py-10">
         <div className="flex flex-col lg:flex-row gap-8 lg:gap-12 items-start justify-center">
 
-          {/* Kolom Kiri: Stepper & Konteks Langkah */}
-          <div className="w-full lg:w-[300px] shrink-0 flex flex-col gap-4">
-            <div className="text-[10px] text-[#2563EB] font-bold tracking-[1.1px] uppercase">
-              PENDAFTARAN PENYEWA UMKM
-            </div>
-
-            <h1 className="text-[22px] sm:text-[24px] font-extrabold text-[#0F172A] tracking-[-0.6px] leading-[1.25]">
-              {currentMeta.title}
-            </h1>
-
-            <p className="text-[12px] leading-[19px] text-[#475569]">
-              {currentMeta.desc}
-            </p>
-
-            {/* Stepper Indikator Vertikal */}
-            <div className="w-full flex flex-col gap-0 pt-2">
-              {STEP_METAS.map((stepItem, idx) => {
-                const isCompleted = currentStep > stepItem.num
-                const isActive = currentStep === stepItem.num
-                const isLast = idx === STEP_METAS.length - 1
-
-                let statusLabel = 'Belum dimulai'
-                if (isCompleted) statusLabel = 'Selesai'
-                if (isActive) statusLabel = 'Sedang diisi'
-
-                return (
-                  <div
-                    key={stepItem.num}
-                    onClick={() => {
-                      if (isCompleted) setCurrentStep(stepItem.num)
-                    }}
-                    className={`flex flex-row gap-3 items-start ${
-                      isCompleted ? 'cursor-pointer group' : ''
-                    }`}
-                  >
-                    {/* Marker Bulat & Garis Konektor */}
-                    <div className="w-[24px] shrink-0 flex flex-col items-center">
-                      <div
-                        className={`w-[24px] h-[24px] rounded-full flex items-center justify-center text-[10px] font-bold transition-all ${
-                          isCompleted
-                            ? 'bg-[#F0FDF4] text-[#15803D] border border-emerald-300'
-                            : isActive
-                            ? 'bg-[#2563EB] text-white shadow-xs'
-                            : 'bg-white text-[#94A3B8] border border-[#CBD5E1]'
-                        }`}
-                      >
-                        {isCompleted ? (
-                          <Check className="w-3.5 h-3.5 text-[#15803D]" strokeWidth={2.8} />
-                        ) : (
-                          stepItem.num
-                        )}
-                      </div>
-
-                      {!isLast && (
-                        <div
-                          className={`w-[1px] h-[32px] sm:h-[36px] transition-colors ${
-                            isCompleted ? 'bg-[#15803D]' : 'bg-[#E2E8F0]'
-                          }`}
-                        />
-                      )}
-                    </div>
-
-                    {/* Deskripsi Step */}
-                    <div className="flex flex-col pt-0.5 pb-2">
-                      <div
-                        className={`text-[12px] font-bold transition-colors ${
-                          isActive
-                            ? 'text-[#0F172A]'
-                            : isCompleted
-                            ? 'text-[#0F172A] group-hover:text-blue-600'
-                            : 'text-[#64748B]'
-                        }`}
-                      >
-                        {stepItem.name}
-                      </div>
-                      <div
-                        className={`text-[10px] ${
-                          isActive
-                            ? 'text-blue-600 font-semibold'
-                            : isCompleted
-                            ? 'text-emerald-600'
-                            : 'text-[#94A3B8]'
-                        }`}
-                      >
-                        {statusLabel}
-                      </div>
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
-
-            {/* Box Bantuan / Keamanan */}
-            <div className="mt-4 p-3.5 rounded-2xl bg-white border border-[#E2E8F0] shadow-2xs flex items-start gap-2.5">
-              <ShieldCheck className="w-4 h-4 text-[#2563EB] shrink-0 mt-0.5" />
-              <div className="text-[11px] leading-[17px] text-[#475569]">
-                Semua data Anda dilindungi enkripsi bank-grade dan hanya digunakan untuk kontrak sewa resmi MyRent.
-              </div>
-            </div>
-          </div>
+          {/* Kolom Kiri: Sidebar Stepper (Disembunyikan di Mobile < lg, Muncul di Desktop >= lg) */}
+          <StepIndicator currentStep={currentStep} onSelectStep={setCurrentStep} />
 
           {/* Kolom Kanan: Card Form */}
           <div className="w-full flex-1 max-w-[760px] bg-white rounded-2xl sm:rounded-3xl border border-[#E2E8F0] shadow-xl p-5 sm:p-8 flex flex-col gap-6">

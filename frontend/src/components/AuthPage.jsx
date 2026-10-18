@@ -81,11 +81,12 @@ export default function AuthPage({ onLoginSuccess, onNavigateRegister }) {
   const handleRegisterClick = () => {
     if (onNavigateRegister) {
       onNavigateRegister(role)
-    }
-    if (isPenyewa) {
-      setAuthView('register-penyewa')
     } else {
-      handleNotify('Pendaftaran akun Pemilik Alat segera hadir!')
+      if (isPenyewa) {
+        setAuthView('register-penyewa')
+      } else {
+        handleNotify('Pendaftaran akun Pemilik Alat segera hadir!')
+      }
     }
   }
 
@@ -93,6 +94,7 @@ export default function AuthPage({ onLoginSuccess, onNavigateRegister }) {
     return (
       <RegisterPenyewaAlat
         onNavigateLogin={() => setAuthView('login')}
+        onBackToLogin={() => setAuthView('login')}
         onRegisterSuccess={(newUser) => {
           if (onLoginSuccess) {
             onLoginSuccess({

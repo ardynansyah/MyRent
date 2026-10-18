@@ -119,11 +119,19 @@ export default function App() {
 
         <RegisterPenyewaAlat
           onNavigateLogin={() => setCurrentPage('auth')}
+          onBackToLogin={() => setCurrentPage('auth')}
           onRegisterSuccess={(newUser) => {
             handleLoginSuccess({
               email: newUser.email,
               role: 'penyewa',
               name: newUser.fullName || newUser.businessName
+            })
+          }}
+          onFinish={(newUser) => {
+            handleLoginSuccess({
+              email: newUser?.email,
+              role: 'penyewa',
+              name: newUser?.fullName || newUser?.businessName || 'Penyewa UMKM'
             })
           }}
         />
