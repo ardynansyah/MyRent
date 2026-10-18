@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import AuthPage from './components/AuthPage'
-import RegisterPemilikAlat from './components/registerPemilikAlat/RegisterPemilikAlat'
+import RegisterPenyewaAlat from './components/registerPenyewaAlat'
 import {
   Building2,
   KeyRound,
@@ -100,15 +100,34 @@ export default function App() {
     setCurrentPage('dashboard')
   }
 
-  // Navigasi dari tombol "Daftar" di AuthPage:
-  // - Pemilik Alat  -> halaman alur pendaftaran RegisterPemilikAlat
-  // - Penyewa UMKM  -> placeholder (komponen registerPenyewaAlat masih dikerjakan developer lain)
-  const handleNavigateRegister = (selectedRole) => {
-    if (selectedRole === 'pemilik') {
-      setCurrentPage('register-pemilik')
-    } else {
-      showToast('Formulir pendaftaran Penyewa UMKM sedang disiapkan developer lain.')
-    }
+  // If viewing Register Penyewa Page
+  if (currentPage === 'register-penyewa') {
+    return (
+      <div className="relative min-h-screen">
+        {/* Floating View Switcher Button (hanya tampil di desktop/tablet agar tidak menutupi mobile) */}
+        <div className="fixed bottom-4 right-4 z-40 hidden sm:block">
+          <button
+            type="button"
+            onClick={() => setCurrentPage('dashboard')}
+            className="flex items-center gap-2 bg-slate-900/90 hover:bg-slate-900 text-white text-xs font-semibold px-4 py-2.5 rounded-full shadow-lg backdrop-blur border border-slate-700 hover:scale-105 active:scale-95 transition-all cursor-pointer"
+          >
+            <span>Buka Dashboard Demo</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </button>
+        </div>
+
+        <RegisterPenyewaAlat
+          onNavigateLogin={() => setCurrentPage('auth')}
+          onRegisterSuccess={(newUser) => {
+            handleLoginSuccess({
+              email: newUser.email,
+              role: 'penyewa',
+              name: newUser.fullName || newUser.businessName
+            })
+          }}
+        />
+      </div>
+    )
   }
 
   // If viewing Auth Page
@@ -132,26 +151,12 @@ export default function App() {
         {/* Auth Page Component */}
         <AuthPage
           onLoginSuccess={handleLoginSuccess}
-          onNavigateRegister={handleNavigateRegister}
-        />
-      </div>
-    )
-  }
-
-  // If viewing Register Pemilik Alat (alur 5 langkah)
-  if (currentPage === 'register-pemilik') {
-    return (
-      <div className="relative min-h-screen">
-        <Toast message={toastMessage} />
-
-        <RegisterPemilikAlat
-          onBackToLogin={() => setCurrentPage('auth')}
-          onSwitchToPenyewa={() =>
-            showToast('Formulir pendaftaran Penyewa UMKM sedang disiapkan developer lain.')
-          }
-          onFinish={() => {
-            setCurrentPage('auth')
-            showToast('Pendaftaran Pemilik Alat terkirim! Admin akan mereview dalam 1 × 24 jam.')
+          onNavigateRegister={(selectedRole) => {
+            if (selectedRole === 'penyewa') {
+              setCurrentPage('register-penyewa')
+            } else {
+              showToast('Pendaftaran akun Pemilik Alat segera hadir!')
+            }
           }}
         />
       </div>
@@ -316,11 +321,10 @@ export default function App() {
                 <button
                   key={cat}
                   onClick={() => setSelectedCategory(cat)}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
-                    selectedCategory === cat
+                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${selectedCategory === cat
                       ? 'bg-[#2563EB] text-white shadow-2xs'
                       : 'text-slate-600 hover:text-slate-900'
-                  }`}
+                    }`}
                 >
                   {cat}
                 </button>

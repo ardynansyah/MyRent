@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import RegisterPenyewaAlat from './registerPenyewaAlat'
 import {
   CheckCircle2,
   Store,
@@ -13,6 +14,7 @@ import {
 } from 'lucide-react'
 
 export default function AuthPage({ onLoginSuccess, onNavigateRegister }) {
+  const [authView, setAuthView] = useState('login') // 'login' | 'register-penyewa'
   const [role, setRole] = useState('penyewa') // 'penyewa' | 'pemilik'
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -79,10 +81,31 @@ export default function AuthPage({ onLoginSuccess, onNavigateRegister }) {
   const handleRegisterClick = () => {
     if (onNavigateRegister) {
       onNavigateRegister(role)
-    } else {
-      const roleLabel = isPenyewa ? 'Penyewa UMKM' : 'Pemilik Alat'
-      handleNotify(`Mengarahkan ke formulir pendaftaran ${roleLabel}...`)
     }
+    if (isPenyewa) {
+      setAuthView('register-penyewa')
+    } else {
+      handleNotify('Pendaftaran akun Pemilik Alat segera hadir!')
+    }
+  }
+
+  if (authView === 'register-penyewa') {
+    return (
+      <RegisterPenyewaAlat
+        onNavigateLogin={() => setAuthView('login')}
+        onRegisterSuccess={(newUser) => {
+          if (onLoginSuccess) {
+            onLoginSuccess({
+              email: newUser.email,
+              role: 'penyewa',
+              name: newUser.fullName || newUser.businessName
+            })
+          } else {
+            setAuthView('login')
+          }
+        }}
+      />
+    )
   }
 
   return (
