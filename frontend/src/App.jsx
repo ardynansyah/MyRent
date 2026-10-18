@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import AuthPage from './components/AuthPage'
+import RegisterPemilikAlat from './components/registerPemilikAlat/RegisterPemilikAlat'
 import {
   Building2,
   KeyRound,
@@ -99,10 +100,23 @@ export default function App() {
     setCurrentPage('dashboard')
   }
 
+  // Navigasi dari tombol "Daftar" di AuthPage:
+  // - Pemilik Alat  -> halaman alur pendaftaran RegisterPemilikAlat
+  // - Penyewa UMKM  -> placeholder (komponen registerPenyewaAlat masih dikerjakan developer lain)
+  const handleNavigateRegister = (selectedRole) => {
+    if (selectedRole === 'pemilik') {
+      setCurrentPage('register-pemilik')
+    } else {
+      showToast('Formulir pendaftaran Penyewa UMKM sedang disiapkan developer lain.')
+    }
+  }
+
   // If viewing Auth Page
   if (currentPage === 'auth') {
     return (
       <div className="relative min-h-screen">
+        <Toast message={toastMessage} />
+
         {/* Floating View Switcher Button (hanya tampil di desktop/tablet agar tidak menutupi mobile) */}
         <div className="fixed bottom-4 right-4 z-40 hidden sm:block">
           <button
@@ -118,9 +132,27 @@ export default function App() {
         {/* Auth Page Component */}
         <AuthPage
           onLoginSuccess={handleLoginSuccess}
-          onNavigateRegister={(selectedRole) =>
-            showToast(`Mengarahkan ke pendaftaran sebagai ${selectedRole === 'penyewa' ? 'Penyewa UMKM' : 'Pemilik Alat'}`)
+          onNavigateRegister={handleNavigateRegister}
+        />
+      </div>
+    )
+  }
+
+  // If viewing Register Pemilik Alat (alur 5 langkah)
+  if (currentPage === 'register-pemilik') {
+    return (
+      <div className="relative min-h-screen">
+        <Toast message={toastMessage} />
+
+        <RegisterPemilikAlat
+          onBackToLogin={() => setCurrentPage('auth')}
+          onSwitchToPenyewa={() =>
+            showToast('Formulir pendaftaran Penyewa UMKM sedang disiapkan developer lain.')
           }
+          onFinish={() => {
+            setCurrentPage('auth')
+            showToast('Pendaftaran Pemilik Alat terkirim! Admin akan mereview dalam 1 × 24 jam.')
+          }}
         />
       </div>
     )
@@ -130,12 +162,7 @@ export default function App() {
   return (
     <div className="min-h-screen bg-[#F8FAFC] text-slate-800 flex flex-col font-sans">
       {/* Toast Notification */}
-      {toastMessage && (
-        <div className="fixed top-5 right-5 z-50 flex items-center gap-2 bg-blue-600 text-white px-4 py-2.5 rounded-xl shadow-lg border border-blue-400/30 text-sm font-medium animate-in fade-in slide-in-from-top-4 duration-300">
-          <CheckCircle2 className="w-4 h-4 text-emerald-300" />
-          <span>{toastMessage}</span>
-        </div>
-      )}
+      <Toast message={toastMessage} />
 
       {/* Top Navigation */}
       <header className="sticky top-0 z-40 backdrop-blur-md bg-white/90 border-b border-slate-200 px-4 sm:px-8 py-3.5 transition-all">
@@ -372,6 +399,16 @@ export default function App() {
       <footer className="border-t border-slate-200 bg-white py-6 px-4 text-center text-xs text-slate-500">
         <p>© 2026 MyRent. Platform Sewa Alat Terverifikasi untuk UMKM Indonesia.</p>
       </footer>
+    </div>
+  )
+}
+
+function Toast({ message }) {
+  if (!message) return null
+  return (
+    <div className="fixed top-5 right-5 z-50 flex items-center gap-2 bg-blue-600 text-white px-4 py-2.5 rounded-xl shadow-lg border border-blue-400/30 text-sm font-medium animate-in fade-in slide-in-from-top-4 duration-300">
+      <CheckCircle2 className="w-4 h-4 text-emerald-300" />
+      <span>{message}</span>
     </div>
   )
 }
