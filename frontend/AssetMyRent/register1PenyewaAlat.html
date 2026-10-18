@@ -1,0 +1,953 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script>
+      tailwind = { config: { corePlugins: { preflight: false } } };
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans%3Awght%40200..800&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      *, ::before, ::after {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+      }
+    </style>
+
+    <style>
+      body {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+    </style>
+  </head>
+  <body style="background-color: #F8FAFC">
+    <div
+      data-pencil-name="07 · Daftar Pemilik — 1. Buat Akun"
+      class="box-border w-[1440px] h-fit flex flex-col gap-0 justify-start items-center bg-[#F8FAFC] overflow-hidden"
+    >
+      <div
+        data-pencil-name="TopBar"
+        class="box-border w-full h-[64px] shrink-0 flex flex-row gap-0 p-[0px_32px] justify-between items-center bg-[#FFFFFF] [border-width:0px_0px_1px_0px] [border-style:solid] [border-color:#E2E8F0]"
+      >
+        <div
+          data-pencil-name="Left"
+          class="box-border w-fit shrink-0 h-fit flex flex-row gap-[12px] justify-start items-center"
+        >
+          <div
+            data-pencil-name="Wordmark"
+            class="text-[17px]/[normal] box-border text-[#2563EB] font-['Plus_Jakarta_Sans',system-ui,sans-serif] font-extrabold tracking-[-0.3px] text-left [white-space:nowrap]"
+          >
+            SewaAlat
+          </div>
+          <div
+            data-pencil-name="Sep"
+            class="box-border w-[1px] shrink-0 h-[16px] flex flex-row gap-0 justify-start items-start bg-[#E2E8F0]"
+          ></div>
+          <div
+            data-pencil-name="Ctx"
+            class="text-[12px]/[normal] box-border text-[#475569] font-['Plus_Jakarta_Sans',system-ui,sans-serif] font-semibold text-left [white-space:nowrap]"
+          >
+            Daftar sebagai Pemilik Alat
+          </div>
+        </div>
+        <div
+          data-pencil-name="Right"
+          class="box-border w-fit shrink-0 h-fit flex flex-row gap-[8px] justify-start items-center"
+        >
+          <div
+            data-pencil-name="Q"
+            class="text-[11px]/[normal] box-border text-[#475569] font-['Plus_Jakarta_Sans',system-ui,sans-serif] font-normal text-left [white-space:nowrap]"
+          >
+            Sudah punya akun?
+          </div>
+          <div
+            data-pencil-name="L"
+            class="text-[11px]/[normal] box-border text-[#2563EB] font-['Plus_Jakarta_Sans',system-ui,sans-serif] font-bold text-left [white-space:nowrap]"
+          >
+            Masuk
+          </div>
+        </div>
+      </div>
+      <div
+        data-pencil-name="Body"
+        class="box-border w-[1140px] h-fit shrink-0 flex flex-row gap-[36px] p-[32px_0px_44px_0px] justify-start items-start"
+      >
+        <div
+          data-pencil-name="StepperCol"
+          class="box-border w-[300px] shrink-0 h-fit flex flex-col gap-[16px] p-[4px_0px_0px_0px] justify-start items-start"
+        >
+          <div
+            data-pencil-name="Eyebrow"
+            class="text-[10px]/[normal] box-border text-[#2563EB] font-['Plus_Jakarta_Sans',system-ui,sans-serif] font-bold tracking-[1.1px] text-left [white-space:nowrap]"
+          >
+            PENDAFTARAN PEMILIK ALAT
+          </div>
+          <div
+            data-pencil-name="Title"
+            class="text-[24px]/[30px] box-border w-full text-[#0F172A] font-['Plus_Jakarta_Sans',system-ui,sans-serif] font-extrabold tracking-[-0.6px] text-left"
+          >
+            Sewakan alat,
+            <br />
+            tambah penghasilan.
+          </div>
+          <div
+            data-pencil-name="Desc"
+            class="text-[12px]/[19px] box-border w-full text-[#475569] font-['Plus_Jakarta_Sans',system-ui,sans-serif] font-normal text-left"
+          >
+            Daftarkan toko atau gudang Anda dan terima permintaan sewa dari UMKM terverifikasi di
+            sekitar lokasi Anda.
+          </div>
+          <div
+            data-pencil-name="Steps"
+            class="box-border w-full h-fit shrink-0 flex flex-col gap-0 p-[8px_0px_0px_0px] justify-start items-start"
+          >
+            <div
+              data-pencil-name="Step"
+              class="box-border w-full h-[56px] shrink-0 flex flex-row gap-[11px] justify-start items-start"
+            >
+              <div
+                data-pencil-name="Marker"
+                class="box-border w-[24px] shrink-0 h-fit flex flex-col gap-[4px] justify-start items-center"
+              >
+                <div
+                  data-pencil-name="Dot"
+                  class="box-border w-[24px] h-[24px] shrink-0 flex flex-row gap-0 justify-center items-center bg-[#2563EB] rounded-[999px]"
+                >
+                  <div
+                    data-pencil-name="N"
+                    class="text-[10px]/[normal] box-border text-[#FFFFFF] font-['Plus_Jakarta_Sans',system-ui,sans-serif] font-bold text-left [white-space:nowrap]"
+                  >
+                    1
+                  </div>
+                </div>
+                <div
+                  data-pencil-name="Line"
+                  class="box-border w-[1px] h-[28px] shrink-0 flex flex-row gap-0 justify-start items-start bg-[#E2E8F0]"
+                ></div>
+              </div>
+              <div
+                data-pencil-name="T"
+                class="box-border w-fit shrink-0 h-fit flex flex-col gap-[1px] p-[2px_0px_0px_0px] justify-start items-start"
+              >
+                <div
+                  data-pencil-name="N"
+                  class="text-[12px]/[normal] box-border text-[#0F172A] font-['Plus_Jakarta_Sans',system-ui,sans-serif] font-bold text-left [white-space:nowrap]"
+                >
+                  Buat Akun
+                </div>
+                <div
+                  data-pencil-name="S"
+                  class="text-[10px]/[normal] box-border text-[#2563EB] font-['Plus_Jakarta_Sans',system-ui,sans-serif] font-normal text-left [white-space:nowrap]"
+                >
+                  Sedang diisi
+                </div>
+              </div>
+            </div>
+            <div
+              data-pencil-name="Step"
+              class="box-border w-full h-[56px] shrink-0 flex flex-row gap-[11px] justify-start items-start"
+            >
+              <div
+                data-pencil-name="Marker"
+                class="box-border w-[24px] shrink-0 h-fit flex flex-col gap-[4px] justify-start items-center"
+              >
+                <div
+                  data-pencil-name="Dot"
+                  class="box-border w-[24px] h-[24px] shrink-0 flex flex-row gap-0 justify-center items-center bg-[#FFFFFF] [outline:1px_solid_#E2E8F0] [outline-offset:-0.5px] rounded-[999px]"
+                >
+                  <div
+                    data-pencil-name="N"
+                    class="text-[10px]/[normal] box-border text-[#94A3B8] font-['Plus_Jakarta_Sans',system-ui,sans-serif] font-bold text-left [white-space:nowrap]"
+                  >
+                    2
+                  </div>
+                </div>
+                <div
+                  data-pencil-name="Line"
+                  class="box-border w-[1px] h-[28px] shrink-0 flex flex-row gap-0 justify-start items-start bg-[#E2E8F0]"
+                ></div>
+              </div>
+              <div
+                data-pencil-name="T"
+                class="box-border w-fit shrink-0 h-fit flex flex-col gap-[1px] p-[2px_0px_0px_0px] justify-start items-start"
+              >
+                <div
+                  data-pencil-name="N"
+                  class="text-[12px]/[normal] box-border text-[#475569] font-['Plus_Jakarta_Sans',system-ui,sans-serif] font-medium text-left [white-space:nowrap]"
+                >
+                  Identitas &amp; KTP
+                </div>
+                <div
+                  data-pencil-name="S"
+                  class="text-[10px]/[normal] box-border text-[#94A3B8] font-['Plus_Jakarta_Sans',system-ui,sans-serif] font-normal text-left [white-space:nowrap]"
+                >
+                  Belum dimulai
+                </div>
+              </div>
+            </div>
+            <div
+              data-pencil-name="Step"
+              class="box-border w-full h-[56px] shrink-0 flex flex-row gap-[11px] justify-start items-start"
+            >
+              <div
+                data-pencil-name="Marker"
+                class="box-border w-[24px] shrink-0 h-fit flex flex-col gap-[4px] justify-start items-center"
+              >
+                <div
+                  data-pencil-name="Dot"
+                  class="box-border w-[24px] h-[24px] shrink-0 flex flex-row gap-0 justify-center items-center bg-[#FFFFFF] [outline:1px_solid_#E2E8F0] [outline-offset:-0.5px] rounded-[999px]"
+                >
+                  <div
+                    data-pencil-name="N"
+                    class="text-[10px]/[normal] box-border text-[#94A3B8] font-['Plus_Jakarta_Sans',system-ui,sans-serif] font-bold text-left [white-space:nowrap]"
+                  >
+                    3
+                  </div>
+                </div>
+                <div
+                  data-pencil-name="Line"
+                  class="box-border w-[1px] h-[28px] shrink-0 flex flex-row gap-0 justify-start items-start bg-[#E2E8F0]"
+                ></div>
+              </div>
+              <div
+                data-pencil-name="T"
+                class="box-border w-fit shrink-0 h-fit flex flex-col gap-[1px] p-[2px_0px_0px_0px] justify-start items-start"
+              >
+                <div
+                  data-pencil-name="N"
+                  class="text-[12px]/[normal] box-border text-[#475569] font-['Plus_Jakarta_Sans',system-ui,sans-serif] font-medium text-left [white-space:nowrap]"
+                >
+                  Gudang &amp; Operasional
+                </div>
+                <div
+                  data-pencil-name="S"
+                  class="text-[10px]/[normal] box-border text-[#94A3B8] font-['Plus_Jakarta_Sans',system-ui,sans-serif] font-normal text-left [white-space:nowrap]"
+                >
+                  Belum dimulai
+                </div>
+              </div>
+            </div>
+            <div
+              data-pencil-name="Step"
+              class="box-border w-full h-[56px] shrink-0 flex flex-row gap-[11px] justify-start items-start"
+            >
+              <div
+                data-pencil-name="Marker"
+                class="box-border w-[24px] shrink-0 h-fit flex flex-col gap-[4px] justify-start items-center"
+              >
+                <div
+                  data-pencil-name="Dot"
+                  class="box-border w-[24px] h-[24px] shrink-0 flex flex-row gap-0 justify-center items-center bg-[#FFFFFF] [outline:1px_solid_#E2E8F0] [outline-offset:-0.5px] rounded-[999px]"
+                >
+                  <div
+                    data-pencil-name="N"
+                    class="text-[10px]/[normal] box-border text-[#94A3B8] font-['Plus_Jakarta_Sans',system-ui,sans-serif] font-bold text-left [white-space:nowrap]"
+                  >
+                    4
+                  </div>
+                </div>
+                <div
+                  data-pencil-name="Line"
+                  class="box-border w-[1px] h-[28px] shrink-0 flex flex-row gap-0 justify-start items-start bg-[#E2E8F0]"
+                ></div>
+              </div>
+              <div
+                data-pencil-name="T"
+                class="box-border w-fit shrink-0 h-fit flex flex-col gap-[1px] p-[2px_0px_0px_0px] justify-start items-start"
+              >
+                <div
+                  data-pencil-name="N"
+                  class="text-[12px]/[normal] box-border text-[#475569] font-['Plus_Jakarta_Sans',system-ui,sans-serif] font-medium text-left [white-space:nowrap]"
+                >
+                  Rekening Pencairan
+                </div>
+                <div
+                  data-pencil-name="S"
+                  class="text-[10px]/[normal] box-border text-[#94A3B8] font-['Plus_Jakarta_Sans',system-ui,sans-serif] font-normal text-left [white-space:nowrap]"
+                >
+                  Belum dimulai
+                </div>
+              </div>
+            </div>
+            <div
+              data-pencil-name="Step"
+              class="box-border w-full h-[34px] shrink-0 flex flex-row gap-[11px] justify-start items-start"
+            >
+              <div
+                data-pencil-name="Marker"
+                class="box-border w-[24px] shrink-0 h-fit flex flex-col gap-[4px] justify-start items-center"
+              >
+                <div
+                  data-pencil-name="Dot"
+                  class="box-border w-[24px] h-[24px] shrink-0 flex flex-row gap-0 justify-center items-center bg-[#FFFFFF] [outline:1px_solid_#E2E8F0] [outline-offset:-0.5px] rounded-[999px]"
+                >
+                  <div
+                    data-pencil-name="N"
+                    class="text-[10px]/[normal] box-border text-[#94A3B8] font-['Plus_Jakarta_Sans',system-ui,sans-serif] font-bold text-left [white-space:nowrap]"
+                  >
+                    5
+                  </div>
+                </div>
+              </div>
+              <div
+                data-pencil-name="T"
+                class="box-border w-fit shrink-0 h-fit flex flex-col gap-[1px] p-[2px_0px_0px_0px] justify-start items-start"
+              >
+                <div
+                  data-pencil-name="N"
+                  class="text-[12px]/[normal] box-border text-[#475569] font-['Plus_Jakarta_Sans',system-ui,sans-serif] font-medium text-left [white-space:nowrap]"
+                >
+                  Review &amp; Kirim
+                </div>
+                <div
+                  data-pencil-name="S"
+                  class="text-[10px]/[normal] box-border text-[#94A3B8] font-['Plus_Jakarta_Sans',system-ui,sans-serif] font-normal text-left [white-space:nowrap]"
+                >
+                  Belum dimulai
+                </div>
+              </div>
+            </div>
+          </div>
+          <div
+            data-pencil-name="Tip"
+            class="box-border w-full h-fit shrink-0 flex flex-col gap-[7px] p-[14px] justify-start items-start bg-[#EFF6FF] rounded-[12px]"
+          >
+            <div
+              data-pencil-name="H"
+              class="box-border w-fit h-fit shrink-0 flex flex-row gap-[7px] justify-start items-center"
+            >
+              <svg
+                data-pencil-name="I"
+                data-icon-name="shield-check"
+                data-icon-set="lucide"
+                viewBox="0 0 13.99993896484375 14"
+                preserveAspectRatio="xMidYMid meet"
+                xmlns="http://www.w3.org/2000/svg"
+                class="box-border w-[13px] shrink-0 h-[13px]"
+              >
+                <path
+                  d="M6.84619 0.60156q-0.34863 0.02734-0.68701 0.30762-0.51611 0.42041-1.00147 0.70068-0.48193 0.28027-1.01513 0.4751-0.30762 0.11279-0.58789 0.1709-0.28027 0.05469-0.66992 0.08203-0.23926 0.01367-0.36573 0.07178-0.19482 0.06836-0.37939 0.22217-0.18115 0.15381-0.26319 0.34863l-0.01367 0.03076q-0.07178 0.12646-0.08545 0.22217-0.01367 0.15381-0.02734 0.60156l0 1.78076q0 2.25244 0.01367 2.46094 0.14014 1.6543 1.10742 2.88477 0.14014 0.16748 0.43409 0.46142 0.29395 0.29394 0.48877 0.44775 0.92285 0.7417 2.2832 1.27491 0.46143 0.18115 0.65625 0.23926 0.23926 0.05469 0.43408 0.01367 0.16748-0.02734 0.5332-0.15381 1.35693-0.51953 2.27979-1.20313 0.37939-0.2666 0.71435-0.60498 1.37402-1.3706 1.54151-3.37353 0.01367-0.23584 0.01367-2.46094 0-2.22852-0.02734-2.35498-0.07178-0.32129-0.31787-0.56396-0.24268-0.24609-0.5503-0.31788-0.09912-0.02734-0.37939-0.04101-0.48877-0.02734-0.96387-0.18115-0.81348-0.2666-1.55518-0.77246-0.2666-0.18115-0.64257-0.48877-0.42041-0.33496-0.96729-0.28028z m0.43408 1.34326q0.64258 0.51953 1.32959 0.86817 1.2168 0.61865 2.25244 0.68701l0.21192 0-0.01367 4.31348q0 0.33496-0.02735 0.50244-0.22559 1.34326-1.1416 2.27637-0.91602 0.92969-2.66601 1.57226l-0.21192 0.08545-0.18115-0.05469q-2.32422-0.85449-3.2334-2.22851-0.47852-0.71436-0.63232-1.63721-0.02734-0.18115-0.02735-0.50244l-0.01367-4.32715 0.19483 0q0.86816-0.05469 1.84912-0.48193 0.98096-0.42725 1.83545-1.12793 0.16748-0.14014 0.19482-0.14014 0.02734 0 0.28027 0.19482z m1.32959 3.31885q-0.06836 0.02734-0.12646 0.05127-0.05469 0.02051-1.06299 1.02539l-0.99463 0.99463-0.40674-0.40332q-0.2666-0.2666-0.3623-0.33838-0.12646-0.11279-0.19824-0.14013-0.06836-0.02734-0.19483-0.02735-0.12646 0-0.16748 0.01367-0.04102 0.01367-0.09912 0.04102-0.18115 0.09912-0.28027 0.2666-0.04102 0.08545-0.04102 0.25293l0 0.01367q0 0.14014 0.03418 0.21192 0.0376 0.06836 0.17774 0.22216 0.0957 0.11279 0.48876 0.50586l0.04102 0.04102q0.42041 0.42041 0.55371 0.54687 0.1333 0.12305 0.20166 0.15381 0.14014 0.06836 0.29395 0.05469 0.15381-0.01367 0.28027-0.09912 0.07178-0.05469 1.28857-1.27149 0.86816-0.86816 1.04932-1.06298 0.18457-0.19824 0.21192-0.27002 0.0957-0.27686-0.05811-0.52295-0.15381-0.24609-0.44775-0.25977-0.12646-0.01367-0.18116 0z"
+                  fill="#1D4ED8"
+                ></path>
+              </svg>
+              <div
+                data-pencil-name="T"
+                class="text-[11px]/[normal] box-border text-[#1D4ED8] font-['Plus_Jakarta_Sans',system-ui,sans-serif] font-bold text-left [white-space:nowrap]"
+              >
+                Kenapa penyewa harus KYC?
+              </div>
+            </div>
+            <div
+              data-pencil-name="B"
+              class="text-[10px]/[16px] box-border w-full text-[#1D4ED8] font-['Plus_Jakarta_Sans',system-ui,sans-serif] font-normal text-left"
+            >
+              Kami memverifikasi penyewa lebih dulu sehingga risiko alat tidak kembali atau rusak
+              jauh lebih kecil.
+            </div>
+          </div>
+        </div>
+        <div
+          data-pencil-name="FormCard"
+          class="box-border w-[760px] shrink-0 h-fit flex flex-col gap-[18px] p-[28px] justify-start items-start bg-[#FFFFFF] [outline:1px_solid_#E2E8F0] [outline-offset:-0.5px] rounded-[16px]"
+        >
+          <div
+            data-pencil-name="CardHead"
+            class="box-border w-full h-fit shrink-0 flex flex-row gap-0 justify-between items-start"
+          >
+            <div
+              data-pencil-name="L"
+              class="box-border [flex:1_1_0] h-fit flex flex-col gap-[3px] justify-start items-start"
+            >
+              <div
+                data-pencil-name="Step"
+                class="text-[9px]/[normal] box-border text-[#2563EB] font-['Plus_Jakarta_Sans',system-ui,sans-serif] font-bold tracking-[0.9px] text-left [white-space:nowrap]"
+              >
+                LANGKAH 1 DARI 5
+              </div>
+              <div
+                data-pencil-name="Title"
+                class="text-[19px]/[normal] box-border text-[#0F172A] font-['Plus_Jakarta_Sans',system-ui,sans-serif] font-bold text-left [white-space:nowrap]"
+              >
+                Buat akun SewaAlat
+              </div>
+              <div
+                data-pencil-name="Sub"
+                class="text-[11px]/[17px] box-border w-full text-[#475569] font-['Plus_Jakarta_Sans',system-ui,sans-serif] font-normal text-left"
+              >
+                Pilih tipe akun, lalu lengkapi data diri dan kata sandi.
+              </div>
+            </div>
+            <div
+              data-pencil-name="Draft"
+              class="box-border w-fit shrink-0 h-fit flex flex-row gap-0 p-[5px_10px] justify-start items-start bg-[#F8FAFC] rounded-[999px]"
+            >
+              <div
+                data-pencil-name="T"
+                class="text-[10px]/[normal] box-border text-[#94A3B8] font-['Plus_Jakarta_Sans',system-ui,sans-serif] font-semibold text-left [white-space:nowrap]"
+              >
+                Draf tersimpan
+              </div>
+            </div>
+          </div>
+          <div
+            data-pencil-name="Progress"
+            class="box-border w-full h-fit shrink-0 flex flex-row gap-[6px] justify-start items-start"
+          >
+            <div
+              data-pencil-name="Seg"
+              class="box-border [flex:1_1_0] h-[5px] flex flex-row gap-0 justify-start items-start bg-[#2563EB] rounded-[999px]"
+            ></div>
+            <div
+              data-pencil-name="Seg"
+              class="box-border [flex:1_1_0] h-[5px] flex flex-row gap-0 justify-start items-start bg-[#E2E8F0] rounded-[999px]"
+            ></div>
+            <div
+              data-pencil-name="Seg"
+              class="box-border [flex:1_1_0] h-[5px] flex flex-row gap-0 justify-start items-start bg-[#E2E8F0] rounded-[999px]"
+            ></div>
+            <div
+              data-pencil-name="Seg"
+              class="box-border [flex:1_1_0] h-[5px] flex flex-row gap-0 justify-start items-start bg-[#E2E8F0] rounded-[999px]"
+            ></div>
+            <div
+              data-pencil-name="Seg"
+              class="box-border [flex:1_1_0] h-[5px] flex flex-row gap-0 justify-start items-start bg-[#E2E8F0] rounded-[999px]"
+            ></div>
+          </div>
+          <div
+            data-pencil-name="RolePick"
+            class="box-border w-full h-fit shrink-0 flex flex-col gap-[7px] justify-start items-start"
+          >
+            <div
+              data-pencil-name="Label"
+              class="text-[9px]/[normal] box-border text-[#94A3B8] font-['Plus_Jakarta_Sans',system-ui,sans-serif] font-bold tracking-[0.9px] text-left [white-space:nowrap]"
+            >
+              DAFTAR SEBAGAI
+            </div>
+            <div
+              data-pencil-name="RoleRow"
+              class="box-border w-full h-fit shrink-0 flex flex-row gap-[8px] justify-start items-start"
+            >
+              <div
+                data-pencil-name="Role Penyewa UMKM"
+                class="box-border [flex:1_1_0] h-fit flex flex-row gap-[9px] p-[10px_11px] justify-start items-center bg-[#FFFFFF] [outline:1px_solid_#E2E8F0] [outline-offset:-0.5px] rounded-[10px]"
+              >
+                <div
+                  data-pencil-name="IconBox"
+                  class="box-border w-[26px] shrink-0 h-[26px] flex flex-row gap-0 justify-center items-center bg-[#F8FAFC] rounded-[7px]"
+                >
+                  <svg
+                    data-pencil-name="I"
+                    data-icon-name="store"
+                    data-icon-set="lucide"
+                    viewBox="0 0 13.99993896484375 14"
+                    preserveAspectRatio="xMidYMid meet"
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="box-border w-[14px] shrink-0 h-[14px]"
+                  >
+                    <path
+                      d="M3.98877 0.58789q-0.08203 0-0.19482 0.02734-0.30762 0.04443-0.60157 0.21875-0.29395 0.17432-0.48877 0.42725-0.09912 0.14014-0.93994 1.35693-0.84082 1.2168-0.90918 1.32959-0.37939 0.65967-0.22558 1.40137 0.08545 0.43408 0.32812 0.78272 0.24609 0.34863 0.62549 0.58789l0.16748 0.08545 0.01367 4.56298 0.04102 0.15381q0.15381 0.51953 0.50244 0.84766 0.35205 0.32813 0.87158 0.42725 0.08203 0.02734 0.71436 0.02734l3.10693 0 3.10693 0q0.63232 0 0.72803-0.02734 0.50586-0.09912 0.85449-0.42725 0.35205-0.32813 0.50586-0.84766l0.04102-0.15381 0.01367-4.56298 0.08545-0.04444q0.18115-0.08203 0.38965-0.27685 0.21191-0.19824 0.33838-0.36573 0.34863-0.5332 0.34863-1.16211 0-0.54688-0.25293-0.98095-0.04102-0.08203-0.79639-1.1792-0.75537-1.10059-0.98095-1.4082-0.09912-0.15723-0.18116-0.23926-0.12647-0.14014-0.33154-0.27344-0.20166-0.1333-0.38281-0.18799l-0.04102-0.01367q-0.11279-0.05811-0.25293-0.05811-0.18115-0.02734-0.7417-0.02734l-2.35156 0q-3.03857 0-3.11035 0z m6.17627 1.23047q0.10938 0.05811 0.16406 0.11621 0.0581 0.05469 0.92627 1.31592 0.86816 1.25781 0.90918 1.33984 0.11279 0.23926 0.07861 0.48535-0.03418 0.24268-0.20166 0.44092-0.25293 0.30762-0.67334 0.30762-0.16748 0-0.30761-0.04785-0.14014-0.05127-0.29395-0.19141-0.43408-0.3623-0.92627-0.33496-0.43066 0.04102-0.7417 0.30762-0.18115 0.16748-0.32812 0.22558-0.14697 0.05469-0.35547 0.04102-0.12646 0-0.17774-0.01367-0.04785-0.01367-0.12988-0.05811-0.14014-0.05469-0.2666-0.18115-0.23926-0.19482-0.49219-0.2666-0.14014-0.05469-0.34863-0.05469-0.2085 0-0.34863 0.05469-0.25293 0.07178-0.46485 0.25293-0.2085 0.18115-0.37597 0.23926-0.11279 0.02734-0.2666 0.02734-0.15381 0-0.26661-0.02734-0.08203-0.02734-0.19482-0.08887-0.11279-0.06494-0.14697-0.10596-0.03418-0.04443-0.12647-0.11279-0.09229-0.07178-0.18799-0.1128-0.12646-0.07178-0.24609-0.09228-0.11963-0.02051-0.30078-0.02051-0.15381 0-0.21875 0.00684-0.06152 0.00684-0.16065 0.03418-0.23584 0.08545-0.44775 0.2666-0.16748 0.14014-0.30762 0.19824-0.14014 0.05469-0.30761 0.05469-0.34863 0-0.60157-0.23926-0.21191-0.19482-0.2666-0.46826-0.05469-0.27344 0.07178-0.50928 0.04102-0.08545 0.90234-1.34326 0.86133-1.26123 0.92969-1.33301 0.08545-0.0957 0.25293-0.15381 0.08203-0.02734 3.10693-0.02734l3.02491 0.01367 0.11279 0.05469z m-5.95068 4.69287q0.33496 0.28027 0.75537 0.40674 0.42041 0.12305 0.85449 0.06836 0.58789-0.08545 1.04932-0.48877 0.09912-0.07178 0.12646-0.07178 0.02734 0 0.12646 0.07178 0.3623 0.32129 0.83057 0.44092 0.47168 0.11621 0.91943 0.0205 0.23584-0.05811 0.48194-0.17431 0.24609-0.11963 0.42724-0.27344 0.09912-0.08545 0.13331-0.08545 0.03418 0 0.11962 0.07178 0.2085 0.18115 0.44776 0.29394 0.23926 0.10938 0.54687 0.18116l0.04102 0.01367 0 4.25537-0.04102 0.08545q-0.09912 0.19482-0.29394 0.29394l-0.1128 0.04102-1.30224 0.01367 0-2.26611q0-0.2666-0.02734-0.3794-0.01367-0.07178-0.08545-0.19482l-0.01368-0.03076q-0.09912-0.22217-0.30078-0.37598-0.20166-0.15381-0.44092-0.22559-0.09912-0.02734-0.30761-0.02734l-1.14844 0-1.14844 0q-0.2085 0-0.30761 0.02734-0.23926 0.07178-0.44092 0.22559-0.20166 0.15381-0.30078 0.37598l-0.01368 0.03076q-0.07178 0.12305-0.08545 0.19482-0.02734 0.11279-0.02734 0.3794l0 2.26611-1.30224-0.01367-0.09913-0.04102q-0.2085-0.09912-0.30761-0.29394l-0.04102-0.08545 0-4.25537 0.04102-0.01367q0.58789-0.12646 1.02197-0.49219 0.05811-0.05469 0.09228-0.05469 0.03418 0 0.13331 0.08545z m3.96142 3.98877l0 1.17578-2.35156 0 0-2.35156 2.35156 0 0 1.17578z"
+                      fill="#94A3B8"
+                    ></path>
+                  </svg>
+                </div>
+                <div
+                  data-pencil-name="T"
+                  class="box-border [flex:1_1_0] h-fit flex flex-col gap-[1px] justify-start items-start"
+                >
+                  <div
+                    data-pencil-name="N"
+                    class="text-[11px]/[normal] box-border text-[#0F172A] font-['Plus_Jakarta_Sans',system-ui,sans-serif] font-semibold text-left [white-space:nowrap]"
+                  >
+                    Penyewa UMKM
+                  </div>
+                  <div
+                    data-pencil-name="D"
+                    class="text-[9px]/[normal] box-border text-[#94A3B8] font-['Plus_Jakarta_Sans',system-ui,sans-serif] font-normal text-left [white-space:nowrap]"
+                  >
+                    Sewa alat produksi
+                  </div>
+                </div>
+              </div>
+              <div
+                data-pencil-name="Role Pemilik Alat"
+                class="box-border [flex:1_1_0] h-fit flex flex-row gap-[9px] p-[10px_11px] justify-start items-center bg-[#EFF6FF] [outline:1px_solid_#2563EB] [outline-offset:-0.5px] rounded-[10px]"
+              >
+                <div
+                  data-pencil-name="IconBox"
+                  class="box-border w-[26px] shrink-0 h-[26px] flex flex-row gap-0 justify-center items-center bg-[#2563EB] rounded-[7px]"
+                >
+                  <svg
+                    data-pencil-name="I"
+                    data-icon-name="key-round"
+                    data-icon-set="lucide"
+                    viewBox="0 0 13.99993896484375 14"
+                    preserveAspectRatio="xMidYMid meet"
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="box-border w-[14px] shrink-0 h-[14px]"
+                  >
+                    <path
+                      d="M8.68164 0.57422q-0.60498 0.05469-1.13476 0.25293-0.32129 0.12646-0.67334 0.32812-0.34863 0.20166-0.62891 0.44092-0.40674 0.34863-0.72803 0.79639-0.32129 0.44775-0.51953 0.93994-0.15381 0.39307-0.22559 0.72803-0.06836 0.33496-0.08203 0.75537-0.01367 0.51953 0.09912 1.02197l0.04102 0.18115-1.89014 1.89014q-1.89014 1.87646-2.00293 2.0166-0.19482 0.2666-0.29394 0.58789-0.04102 0.16748-0.05469 0.39307-0.01367 0.22217 0 0.81006l0 0.61865q0.01367 0.15381 0.02734 0.22217 0.09912 0.29394 0.31446 0.51953 0.21875 0.22217 0.52636 0.30762 0.06836 0.01367 0.25293 0.02734l0.90918 0 0.92286 0q0.18457-0.01367 0.25293-0.02734 0.23926-0.07178 0.44091-0.23243 0.20166-0.16064 0.31446-0.38281 0.07178-0.15723 0.09228-0.27344 0.02051-0.11963 0.02051-0.42724l0.01367-0.39307 0.39307-0.01367q0.30762 0 0.42383-0.02051 0.11963-0.02051 0.27685-0.09228 0.22217-0.11279 0.38281-0.30762 0.16064-0.19482 0.23243-0.43408 0.02734-0.11279 0.02734-0.48877l0.01367-0.39307 0.21192-0.01367q0.3623-0.04102 0.64941-0.18115 0.28711-0.14014 0.55371-0.42041l0.14014-0.14014 0.19482 0.04102q0.50586 0.11279 1.06983 0.09228 0.56738-0.02051 1.07324-0.17432 0.90918-0.28027 1.62353-0.91259 0.75537-0.65625 1.14844-1.56543 0.34863-0.84082 0.3418-1.74317-0.00684-0.90576-0.36914-1.75683-0.28027-0.63232-0.7793-1.16895-0.49561-0.54004-1.1416-0.89209-0.2085-0.10937-0.51612-0.229-0.30762-0.11963-0.56054-0.17432-0.30762-0.07178-0.70752-0.10596-0.3999-0.03418-0.67676-0.00683z m0.79639 1.18945q0.79639 0.09912 1.43896 0.56055 0.646 0.46143 1.01172 1.16211 0.15381 0.33496 0.23584 0.6289 0.05811 0.23926 0.07861 0.39307 0.02051 0.15381 0.02051 0.44775-0.01367 0.25293-0.02051 0.35206-0.00684 0.0957-0.03418 0.24951-0.11279 0.5332-0.36572 0.96728-0.42041 0.75537-1.16894 1.18262-0.74853 0.42725-1.60303 0.42725-0.28027 0-0.48535-0.02735-0.20166-0.03076-0.47852-0.11279-0.32471-0.09912-0.51953-0.01367-0.08545 0.04102-0.39307 0.34179-0.30762 0.30078-0.41357 0.35889-0.10254 0.05469-0.35547 0.06836-0.19482 0.01367-0.30762 0.04102-0.11279 0.02734-0.24609 0.09228-0.1333 0.06152-0.28711 0.21533-0.15381 0.15381-0.2085 0.28028-0.08545 0.16748-0.09912 0.27343-0.01367 0.10596-0.02734 0.44092l0 0.40674-0.40674 0q-0.33496 0.01367-0.44775 0.03418-0.11279 0.02051-0.28028 0.10596-0.12646 0.05469-0.28027 0.20849-0.15381 0.15381-0.2085 0.28028-0.08545 0.16748-0.09912 0.27343-0.01367 0.10596-0.02734 0.44092l0 0.40674-1.75 0 0-0.70068q0.01367-0.52978 0.01367-0.62891 0-0.09912 0.03418-0.16748 0.0376-0.07178 0.38623-0.43408 0.34863-0.36572 1.73633-1.75 1.42871-1.44238 1.75684-1.77735 0.32813-0.33838 0.34179-0.39306 0.04443-0.11279 0.04444-0.18799 0-0.07861-0.03077-0.20508l-0.08203-0.29394q-0.08545-0.3623-0.08545-0.77588 0-0.41357 0.09913-0.79297 0.2085-0.86816 0.85107-1.49707 0.646-0.62891 1.52783-0.82715 0.54688-0.13672 1.13477-0.05469z m-0.08545 1.76367q-0.22217 0.05811-0.38965 0.23243-0.16748 0.17432-0.22559 0.3999-0.08203 0.32129 0.07178 0.6289 0.04102 0.08203 0.16065 0.20166 0.11963 0.11963 0.20166 0.16065 0.19824 0.09912 0.41357 0.09912 0.21533 0 0.41357-0.09912 0.08203-0.04102 0.20166-0.16065 0.11963-0.11963 0.16065-0.20166 0.12646-0.25293 0.09228-0.52636-0.03418-0.27344-0.23242-0.46826-0.26318-0.29395-0.64258-0.29395-0.09912 0-0.22558 0.02734z"
+                      fill="#FFFFFF"
+                    ></path>
+                  </svg>
+                </div>
+                <div
+                  data-pencil-name="T"
+                  class="box-border [flex:1_1_0] h-fit flex flex-col gap-[1px] justify-start items-start"
+                >
+                  <div
+                    data-pencil-name="N"
+                    class="text-[11px]/[normal] box-border text-[#1D4ED8] font-['Plus_Jakarta_Sans',system-ui,sans-serif] font-bold text-left [white-space:nowrap]"
+                  >
+                    Pemilik Alat
+                  </div>
+                  <div
+                    data-pencil-name="D"
+                    class="text-[9px]/[normal] box-border text-[#1D4ED8] font-['Plus_Jakarta_Sans',system-ui,sans-serif] font-normal text-left [white-space:nowrap]"
+                  >
+                    Sewakan alat Anda
+                  </div>
+                </div>
+                <div
+                  data-pencil-name="Check"
+                  class="box-border w-[16px] shrink-0 h-[16px] flex flex-row gap-0 justify-center items-center bg-[#2563EB] rounded-[999px]"
+                >
+                  <svg
+                    data-pencil-name="C"
+                    data-icon-name="check"
+                    data-icon-set="lucide"
+                    viewBox="0 0 13.99993896484375 14"
+                    preserveAspectRatio="xMidYMid meet"
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="box-border w-[10px] shrink-0 h-[10px]"
+                  >
+                    <path
+                      d="M11.48096 2.95313q-0.07178 0.01367-0.12989 0.0581-0.05469 0.04102-3.07617 3.06592l-3.0249 3.00781-1.28857-1.28857q-1.28857-1.28516-1.38086-1.32618-0.08887-0.04443-0.22217-0.04443-0.1333 0-0.23242 0.0376-0.0957 0.03418-0.18799 0.11279-0.08887 0.0752-0.1333 0.1709-0.02734 0.07178-0.03418 0.11279-0.00684 0.04102-0.00684 0.14014l0 0.04102q-0.01367 0.11279 0.04102 0.19824 0.07178 0.10938 0.36572 0.40332 0.19482 0.21191 0.96729 0.98096l1.49707 1.48339q0.28027 0.2666 0.38964 0.33838 0.07178 0.05469 0.18457 0.04102l0.09571 0.01367q0.07178 0 0.14013-0.02734 0.08545-0.07178 0.32129-0.28711 0.23926-0.21875 0.79981-0.76221l2.2832-2.2832q2.08496-2.09863 2.7002-2.71387 0.61524-0.61865 0.64599-0.68701 0.04102-0.08545 0.04102-0.23926 0-0.09912-0.00684-0.14014-0.00684-0.04102-0.03418-0.11279-0.04443-0.08203-0.13672-0.16406-0.08887-0.08545-0.18115-0.11963-0.08887-0.0376-0.20849-0.0376-0.11963 0-0.18799 0.02734z"
+                      fill="#FFFFFF"
+                    ></path>
+                  </svg>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div
+            data-pencil-name="Fields"
+            class="box-border w-full h-fit shrink-0 flex flex-col gap-[14px] justify-start items-start"
+          >
+            <div
+              data-pencil-name="Field Nama Penyedia / Toko"
+              class="box-border w-full h-fit shrink-0 flex flex-col gap-[6px] justify-start items-start"
+            >
+              <div
+                data-pencil-name="Label"
+                class="text-[12px]/[normal] box-border text-[#475569] font-['Plus_Jakarta_Sans',system-ui,sans-serif] font-semibold text-left [white-space:nowrap]"
+              >
+                Nama Penyedia / Toko *
+              </div>
+              <div
+                data-pencil-name="Input"
+                class="box-border w-full h-[44px] shrink-0 flex flex-row gap-[10px] p-[0px_12px] justify-between items-center bg-[#FFFFFF] [outline:1px_solid_#E2E8F0] [outline-offset:-0.5px] rounded-[10px]"
+              >
+                <div
+                  data-pencil-name="Left"
+                  class="box-border [flex:1_1_0] h-fit flex flex-row gap-[10px] justify-start items-center"
+                >
+                  <svg
+                    data-pencil-name="Leading"
+                    data-icon-name="store"
+                    data-icon-set="lucide"
+                    viewBox="0 0 13.99993896484375 14"
+                    preserveAspectRatio="xMidYMid meet"
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="box-border w-[16px] shrink-0 h-[16px]"
+                  >
+                    <path
+                      d="M3.98877 0.58789q-0.08203 0-0.19482 0.02734-0.30762 0.04443-0.60157 0.21875-0.29395 0.17432-0.48877 0.42725-0.09912 0.14014-0.93994 1.35693-0.84082 1.2168-0.90918 1.32959-0.37939 0.65967-0.22558 1.40137 0.08545 0.43408 0.32812 0.78272 0.24609 0.34863 0.62549 0.58789l0.16748 0.08545 0.01367 4.56298 0.04102 0.15381q0.15381 0.51953 0.50244 0.84766 0.35205 0.32813 0.87158 0.42725 0.08203 0.02734 0.71436 0.02734l3.10693 0 3.10693 0q0.63232 0 0.72803-0.02734 0.50586-0.09912 0.85449-0.42725 0.35205-0.32813 0.50586-0.84766l0.04102-0.15381 0.01367-4.56298 0.08545-0.04444q0.18115-0.08203 0.38965-0.27685 0.21191-0.19824 0.33838-0.36573 0.34863-0.5332 0.34863-1.16211 0-0.54688-0.25293-0.98095-0.04102-0.08203-0.79639-1.1792-0.75537-1.10059-0.98095-1.4082-0.09912-0.15723-0.18116-0.23926-0.12647-0.14014-0.33154-0.27344-0.20166-0.1333-0.38281-0.18799l-0.04102-0.01367q-0.11279-0.05811-0.25293-0.05811-0.18115-0.02734-0.7417-0.02734l-2.35156 0q-3.03857 0-3.11035 0z m6.17627 1.23047q0.10938 0.05811 0.16406 0.11621 0.0581 0.05469 0.92627 1.31592 0.86816 1.25781 0.90918 1.33984 0.11279 0.23926 0.07861 0.48535-0.03418 0.24268-0.20166 0.44092-0.25293 0.30762-0.67334 0.30762-0.16748 0-0.30761-0.04785-0.14014-0.05127-0.29395-0.19141-0.43408-0.3623-0.92627-0.33496-0.43066 0.04102-0.7417 0.30762-0.18115 0.16748-0.32812 0.22558-0.14697 0.05469-0.35547 0.04102-0.12646 0-0.17774-0.01367-0.04785-0.01367-0.12988-0.05811-0.14014-0.05469-0.2666-0.18115-0.23926-0.19482-0.49219-0.2666-0.14014-0.05469-0.34863-0.05469-0.2085 0-0.34863 0.05469-0.25293 0.07178-0.46485 0.25293-0.2085 0.18115-0.37597 0.23926-0.11279 0.02734-0.2666 0.02734-0.15381 0-0.26661-0.02734-0.08203-0.02734-0.19482-0.08887-0.11279-0.06494-0.14697-0.10596-0.03418-0.04443-0.12647-0.11279-0.09229-0.07178-0.18799-0.1128-0.12646-0.07178-0.24609-0.09228-0.11963-0.02051-0.30078-0.02051-0.15381 0-0.21875 0.00684-0.06152 0.00684-0.16065 0.03418-0.23584 0.08545-0.44775 0.2666-0.16748 0.14014-0.30762 0.19824-0.14014 0.05469-0.30761 0.05469-0.34863 0-0.60157-0.23926-0.21191-0.19482-0.2666-0.46826-0.05469-0.27344 0.07178-0.50928 0.04102-0.08545 0.90234-1.34326 0.86133-1.26123 0.92969-1.33301 0.08545-0.0957 0.25293-0.15381 0.08203-0.02734 3.10693-0.02734l3.02491 0.01367 0.11279 0.05469z m-5.95068 4.69287q0.33496 0.28027 0.75537 0.40674 0.42041 0.12305 0.85449 0.06836 0.58789-0.08545 1.04932-0.48877 0.09912-0.07178 0.12646-0.07178 0.02734 0 0.12646 0.07178 0.3623 0.32129 0.83057 0.44092 0.47168 0.11621 0.91943 0.0205 0.23584-0.05811 0.48194-0.17431 0.24609-0.11963 0.42724-0.27344 0.09912-0.08545 0.13331-0.08545 0.03418 0 0.11962 0.07178 0.2085 0.18115 0.44776 0.29394 0.23926 0.10938 0.54687 0.18116l0.04102 0.01367 0 4.25537-0.04102 0.08545q-0.09912 0.19482-0.29394 0.29394l-0.1128 0.04102-1.30224 0.01367 0-2.26611q0-0.2666-0.02734-0.3794-0.01367-0.07178-0.08545-0.19482l-0.01368-0.03076q-0.09912-0.22217-0.30078-0.37598-0.20166-0.15381-0.44092-0.22559-0.09912-0.02734-0.30761-0.02734l-1.14844 0-1.14844 0q-0.2085 0-0.30761 0.02734-0.23926 0.07178-0.44092 0.22559-0.20166 0.15381-0.30078 0.37598l-0.01368 0.03076q-0.07178 0.12305-0.08545 0.19482-0.02734 0.11279-0.02734 0.3794l0 2.26611-1.30224-0.01367-0.09913-0.04102q-0.2085-0.09912-0.30761-0.29394l-0.04102-0.08545 0-4.25537 0.04102-0.01367q0.58789-0.12646 1.02197-0.49219 0.05811-0.05469 0.09228-0.05469 0.03418 0 0.13331 0.08545z m3.96142 3.98877l0 1.17578-2.35156 0 0-2.35156 2.35156 0 0 1.17578z"
+                      fill="#94A3B8"
+                    ></path>
+                  </svg>
+                  <div
+                    data-pencil-name="Value"
+                    class="text-[13px]/[normal] box-border text-[#0F172A] font-['Plus_Jakarta_Sans',system-ui,sans-serif] font-normal text-left [white-space:nowrap]"
+                  >
+                    Kopi Senja Roastery
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div
+              data-pencil-name="Field Nama Lengkap Pemilik"
+              class="box-border w-full h-fit shrink-0 flex flex-col gap-[6px] justify-start items-start"
+            >
+              <div
+                data-pencil-name="Label"
+                class="text-[12px]/[normal] box-border text-[#475569] font-['Plus_Jakarta_Sans',system-ui,sans-serif] font-semibold text-left [white-space:nowrap]"
+              >
+                Nama Lengkap Pemilik *
+              </div>
+              <div
+                data-pencil-name="Input"
+                class="box-border w-full h-[44px] shrink-0 flex flex-row gap-[10px] p-[0px_12px] justify-between items-center bg-[#FFFFFF] [outline:1px_solid_#E2E8F0] [outline-offset:-0.5px] rounded-[10px]"
+              >
+                <div
+                  data-pencil-name="Left"
+                  class="box-border [flex:1_1_0] h-fit flex flex-row gap-[10px] justify-start items-center"
+                >
+                  <svg
+                    data-pencil-name="Leading"
+                    data-icon-name="user"
+                    data-icon-set="lucide"
+                    viewBox="0 0 13.99993896484375 14"
+                    preserveAspectRatio="xMidYMid meet"
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="box-border w-[16px] shrink-0 h-[16px]"
+                  >
+                    <path
+                      d="M6.59326 1.20313q-0.81006 0.11279-1.42871 0.61865-0.61523 0.50244-0.89551 1.24414-0.18115 0.48877-0.18115 1.02197 0 0.28027 0.04102 0.50586 0.04443 0.22217 0.14013 0.48877 0.15381 0.46143 0.46826 0.84766 0.31787 0.38281 0.7212 0.63574 0.36572 0.22559 0.73486 0.32471 0.37256 0.0957 0.80664 0.0957 0.22559 0 0.3623-0.01367 0.14014-0.01367 0.35206-0.05811 0.60156-0.15381 1.104-0.55713 0.50586-0.40674 0.7998-0.98096 0.19482-0.39307 0.26661-0.88183 0.02734-0.14014 0.02734-0.40674 0-0.2666-0.02734-0.40674-0.09912-0.65625-0.46485-1.20312-0.3623-0.54688-0.93652-0.89551-0.43408-0.2666-0.98096-0.36572-0.15381-0.02734-0.45459-0.03418-0.30078-0.00684-0.45459 0.02051z m0.60156 1.14843q0.40674 0.02734 0.78272 0.28711 0.37939 0.25977 0.58105 0.65967 0.20508 0.39648 0.18457 0.88184-0.02051 0.48193-0.28711 0.86132-0.15381 0.23584-0.37939 0.41358-0.22217 0.17432-0.46143 0.27002-0.19482 0.05811-0.2871 0.07861-0.08887 0.02051-0.32813 0.02051-0.23926 0-0.33154-0.02051-0.08887-0.02051-0.28369-0.07861-0.39307-0.14014-0.68018-0.46826-0.28711-0.32813-0.3999-0.73487-0.10938-0.46143 0.01367-0.90918 0.12646-0.44775 0.45459-0.76904 0.33154-0.32471 0.79297-0.45117 0.08545-0.02734 0.24609-0.04785 0.16064-0.02051 0.21533-0.00684l0.16748 0.01367z m-2.35156 5.85156q-0.96387 0.14014-1.65088 0.82715-0.54688 0.54688-0.75537 1.31592-0.07178 0.23926-0.08545 0.44092-0.01367 0.20166-0.01367 0.82031l0 0.76904 0.04102 0.1128q0.05811 0.0957 0.14013 0.18115 0.21191 0.19482 0.50586 0.14697 0.29395-0.04785 0.42041-0.31445l0.04102-0.09912 0.01367-0.79639q0.01367-0.61865 0.02734-0.77246 0.01367-0.15381 0.07178-0.34863 0.14014-0.37939 0.46826-0.68018 0.32813-0.30078 0.73487-0.41357 0.15381-0.04102 0.53662-0.05469 0.38623-0.01367 1.66113-0.01367 1.2749 0 1.65771 0.01367 0.38623 0.01367 0.54004 0.05469 0.42041 0.11279 0.75538 0.43066 0.33838 0.31445 0.46142 0.71778 0.05811 0.16748 0.06494 0.3247 0.00684 0.15381 0.02051 0.7417l0.01367 0.79639 0.04102 0.09912q0.12646 0.2666 0.42041 0.31445 0.29395 0.04785 0.50586-0.14697 0.08203-0.08545 0.14013-0.18115l0.04102-0.1128 0-0.76904q0-0.61865-0.01367-0.82031-0.01367-0.20166-0.08545-0.44092-0.08203-0.32129-0.23584-0.61523-0.2666-0.51953-0.73828-0.90235-0.46826-0.38623-1.02539-0.54004l-0.04444-0.01367q-0.16748-0.05811-0.29394-0.07178-0.15381-0.01367-0.56055-0.01367l-1.60986-0.01367q-2.05762 0-2.21143 0.02734z"
+                      fill="#94A3B8"
+                    ></path>
+                  </svg>
+                  <div
+                    data-pencil-name="Value"
+                    class="text-[13px]/[normal] box-border text-[#0F172A] font-['Plus_Jakarta_Sans',system-ui,sans-serif] font-normal text-left [white-space:nowrap]"
+                  >
+                    Budi Santoso
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div
+              data-pencil-name="Row"
+              class="box-border w-full h-fit shrink-0 flex flex-row gap-[12px] justify-start items-start"
+            >
+              <div
+                data-pencil-name="Field Email"
+                class="box-border [flex:1_1_0] h-fit flex flex-col gap-[6px] justify-start items-start"
+              >
+                <div
+                  data-pencil-name="Label"
+                  class="text-[12px]/[normal] box-border text-[#475569] font-['Plus_Jakarta_Sans',system-ui,sans-serif] font-semibold text-left [white-space:nowrap]"
+                >
+                  Email *
+                </div>
+                <div
+                  data-pencil-name="Input"
+                  class="box-border w-full h-[44px] shrink-0 flex flex-row gap-[10px] p-[0px_12px] justify-between items-center bg-[#FFFFFF] [outline:1px_solid_#E2E8F0] [outline-offset:-0.5px] rounded-[10px]"
+                >
+                  <div
+                    data-pencil-name="Left"
+                    class="box-border [flex:1_1_0] h-fit flex flex-row gap-[10px] justify-start items-center"
+                  >
+                    <svg
+                      data-pencil-name="Leading"
+                      data-icon-name="mail"
+                      data-icon-set="lucide"
+                      viewBox="0 0 13.99993896484375 14"
+                      preserveAspectRatio="xMidYMid meet"
+                      xmlns="http://www.w3.org/2000/svg"
+                      class="box-border w-[16px] shrink-0 h-[16px]"
+                    >
+                      <path
+                        d="M2.05762 1.77734q-0.28027 0.04102-0.53321 0.16748-0.34863 0.19824-0.58789 0.50586-0.23584 0.30762-0.32129 0.70069-0.01367 0.10938-0.02734 0.66992l0 3.17871 0 3.17871q0.01367 0.56055 0.02734 0.66992 0.11279 0.5332 0.50245 0.90577 0.39307 0.36914 0.92627 0.46826 0.16748 0.02734 4.95605 0.02734 4.78857 0 4.95605-0.02734 0.5332-0.09912 0.92286-0.46826 0.39307-0.37256 0.50586-0.90577 0.01367-0.10938 0.02734-0.66992l0-3.17871 0-3.17871q-0.01367-0.56055-0.02734-0.66992-0.12647-0.54688-0.53321-0.92285-0.40674-0.37939-0.95019-0.46485-0.1709-0.01367-4.93897-0.01367-4.76465 0-4.90478 0.02734z m9.81298 1.17579q0.09912 0.04443 0.18116 0.12304 0.08545 0.0752 0.12646 0.16065 0.04443 0.08203 0.05127 0.12988 0.00684 0.04785 0.00684 0.18799l0 0.21191-2.46436 1.58252q-2.46436 1.56543-2.53613 1.60303-0.06836 0.03418-0.16748 0.03418l-0.02734 0.01367q-0.0957 0.01367-0.2085-0.04102-0.15381-0.07178-0.65967-0.37939l-4.40918-2.81299 0-0.21191q0-0.14014 0.00684-0.18799 0.00684-0.04785 0.04101-0.12305 0.0376-0.07861 0.12647-0.16064 0.09229-0.08545 0.16748-0.1128 0.07861-0.03076 0.70752-0.04443l4.18701 0 4.18701 0q0.61523 0 0.68359 0.02735z m-5.63964 5.02783q0.22217 0.10938 0.46142 0.15381 0.09912 0.02734 0.30762 0.02734 0.2085 0 0.30762-0.02734 0.30762-0.05811 0.54687-0.19825 0.14014-0.08203 2.26612-1.42529l2.12939-1.36035-0.01367 5.50293-0.04102 0.09912q-0.11279 0.2085-0.3247 0.29395l-0.09571 0.02734-9.5498 0-0.09571-0.02734q-0.21191-0.08545-0.3247-0.29395l-0.04102-0.09912-0.01367-5.50293 2.17041 1.37402q2.17041 1.38428 2.31055 1.45606z"
+                        fill="#94A3B8"
+                      ></path>
+                    </svg>
+                    <div
+                      data-pencil-name="Value"
+                      class="text-[13px]/[normal] box-border text-[#0F172A] font-['Plus_Jakarta_Sans',system-ui,sans-serif] font-normal text-left [white-space:nowrap]"
+                    >
+                      halo@kopisenja.id
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div
+                data-pencil-name="Field No. WhatsApp"
+                class="box-border [flex:1_1_0] h-fit flex flex-col gap-[6px] justify-start items-start"
+              >
+                <div
+                  data-pencil-name="Label"
+                  class="text-[12px]/[normal] box-border text-[#475569] font-['Plus_Jakarta_Sans',system-ui,sans-serif] font-semibold text-left [white-space:nowrap]"
+                >
+                  No. WhatsApp *
+                </div>
+                <div
+                  data-pencil-name="Input"
+                  class="box-border w-full h-[44px] shrink-0 flex flex-row gap-[10px] p-[0px_12px] justify-between items-center bg-[#FFFFFF] [outline:1px_solid_#E2E8F0] [outline-offset:-0.5px] rounded-[10px]"
+                >
+                  <div
+                    data-pencil-name="Left"
+                    class="box-border [flex:1_1_0] h-fit flex flex-row gap-[10px] justify-start items-center"
+                  >
+                    <svg
+                      data-pencil-name="Leading"
+                      data-icon-name="phone"
+                      data-icon-set="lucide"
+                      viewBox="0 0 13.99993896484375 14"
+                      preserveAspectRatio="xMidYMid meet"
+                      xmlns="http://www.w3.org/2000/svg"
+                      class="box-border w-[16px] shrink-0 h-[16px]"
+                    >
+                      <path
+                        d="M2.15674 0.60156q-0.29395 0.02734-0.58789 0.16748-0.29395 0.14014-0.50586 0.36573-0.30762 0.32129-0.43408 0.78271-0.02734 0.12646-0.03418 0.21191-0.00684 0.08203-0.00684 0.36231 0.01367 1.65088 0.53662 3.26074 0.52637 1.60986 1.49365 2.98389 0.5332 0.7417 1.2168 1.42871 0.68701 0.68359 1.42871 1.2168 1.37402 0.96729 2.99072 1.49365 1.6167 0.52295 3.25391 0.53662 0.28027 0 0.3623-0.00684 0.08545-0.00683 0.21192-0.03418 0.25293-0.07178 0.44092-0.18115 0.18799-0.11279 0.36914-0.29394 0.18457-0.18457 0.29394-0.37256 0.11279-0.18799 0.18457-0.44092l0.04102-0.16748 0-1.0083q0.01367-0.67334 0-0.92627-0.01367-0.30762-0.05127-0.46826-0.03418-0.16064-0.11621-0.35547-0.18115-0.36572-0.50586-0.61524-0.32129-0.25293-0.72803-0.33838-0.10938-0.01367-0.29394-0.02734l-0.92285 0q-0.84082 0-1.0459 0.01367-0.20166 0.01367-0.38282 0.07178-0.28027 0.08203-0.49218 0.25293-0.2085 0.16748-0.417 0.44434l-0.14013 0.17089-0.11279-0.04443q-0.22217-0.10938-0.54688-0.31103-0.32129-0.20508-0.51611-0.35889-1.07666-0.81348-1.80469-1.91748-0.09912-0.15723-0.2666-0.45117-0.16748-0.29395-0.18457-0.32813-0.01367-0.03418 0.15722-0.16064 0.52979-0.39307 0.69727-0.93653 0.07178-0.18457 0.07861-0.3999 0.00684-0.21875 0.00684-1.10058l0-1.10401-0.05469-0.15381q-0.11279-0.36572-0.35205-0.64599-0.23584-0.28027-0.56055-0.44776-0.29395-0.14014-0.6289-0.16748-0.16748-0.02734-1.02881-0.02734-0.86133 0-1.04248 0.02734z m2.17041 1.20313q0.08203 0.04443 0.15722 0.12304 0.07861 0.0752 0.11963 0.16065 0.04443 0.08203 0.05811 0.30078 0.01367 0.21533 0 0.91602l0 0.71435q-0.01367 0.2085-0.03418 0.28027-0.02051 0.06836-0.07861 0.13672l-0.01368 0q-0.05469 0.08545-0.25976 0.23243-0.20166 0.14697-0.29395 0.25292-0.08887 0.10254-0.16064 0.24952-0.06836 0.14697-0.09912 0.25293-0.02734 0.10596-0.02735 0.27343 0 0.19482 0.06836 0.38623 0.07178 0.18799 0.29737 0.56739 1.20313 2.1123 3.30175 3.30175 0.36572 0.21191 0.55372 0.2837 0.19141 0.06836 0.38623 0.06836 0.28027-0.01367 0.5332-0.12647 0.12305-0.07178 0.229-0.16064 0.10596-0.09228 0.2461-0.27344 0.16748-0.22559 0.25293-0.28027l0-0.01368q0.08203-0.05811 0.14355-0.07861 0.06494-0.02051 0.27344-0.03418l0.72803 0q0.72803-0.01367 0.93652 0 0.21191 0.01367 0.29736 0.07178 0.16748 0.0957 0.25293 0.26318l0.04102 0.09912 0 1.02198q0 0.7417 0 0.88867 0 0.14697-0.02735 0.20508-0.12646 0.26318-0.37939 0.33496-0.15381 0.05469-0.74854 0.01367-0.59473-0.04102-1.1416-0.14014-0.96387-0.16748-1.90381-0.53662-0.93652-0.37256-1.75-0.89209-1.37061-0.89551-2.38574-2.16699-1.01514-1.2749-1.56885-2.81641-0.55371-1.5415-0.56738-3.13769 0-0.26318 0-0.31787 0-0.05811 0.04102-0.12989 0.08545-0.18115 0.22558-0.24951 0.08203-0.05811 0.16065-0.07178 0.07861-0.01367 0.30078-0.02734l1.73633 0.01367 0.09912 0.04102z"
+                        fill="#94A3B8"
+                      ></path>
+                    </svg>
+                    <div
+                      data-pencil-name="Value"
+                      class="text-[13px]/[normal] box-border text-[#0F172A] font-['Plus_Jakarta_Sans',system-ui,sans-serif] font-normal text-left [white-space:nowrap]"
+                    >
+                      +62 812 8899 0011
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div
+              data-pencil-name="Row"
+              class="box-border w-full h-fit shrink-0 flex flex-row gap-[12px] justify-start items-start"
+            >
+              <div
+                data-pencil-name="Field Kata Sandi"
+                class="box-border [flex:1_1_0] h-fit flex flex-col gap-[6px] justify-start items-start"
+              >
+                <div
+                  data-pencil-name="Label"
+                  class="text-[12px]/[normal] box-border text-[#475569] font-['Plus_Jakarta_Sans',system-ui,sans-serif] font-semibold text-left [white-space:nowrap]"
+                >
+                  Kata Sandi *
+                </div>
+                <div
+                  data-pencil-name="Input"
+                  class="box-border w-full h-[44px] shrink-0 flex flex-row gap-[10px] p-[0px_12px] justify-between items-center bg-[#FFFFFF] [outline:1px_solid_#E2E8F0] [outline-offset:-0.5px] rounded-[10px]"
+                >
+                  <div
+                    data-pencil-name="Left"
+                    class="box-border [flex:1_1_0] h-fit flex flex-row gap-[10px] justify-start items-center"
+                  >
+                    <svg
+                      data-pencil-name="Leading"
+                      data-icon-name="lock"
+                      data-icon-set="lucide"
+                      viewBox="0 0 13.99993896484375 14"
+                      preserveAspectRatio="xMidYMid meet"
+                      xmlns="http://www.w3.org/2000/svg"
+                      class="box-border w-[16px] shrink-0 h-[16px]"
+                    >
+                      <path
+                        d="M6.77441 0.60156q-0.72803 0.02734-1.38769 0.3794-0.65625 0.34863-1.12451 0.92285-0.46826 0.57422-0.64942 1.28857l0 0.01367q-0.07178 0.29395-0.08545 0.48536-0.01367 0.18799-0.02734 1.02539l0 1.10742-0.2666 0q-0.40674 0-0.63916 0.04443-0.229 0.04102-0.45117 0.15039-0.32471 0.16748-0.56397 0.44776-0.23584 0.28027-0.34863 0.64599l-0.05469 0.15381 0 4.7168 0.05469 0.15381q0.15723 0.51953 0.56055 0.86132 0.40674 0.3418 0.93994 0.39991 0.14014 0.02734 4.26904 0.02734 4.12891 0 4.26904-0.02734 0.30762-0.02734 0.58789-0.16748 0.32471-0.15381 0.56055-0.44092 0.23926-0.28711 0.35205-0.65283l0.05469-0.15381 0-4.7168-0.05469-0.15381q-0.11279-0.36572-0.35205-0.64599-0.23584-0.28027-0.56055-0.44776-0.22217-0.10938-0.45459-0.15039-0.229-0.04443-0.63574-0.04443l-0.2666 0 0-1.13477q-0.01367-0.81006-0.02734-0.99804-0.01367-0.19141-0.08545-0.47168l0-0.02735q-0.18115-0.71436-0.66651-1.30224-0.48193-0.58789-1.15185-0.93653-0.82715-0.40674-1.79444-0.35205z m0.70069 1.20313q0.75537 0.15381 1.2749 0.7417 0.3623 0.40674 0.50244 0.92627 0.05811 0.19482 0.06494 0.41357 0.00684 0.21533 0.00684 0.9707l0 0.96729-4.64844 0 0-1.06299q0-0.82715 0.01367-1.0083 0.01367-0.18457 0.09912-0.40674 0.22217-0.64258 0.74854-1.06982 0.52637-0.42725 1.19629-0.5127 0.14014-0.01367 0.3623 0 0.22559 0.01367 0.3794 0.04102z m3.85205 5.25q0.08203 0.04443 0.15723 0.12304 0.07861 0.0752 0.11279 0.15381 0.0376 0.0752 0.0581 0.19483 0.02051 0.11621 0.00684 2.19092l0 1.6372q0 0.3623-0.02734 0.48877-0.01367 0.08545-0.07178 0.14014l-0.01367 0.02734q-0.11279 0.12646-0.26661 0.19824l-0.0957 0.04102-8.37402 0-0.0957-0.04102q-0.15381-0.0581-0.26661-0.19824l-0.01367-0.02734q-0.05811-0.06836-0.07178-0.14014-0.02734-0.12646-0.02734-0.48877l0-1.65088q-0.01367-2.08838 0.01367-2.20117 0.01367-0.18115 0.1333-0.31445 0.11963-0.1333 0.28711-0.17432 0.06836-0.01367 4.25537-0.01367l4.20069 0.01367 0.09912 0.04102z"
+                        fill="#94A3B8"
+                      ></path>
+                    </svg>
+                    <div
+                      data-pencil-name="Value"
+                      class="text-[13px]/[normal] box-border text-[#0F172A] font-['Plus_Jakarta_Sans',system-ui,sans-serif] font-normal text-left [white-space:nowrap]"
+                    >
+                      ••••••••
+                    </div>
+                  </div>
+                  <svg
+                    data-pencil-name="Trailing"
+                    data-icon-name="eye"
+                    data-icon-set="lucide"
+                    viewBox="0 0 13.99993896484375 14"
+                    preserveAspectRatio="xMidYMid meet"
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="box-border w-[16px] shrink-0 h-[16px]"
+                  >
+                    <path
+                      d="M6.67871 2.35156q-1.23389 0.04102-2.38916 0.54004-1.15186 0.49561-2.05078 1.37744-0.9502 0.92627-1.46973 2.05762-0.10938 0.25293-0.14697 0.37939-0.03418 0.12646-0.03418 0.29395 0 0.16748 0.03418 0.28711 0.0376 0.11963 0.1333 0.35547 0.37939 0.82715 0.97412 1.5415 0.59473 0.71436 1.33643 1.24756 1.45605 1.00488 3.2915 1.20313 0.2085 0.02734 0.64258 0.02734 0.43408 0 0.62891-0.02734 1.20654-0.12647 2.24902-0.60157 1.04248-0.47851 1.8833-1.28857 0.96387-0.93994 1.4834-2.10205 0.0957-0.23584 0.12988-0.35547 0.0376-0.11963 0.0376-0.28711 0-0.16748-0.0376-0.28711-0.03418-0.11963-0.12988-0.35547-0.36572-0.78613-0.93311-1.4834-0.56396-0.70068-1.27832-1.22021-0.84082-0.61523-1.82861-0.9502-0.98779-0.33838-2.02344-0.36572-0.2085 0-0.50244 0.01367z m0.99463 1.18946q1.46973 0.16748 2.67285 1.05273 1.20313 0.88184 1.81836 2.2251l0.08545 0.18115-0.08545 0.19482q-0.62891 1.34668-1.83203 2.22168-1.20313 0.875-2.73096 1.05616-0.18115 0.01367-0.60156 0.01367-0.42041 0-0.60156-0.01367-1.10742-0.12647-2.0542-0.62207-0.94336-0.49902-1.65772-1.32618-0.51611-0.61523-0.85107-1.34326l-0.08545-0.18115 0.08545-0.18115q0.43408-0.95361 1.18945-1.69531 0.75537-0.7417 1.75-1.16211 0.90918-0.39307 1.94483-0.44776 0.14014-0.01367 0.46142 0 0.32129 0.01367 0.49219 0.02735z m-1.03564 1.1621q-0.89893 0.15381-1.44239 0.82715-0.18457 0.22217-0.29052 0.44776-0.10254 0.22559-0.18799 0.51953-0.02734 0.10938-0.03418 0.19482-0.00684 0.08203-0.00684 0.30762 0 0.28027 0.02735 0.43408 0.02734 0.15381 0.11279 0.3794 0.16748 0.4751 0.52978 0.84082 0.36572 0.3623 0.84082 0.52978 0.22559 0.08545 0.3794 0.11279 0.15381 0.02734 0.43408 0.02735 0.28027 0 0.43408-0.02735 0.15381-0.02734 0.3794-0.11279 0.4751-0.16748 0.8374-0.52978 0.36572-0.36572 0.5332-0.84082 0.08545-0.22559 0.1128-0.3794 0.02734-0.15381 0.02734-0.43408 0-0.28027-0.02734-0.43408-0.02734-0.15381-0.1128-0.3794-0.2085-0.55713-0.6665-0.95019-0.45459-0.39307-1.04248-0.51953-0.14014-0.02734-0.42725-0.03418-0.28711-0.00684-0.41015 0.02051z m0.65625 1.16211q0.28027 0.07178 0.52294 0.31788 0.24609 0.24268 0.31788 0.52294 0.02734 0.12646 0.02734 0.29395 0 0.16748-0.02734 0.28027-0.07178 0.29395-0.3042 0.53321-0.229 0.23584-0.53662 0.32129-0.11279 0.02734-0.29395 0.02734-0.18115 0-0.29395-0.02734-0.30762-0.08545-0.54003-0.32129-0.229-0.23926-0.30079-0.53321-0.02734-0.11279-0.02734-0.28027 0-0.16748 0.02734-0.29395 0.05811-0.22559 0.22559-0.43408 0.16748-0.2085 0.40674-0.32129 0.34863-0.18115 0.79639-0.08545z"
+                      fill="#94A3B8"
+                    ></path>
+                  </svg>
+                </div>
+              </div>
+              <div
+                data-pencil-name="Field Konfirmasi Kata Sandi"
+                class="box-border [flex:1_1_0] h-fit flex flex-col gap-[6px] justify-start items-start"
+              >
+                <div
+                  data-pencil-name="Label"
+                  class="text-[12px]/[normal] box-border text-[#475569] font-['Plus_Jakarta_Sans',system-ui,sans-serif] font-semibold text-left [white-space:nowrap]"
+                >
+                  Konfirmasi Kata Sandi *
+                </div>
+                <div
+                  data-pencil-name="Input"
+                  class="box-border w-full h-[44px] shrink-0 flex flex-row gap-[10px] p-[0px_12px] justify-between items-center bg-[#FFFFFF] [outline:1px_solid_#E2E8F0] [outline-offset:-0.5px] rounded-[10px]"
+                >
+                  <div
+                    data-pencil-name="Left"
+                    class="box-border [flex:1_1_0] h-fit flex flex-row gap-[10px] justify-start items-center"
+                  >
+                    <svg
+                      data-pencil-name="Leading"
+                      data-icon-name="lock"
+                      data-icon-set="lucide"
+                      viewBox="0 0 13.99993896484375 14"
+                      preserveAspectRatio="xMidYMid meet"
+                      xmlns="http://www.w3.org/2000/svg"
+                      class="box-border w-[16px] shrink-0 h-[16px]"
+                    >
+                      <path
+                        d="M6.77441 0.60156q-0.72803 0.02734-1.38769 0.3794-0.65625 0.34863-1.12451 0.92285-0.46826 0.57422-0.64942 1.28857l0 0.01367q-0.07178 0.29395-0.08545 0.48536-0.01367 0.18799-0.02734 1.02539l0 1.10742-0.2666 0q-0.40674 0-0.63916 0.04443-0.229 0.04102-0.45117 0.15039-0.32471 0.16748-0.56397 0.44776-0.23584 0.28027-0.34863 0.64599l-0.05469 0.15381 0 4.7168 0.05469 0.15381q0.15723 0.51953 0.56055 0.86132 0.40674 0.3418 0.93994 0.39991 0.14014 0.02734 4.26904 0.02734 4.12891 0 4.26904-0.02734 0.30762-0.02734 0.58789-0.16748 0.32471-0.15381 0.56055-0.44092 0.23926-0.28711 0.35205-0.65283l0.05469-0.15381 0-4.7168-0.05469-0.15381q-0.11279-0.36572-0.35205-0.64599-0.23584-0.28027-0.56055-0.44776-0.22217-0.10938-0.45459-0.15039-0.229-0.04443-0.63574-0.04443l-0.2666 0 0-1.13477q-0.01367-0.81006-0.02734-0.99804-0.01367-0.19141-0.08545-0.47168l0-0.02735q-0.18115-0.71436-0.66651-1.30224-0.48193-0.58789-1.15185-0.93653-0.82715-0.40674-1.79444-0.35205z m0.70069 1.20313q0.75537 0.15381 1.2749 0.7417 0.3623 0.40674 0.50244 0.92627 0.05811 0.19482 0.06494 0.41357 0.00684 0.21533 0.00684 0.9707l0 0.96729-4.64844 0 0-1.06299q0-0.82715 0.01367-1.0083 0.01367-0.18457 0.09912-0.40674 0.22217-0.64258 0.74854-1.06982 0.52637-0.42725 1.19629-0.5127 0.14014-0.01367 0.3623 0 0.22559 0.01367 0.3794 0.04102z m3.85205 5.25q0.08203 0.04443 0.15723 0.12304 0.07861 0.0752 0.11279 0.15381 0.0376 0.0752 0.0581 0.19483 0.02051 0.11621 0.00684 2.19092l0 1.6372q0 0.3623-0.02734 0.48877-0.01367 0.08545-0.07178 0.14014l-0.01367 0.02734q-0.11279 0.12646-0.26661 0.19824l-0.0957 0.04102-8.37402 0-0.0957-0.04102q-0.15381-0.0581-0.26661-0.19824l-0.01367-0.02734q-0.05811-0.06836-0.07178-0.14014-0.02734-0.12646-0.02734-0.48877l0-1.65088q-0.01367-2.08838 0.01367-2.20117 0.01367-0.18115 0.1333-0.31445 0.11963-0.1333 0.28711-0.17432 0.06836-0.01367 4.25537-0.01367l4.20069 0.01367 0.09912 0.04102z"
+                        fill="#94A3B8"
+                      ></path>
+                    </svg>
+                    <div
+                      data-pencil-name="Value"
+                      class="text-[13px]/[normal] box-border text-[#0F172A] font-['Plus_Jakarta_Sans',system-ui,sans-serif] font-normal text-left [white-space:nowrap]"
+                    >
+                      ••••••••
+                    </div>
+                  </div>
+                  <svg
+                    data-pencil-name="Trailing"
+                    data-icon-name="eye"
+                    data-icon-set="lucide"
+                    viewBox="0 0 13.99993896484375 14"
+                    preserveAspectRatio="xMidYMid meet"
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="box-border w-[16px] shrink-0 h-[16px]"
+                  >
+                    <path
+                      d="M6.67871 2.35156q-1.23389 0.04102-2.38916 0.54004-1.15186 0.49561-2.05078 1.37744-0.9502 0.92627-1.46973 2.05762-0.10938 0.25293-0.14697 0.37939-0.03418 0.12646-0.03418 0.29395 0 0.16748 0.03418 0.28711 0.0376 0.11963 0.1333 0.35547 0.37939 0.82715 0.97412 1.5415 0.59473 0.71436 1.33643 1.24756 1.45605 1.00488 3.2915 1.20313 0.2085 0.02734 0.64258 0.02734 0.43408 0 0.62891-0.02734 1.20654-0.12647 2.24902-0.60157 1.04248-0.47851 1.8833-1.28857 0.96387-0.93994 1.4834-2.10205 0.0957-0.23584 0.12988-0.35547 0.0376-0.11963 0.0376-0.28711 0-0.16748-0.0376-0.28711-0.03418-0.11963-0.12988-0.35547-0.36572-0.78613-0.93311-1.4834-0.56396-0.70068-1.27832-1.22021-0.84082-0.61523-1.82861-0.9502-0.98779-0.33838-2.02344-0.36572-0.2085 0-0.50244 0.01367z m0.99463 1.18946q1.46973 0.16748 2.67285 1.05273 1.20313 0.88184 1.81836 2.2251l0.08545 0.18115-0.08545 0.19482q-0.62891 1.34668-1.83203 2.22168-1.20313 0.875-2.73096 1.05616-0.18115 0.01367-0.60156 0.01367-0.42041 0-0.60156-0.01367-1.10742-0.12647-2.0542-0.62207-0.94336-0.49902-1.65772-1.32618-0.51611-0.61523-0.85107-1.34326l-0.08545-0.18115 0.08545-0.18115q0.43408-0.95361 1.18945-1.69531 0.75537-0.7417 1.75-1.16211 0.90918-0.39307 1.94483-0.44776 0.14014-0.01367 0.46142 0 0.32129 0.01367 0.49219 0.02735z m-1.03564 1.1621q-0.89893 0.15381-1.44239 0.82715-0.18457 0.22217-0.29052 0.44776-0.10254 0.22559-0.18799 0.51953-0.02734 0.10938-0.03418 0.19482-0.00684 0.08203-0.00684 0.30762 0 0.28027 0.02735 0.43408 0.02734 0.15381 0.11279 0.3794 0.16748 0.4751 0.52978 0.84082 0.36572 0.3623 0.84082 0.52978 0.22559 0.08545 0.3794 0.11279 0.15381 0.02734 0.43408 0.02735 0.28027 0 0.43408-0.02735 0.15381-0.02734 0.3794-0.11279 0.4751-0.16748 0.8374-0.52978 0.36572-0.36572 0.5332-0.84082 0.08545-0.22559 0.1128-0.3794 0.02734-0.15381 0.02734-0.43408 0-0.28027-0.02734-0.43408-0.02734-0.15381-0.1128-0.3794-0.2085-0.55713-0.6665-0.95019-0.45459-0.39307-1.04248-0.51953-0.14014-0.02734-0.42725-0.03418-0.28711-0.00684-0.41015 0.02051z m0.65625 1.16211q0.28027 0.07178 0.52294 0.31788 0.24609 0.24268 0.31788 0.52294 0.02734 0.12646 0.02734 0.29395 0 0.16748-0.02734 0.28027-0.07178 0.29395-0.3042 0.53321-0.229 0.23584-0.53662 0.32129-0.11279 0.02734-0.29395 0.02734-0.18115 0-0.29395-0.02734-0.30762-0.08545-0.54003-0.32129-0.229-0.23926-0.30079-0.53321-0.02734-0.11279-0.02734-0.28027 0-0.16748 0.02734-0.29395 0.05811-0.22559 0.22559-0.43408 0.16748-0.2085 0.40674-0.32129 0.34863-0.18115 0.79639-0.08545z"
+                      fill="#94A3B8"
+                    ></path>
+                  </svg>
+                </div>
+              </div>
+            </div>
+            <div
+              data-pencil-name="Field Persetujuan"
+              class="box-border w-full h-fit shrink-0 flex flex-col gap-[6px] justify-start items-start"
+            >
+              <div
+                data-pencil-name="Label"
+                class="text-[12px]/[normal] box-border text-[#475569] font-['Plus_Jakarta_Sans',system-ui,sans-serif] font-semibold text-left [white-space:nowrap]"
+              >
+                Persetujuan
+              </div>
+              <div
+                data-pencil-name="Checks"
+                class="box-border w-full h-fit shrink-0 flex flex-col gap-[8px] justify-start items-start"
+              >
+                <div
+                  data-pencil-name="Check"
+                  class="box-border w-full h-fit shrink-0 flex flex-row gap-[8px] justify-start items-start"
+                >
+                  <div
+                    data-pencil-name="Box"
+                    class="box-border w-[16px] shrink-0 h-[16px] flex flex-row gap-0 justify-center items-center bg-[#2563EB] rounded-[4px]"
+                  >
+                    <svg
+                      data-pencil-name="C"
+                      data-icon-name="check"
+                      data-icon-set="lucide"
+                      viewBox="0 0 13.99993896484375 14"
+                      preserveAspectRatio="xMidYMid meet"
+                      xmlns="http://www.w3.org/2000/svg"
+                      class="box-border w-[11px] shrink-0 h-[11px]"
+                    >
+                      <path
+                        d="M11.48096 2.95313q-0.07178 0.01367-0.12989 0.0581-0.05469 0.04102-3.07617 3.06592l-3.0249 3.00781-1.28857-1.28857q-1.28857-1.28516-1.38086-1.32618-0.08887-0.04443-0.22217-0.04443-0.1333 0-0.23242 0.0376-0.0957 0.03418-0.18799 0.11279-0.08887 0.0752-0.1333 0.1709-0.02734 0.07178-0.03418 0.11279-0.00684 0.04102-0.00684 0.14014l0 0.04102q-0.01367 0.11279 0.04102 0.19824 0.07178 0.10938 0.36572 0.40332 0.19482 0.21191 0.96729 0.98096l1.49707 1.48339q0.28027 0.2666 0.38964 0.33838 0.07178 0.05469 0.18457 0.04102l0.09571 0.01367q0.07178 0 0.14013-0.02734 0.08545-0.07178 0.32129-0.28711 0.23926-0.21875 0.79981-0.76221l2.2832-2.2832q2.08496-2.09863 2.7002-2.71387 0.61524-0.61865 0.64599-0.68701 0.04102-0.08545 0.04102-0.23926 0-0.09912-0.00684-0.14014-0.00684-0.04102-0.03418-0.11279-0.04443-0.08203-0.13672-0.16406-0.08887-0.08545-0.18115-0.11963-0.08887-0.0376-0.20849-0.0376-0.11963 0-0.18799 0.02734z"
+                        fill="#FFFFFF"
+                      ></path>
+                    </svg>
+                  </div>
+                  <div
+                    data-pencil-name="T"
+                    class="text-[11px]/[17px] box-border [flex:1_1_0] text-[#475569] font-['Plus_Jakarta_Sans',system-ui,sans-serif] font-normal text-left"
+                  >
+                    Saya menyetujui Syarat &amp; Ketentuan serta Kebijakan Privasi SewaAlat.
+                  </div>
+                </div>
+                <div
+                  data-pencil-name="Check"
+                  class="box-border w-full h-fit shrink-0 flex flex-row gap-[8px] justify-start items-start"
+                >
+                  <div
+                    data-pencil-name="Box"
+                    class="box-border w-[16px] shrink-0 h-[16px] flex flex-row gap-0 justify-center items-center bg-[#2563EB] rounded-[4px]"
+                  >
+                    <svg
+                      data-pencil-name="C"
+                      data-icon-name="check"
+                      data-icon-set="lucide"
+                      viewBox="0 0 13.99993896484375 14"
+                      preserveAspectRatio="xMidYMid meet"
+                      xmlns="http://www.w3.org/2000/svg"
+                      class="box-border w-[11px] shrink-0 h-[11px]"
+                    >
+                      <path
+                        d="M11.48096 2.95313q-0.07178 0.01367-0.12989 0.0581-0.05469 0.04102-3.07617 3.06592l-3.0249 3.00781-1.28857-1.28857q-1.28857-1.28516-1.38086-1.32618-0.08887-0.04443-0.22217-0.04443-0.1333 0-0.23242 0.0376-0.0957 0.03418-0.18799 0.11279-0.08887 0.0752-0.1333 0.1709-0.02734 0.07178-0.03418 0.11279-0.00684 0.04102-0.00684 0.14014l0 0.04102q-0.01367 0.11279 0.04102 0.19824 0.07178 0.10938 0.36572 0.40332 0.19482 0.21191 0.96729 0.98096l1.49707 1.48339q0.28027 0.2666 0.38964 0.33838 0.07178 0.05469 0.18457 0.04102l0.09571 0.01367q0.07178 0 0.14013-0.02734 0.08545-0.07178 0.32129-0.28711 0.23926-0.21875 0.79981-0.76221l2.2832-2.2832q2.08496-2.09863 2.7002-2.71387 0.61524-0.61865 0.64599-0.68701 0.04102-0.08545 0.04102-0.23926 0-0.09912-0.00684-0.14014-0.00684-0.04102-0.03418-0.11279-0.04443-0.08203-0.13672-0.16406-0.08887-0.08545-0.18115-0.11963-0.08887-0.0376-0.20849-0.0376-0.11963 0-0.18799 0.02734z"
+                        fill="#FFFFFF"
+                      ></path>
+                    </svg>
+                  </div>
+                  <div
+                    data-pencil-name="T"
+                    class="text-[11px]/[17px] box-border [flex:1_1_0] text-[#475569] font-['Plus_Jakarta_Sans',system-ui,sans-serif] font-normal text-left"
+                  >
+                    Saya menyetujui kebijakan escrow &amp; mediasi klaim kerusakan.
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div
+            data-pencil-name="Foot"
+            class="box-border w-full h-fit shrink-0 flex flex-row gap-0 p-[14px_0px_0px_0px] justify-between items-center [border-width:1px_0px_0px_0px] [border-style:solid] [border-color:#E2E8F0]"
+          >
+            <div
+              data-pencil-name="Back"
+              class="text-[12px]/[normal] box-border text-[#475569] font-['Plus_Jakarta_Sans',system-ui,sans-serif] font-semibold text-left [white-space:nowrap]"
+            >
+              Batal &amp; kembali ke masuk
+            </div>
+            <div
+              data-pencil-name="A"
+              class="box-border w-fit shrink-0 h-fit flex flex-row gap-[8px] justify-start items-center"
+            >
+              <div
+                data-pencil-name="BtnSimpan"
+                class="box-border w-fit shrink-0 h-fit flex flex-row gap-[8px] p-[11px_18px] justify-center items-center bg-[#FFFFFF] [outline:1px_solid_#E2E8F0] [outline-offset:-0.5px] rounded-[10px]"
+              >
+                <div
+                  data-pencil-name="Label"
+                  class="text-[12px]/[normal] box-border text-[#0F172A] font-['Plus_Jakarta_Sans',system-ui,sans-serif] font-semibold text-left [white-space:nowrap]"
+                >
+                  Simpan Draf
+                </div>
+              </div>
+              <div
+                data-pencil-name="BtnNext"
+                class="box-border w-fit shrink-0 h-fit flex flex-row gap-[8px] p-[11px_18px] justify-center items-center bg-[#2563EB] rounded-[10px]"
+              >
+                <div
+                  data-pencil-name="Label"
+                  class="text-[12px]/[normal] box-border text-[#FFFFFF] font-['Plus_Jakarta_Sans',system-ui,sans-serif] font-semibold text-left [white-space:nowrap]"
+                >
+                  Lanjut ke Identitas
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

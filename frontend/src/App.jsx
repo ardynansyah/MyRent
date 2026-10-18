@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import AuthPage from './components/AuthPage'
 import RegisterPenyewaAlat from './components/registerPenyewaAlat'
+import RegisterPemilikAlat from './components/registerPemilikAlat/RegisterPemilikAlat'
 import {
   Building2,
   KeyRound,
@@ -73,7 +74,7 @@ const initialRentals = [
 ]
 
 export default function App() {
-  const [currentPage, setCurrentPage] = useState('auth') // 'auth' | 'dashboard'
+  const [currentPage, setCurrentPage] = useState('auth') // 'auth' | 'register-penyewa' | 'register-pemilik' | 'dashboard'
   const [currentUser, setCurrentUser] = useState(null)
   const [selectedCategory, setSelectedCategory] = useState('Semua')
   const [searchQuery, setSearchQuery] = useState('')
@@ -130,6 +131,33 @@ export default function App() {
     )
   }
 
+  // If viewing Register Pemilik Alat Page
+  if (currentPage === 'register-pemilik') {
+    return (
+      <div className="relative min-h-screen">
+        {/* Floating View Switcher Button (hanya tampil di desktop/tablet agar tidak menutupi mobile) */}
+        <div className="fixed bottom-4 right-4 z-40 hidden sm:block">
+          <button
+            type="button"
+            onClick={() => setCurrentPage('dashboard')}
+            className="flex items-center gap-2 bg-slate-900/90 hover:bg-slate-900 text-white text-xs font-semibold px-4 py-2.5 rounded-full shadow-lg backdrop-blur border border-slate-700 hover:scale-105 active:scale-95 transition-all cursor-pointer"
+          >
+            <span>Buka Dashboard Demo</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </button>
+        </div>
+
+        <RegisterPemilikAlat
+          onBackToLogin={() => setCurrentPage('auth')}
+          onSwitchToPenyewa={() => setCurrentPage('register-penyewa')}
+          onFinish={() => {
+            handleLoginSuccess({ role: 'pemilik', name: 'Pemilik Alat' })
+          }}
+        />
+      </div>
+    )
+  }
+
   // If viewing Auth Page
   if (currentPage === 'auth') {
     return (
@@ -154,8 +182,8 @@ export default function App() {
           onNavigateRegister={(selectedRole) => {
             if (selectedRole === 'penyewa') {
               setCurrentPage('register-penyewa')
-            } else {
-              showToast('Pendaftaran akun Pemilik Alat segera hadir!')
+            } else if (selectedRole === 'pemilik') {
+              setCurrentPage('register-pemilik')
             }
           }}
         />
