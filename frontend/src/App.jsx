@@ -157,7 +157,6 @@ export default function App() {
 
         <RegisterPemilikAlat
           onBackToLogin={() => setCurrentPage('auth')}
-          onSwitchToPenyewa={() => setCurrentPage('register-penyewa')}
           onFinish={() => {
             handleLoginSuccess({ role: 'pemilik', name: 'Pemilik Alat' })
           }}

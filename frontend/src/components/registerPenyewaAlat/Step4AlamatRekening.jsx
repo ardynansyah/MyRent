@@ -178,6 +178,7 @@ export default function Step4AlamatRekening({
               errors.bankAccountHolder ? 'border-red-400 focus:ring-red-200' : 'border-[#CBD5E1] focus:border-[#2563EB] focus:ring-blue-100'
             } focus:outline-none focus:ring-2 transition-all`}
           />
+          <p className="text-xs text-gray-500 mt-1">* Nama pemilik rekening harus sama persis dengan nama di KTP.</p>
           {errors.bankAccountHolder && (
             <span className="text-[10px] text-red-500">{errors.bankAccountHolder}</span>
           )}

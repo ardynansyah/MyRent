@@ -23,7 +23,7 @@ export default function RegisterSuccessModal({ formData, onBackToLogin }) {
               Pendaftaran Berhasil Dikirim
             </span>
             <h1 className="text-2xl sm:text-3xl font-extrabold text-[#0F172A] tracking-tight pt-2">
-              Selamat Datang di MyRent, {formData.fullName || 'Penyewa UMKM'}!
+              Selamat Datang di MyRent, {formData.fullName || formData.ktpName || 'Penyewa UMKM'}!
             </h1>
             <p className="text-sm text-[#475569] leading-relaxed max-w-md mx-auto">
               Data pendaftaran dan verifikasi identitas Anda untuk <strong className="text-slate-800">{formData.businessName || 'Usaha Anda'}</strong> telah masuk ke antrean verifikasi Admin.

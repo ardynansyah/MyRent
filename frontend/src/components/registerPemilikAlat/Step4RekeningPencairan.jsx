@@ -1,7 +1,7 @@
 import { useState } from 'react'
-import { User, CreditCard, CircleCheck, ImagePlus } from 'lucide-react'
+import { User, CreditCard } from 'lucide-react'
 import RegisterFormCard from './RegisterFormCard'
-import { TextField, FieldRow, SelectField, PillGroup, UploadBox, CheckItem } from './FormControls'
+import { TextField, FieldRow, SelectField, CheckItem } from './FormControls'
 
 const BANK_OPTIONS = [
   'BCA — Bank Central Asia',
@@ -14,9 +14,6 @@ export default function Step4RekeningPencairan({ onBack, onNext, onSaveDraft }) 
   const [bank, setBank] = useState(BANK_OPTIONS[0])
   const [nomorRekening, setNomorRekening] = useState('4471 8890 221')
   const [namaRekening, setNamaRekening] = useState('Budi Santoso')
-  const [namaCabang, setNamaCabang] = useState('KCP Cilandak')
-  const [namaUsaha, setNamaUsaha] = useState('Kopi Senja Roastery')
-  const [metode, setMetode] = useState('Transfer bank')
   const [konfirmasiKepemilikan, setKonfirmasiKepemilikan] = useState(true)
   const [konfirmasiKomisi, setKonfirmasiKomisi] = useState(true)
 
@@ -53,45 +50,6 @@ export default function Step4RekeningPencairan({ onBack, onNext, onSaveDraft }) 
             onChange={setNamaRekening}
           />
         </FieldRow>
-
-        <FieldRow>
-          <TextField
-            label="Nama Cabang (opsional)"
-            value={namaCabang}
-            onChange={setNamaCabang}
-          />
-          <TextField
-            label="Nama Usaha di Rekening"
-            value={namaUsaha}
-            onChange={setNamaUsaha}
-          />
-        </FieldRow>
-
-        {/* Metode pencairan */}
-        <div className="w-full flex flex-col gap-1.5">
-          <div className="text-[12px] font-semibold text-[#475569]">Metode pencairan</div>
-          <PillGroup
-            options={['Transfer bank', 'E-wallet']}
-            value={metode}
-            onChange={setMetode}
-          />
-        </div>
-
-        {/* Unggah buku tabungan */}
-        <div className="w-full flex flex-col gap-1.5">
-          <div className="text-[12px] font-semibold text-[#475569]">
-            Unggah buku tabungan / e-statement *
-          </div>
-          <div className="w-full flex flex-row gap-2.5">
-            <UploadBox
-              icon={CircleCheck}
-              title="Halaman Depan Buku"
-              subtitle="Nama & nomor terlihat"
-              uploaded
-            />
-            <UploadBox icon={ImagePlus} title="E-statement" subtitle="3 bulan terakhir" />
-          </div>
-        </div>
 
         {/* Konfirmasi */}
         <div className="w-full flex flex-col gap-1.5">

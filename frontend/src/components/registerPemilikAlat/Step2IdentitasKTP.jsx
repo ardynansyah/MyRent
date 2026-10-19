@@ -17,7 +17,7 @@ export default function Step2IdentitasKTP({ onBack, onNext, onSaveDraft }) {
       title="Identitas sesuai KTP"
       subtitle="Pastikan NIK dan nama persis seperti di KTP Anda."
       backLabel="Kembali"
-      nextLabel="Lanjut ke Gudang"
+      nextLabel="Lanjut ke Lokasi Operasional"
       onBack={onBack}
       onNext={onNext}
       onSaveDraft={onSaveDraft}

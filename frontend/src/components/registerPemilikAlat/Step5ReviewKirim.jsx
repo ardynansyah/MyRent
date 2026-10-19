@@ -36,20 +36,20 @@ export default function Step5ReviewKirim({ onBack, onNext, onSaveDraft }) {
       <div className="w-full flex flex-col gap-3.5">
         <ReviewSection label="Akun & identitas">
           <ReviewRow>
-            Kopi Senja Roastery · Budi Santoso · halo@kopisenja.id · +62 812 8899 0011
+            Budi Santoso · halo@kopisenja.id · +62 812 8899 0011
           </ReviewRow>
           <ReviewRow>NIK 3174 0921 8845 0003 · Perorangan · NPWP 09.254.294.3-407.000</ReviewRow>
         </ReviewSection>
 
-        <ReviewSection label="Gudang & operasional">
+        <ReviewSection label="Lokasi operasional">
           <ReviewRow>
-            Gudang Cilandak · Jl. Cilandak Tengah No. 24, Jakarta Selatan 12430
+            Lokasi Cilandak · Jl. Cilandak Tengah No. 24, Jakarta Selatan 12430
           </ReviewRow>
-          <ReviewRow>Senin–Jumat 08:00–18:00 · titik GPS terambil</ReviewRow>
+          <ReviewRow>Senin–Sabtu 08:00–18:00 · titik GPS terambil</ReviewRow>
         </ReviewSection>
 
         <ReviewSection label="Rekening pencairan">
-          <ReviewRow>BCA 4471 8890 221 · a.n. Budi Santoso · Kopi Senja Roastery</ReviewRow>
+          <ReviewRow>BCA 4471 8890 221 · a.n. Budi Santoso</ReviewRow>
         </ReviewSection>
 
         <ReviewSection label="Ringkasan kewajiban pemilik">

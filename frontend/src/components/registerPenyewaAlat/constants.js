@@ -39,9 +39,12 @@ export const INITIAL_FORM = {
   selfieFile: null,
 
   // Step 3: Profil UMKM
+  customSector: '',
   startYear: '',
   nib: '',
   powerCapacity: '1300 W',
+  customPower: '',
+  isManualPower: false,
   frontPhoto: null,
   productionPhoto: null,
   businessDesc: '',

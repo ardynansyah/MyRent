@@ -94,7 +94,7 @@ export function PillGroup({ options, value, onChange }) {
   )
 }
 
-/** Kotak unggah berkas (foto KTP, gudang, buku tabungan, dsb) */
+/** Kotak unggah berkas (foto KTP, Lokasi, buku tabungan, dsb) */
 export function UploadBox({ icon: Icon, title, subtitle, uploaded = false }) {
   return (
     <button

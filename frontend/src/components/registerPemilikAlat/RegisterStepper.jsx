@@ -3,7 +3,7 @@ import { ShieldCheck, Camera, MapPin, Wallet, AlarmClock, Check } from 'lucide-r
 const STEPS = [
   { id: 1, name: 'Buat Akun' },
   { id: 2, name: 'Identitas & KTP' },
-  { id: 3, name: 'Gudang & Operasional' },
+  { id: 3, name: 'Lokasi Operasional' },
   { id: 4, name: 'Rekening Pencairan' },
   { id: 5, name: 'Review & Kirim' }
 ]
@@ -11,15 +11,15 @@ const STEPS = [
 const STEP_META = {
   1: {
     title: ['Sewakan alat,', 'tambah penghasilan.'],
-    desc: 'Daftarkan toko atau gudang Anda dan terima permintaan sewa dari UMKM terverifikasi di sekitar lokasi Anda.'
+    desc: 'Daftarkan toko atau lokasi usaha Anda dan terima permintaan sewa dari UMKM terverifikasi di sekitar lokasi Anda.'
   },
   2: {
     title: ['Verifikasi identitas pemilik alat.'],
     desc: 'Identitas pemilik dipakai pada kontrak sewa dan pencairan dana ke rekening bank Anda.'
   },
   3: {
-    title: ['Lokasi gudang & jam pengambilan.'],
-    desc: 'Penyewa akan melihat alamat gudang dan estimasi jarak, jadi pastikan titik lokasi tepat.'
+    title: ['Lokasi operasional & jam pengambilan.'],
+    desc: 'Penyewa akan melihat alamat lokasi operasional dan estimasi jarak, jadi pastikan titik lokasi tepat.'
   },
   4: {
     title: ['Rekening untuk mencairkan dana.'],
@@ -45,7 +45,7 @@ const STEP_TIPS = {
   3: {
     icon: MapPin,
     title: 'Tips titik lokasi',
-    body: 'Ambil GPS saat berada di depan gudang agar estimasi jarak dan tarif kurir akurat untuk penyewa.'
+    body: 'Ambil GPS saat berada di lokasi usaha agar estimasi jarak dan tarif kurir akurat untuk penyewa.'
   },
   4: {
     icon: Wallet,

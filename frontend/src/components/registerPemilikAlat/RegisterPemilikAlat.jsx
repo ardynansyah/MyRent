@@ -13,7 +13,7 @@ const TOTAL_STEPS = 5
  * Container alur pendaftaran Pemilik Alat (5 langkah).
  * Konversi dari mockup HTML frontend/AssetMyRent/register1-5PenyewaAlat.html.
  */
-export default function RegisterPemilikAlat({ onBackToLogin, onFinish, onSwitchToPenyewa }) {
+export default function RegisterPemilikAlat({ onBackToLogin, onFinish }) {
   const [currentStep, setCurrentStep] = useState(1)
   const [notification, setNotification] = useState('')
 
@@ -68,7 +68,7 @@ export default function RegisterPemilikAlat({ onBackToLogin, onFinish, onSwitchT
 
         <div className="flex-1 min-w-0 flex flex-col items-center lg:items-start">
           {currentStep === 1 && (
-            <Step1BuatAkun {...stepProps} onSwitchToPenyewa={onSwitchToPenyewa} />
+            <Step1BuatAkun {...stepProps} />
           )}
           {currentStep === 2 && <Step2IdentitasKTP {...stepProps} />}
           {currentStep === 3 && <Step3GudangOperasional {...stepProps} />}

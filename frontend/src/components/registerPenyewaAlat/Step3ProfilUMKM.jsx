@@ -7,6 +7,10 @@ export default function Step3ProfilUMKM({
   errors,
   handleMockUpload
 }) {
+  const isManualPowerActive =
+    Boolean(formData.isManualPower) ||
+    (Boolean(formData.powerCapacity) && !POWER_CAPACITIES.includes(formData.powerCapacity))
+
   return (
     <div className="space-y-4 animate-in fade-in duration-200">
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -37,12 +41,22 @@ export default function Step3ProfilUMKM({
             onChange={(e) => handleInputChange('businessSector', e.target.value)}
             className="w-full bg-white text-[13px] rounded-[10px] px-3.5 py-2.5 text-slate-800 border border-[#CBD5E1] focus:border-[#2563EB] focus:ring-2 focus:ring-blue-100 focus:outline-none transition-all cursor-pointer"
           >
-            {SECTORS.map((sec) => (
+            {SECTORS.filter((sec) => sec !== 'Lainnya').map((sec) => (
               <option key={sec} value={sec}>
                 {sec}
               </option>
             ))}
+            <option value="Lainnya">Lainnya</option>
           </select>
+          {formData.businessSector === 'Lainnya' && (
+            <input
+              type="text"
+              placeholder="Masukkan jenis usaha Anda"
+              value={formData.customSector || ''}
+              onChange={(e) => handleInputChange('customSector', e.target.value)}
+              className="w-full bg-white text-[13px] rounded-[10px] px-3.5 py-2.5 text-slate-800 placeholder-[#94A3B8] border border-[#CBD5E1] focus:border-[#2563EB] focus:ring-2 focus:ring-blue-100 focus:outline-none transition-all mt-1"
+            />
+          )}
         </div>
       </div>
 
@@ -76,30 +90,83 @@ export default function Step3ProfilUMKM({
         </div>
       </div>
 
-      {/* Daya Listrik Tempat Usaha (Pill selector sesuai HTML mentah) */}
+      {/* Daya Listrik Tempat Usaha (Pill selector) */}
       <div className="flex flex-col gap-2">
         <label className="text-[12px] font-semibold text-[#475569]">
           Daya Listrik Tempat Usaha *
         </label>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-          {POWER_CAPACITIES.map((cap) => (
-            <button
-              key={cap}
-              type="button"
-              onClick={() => handleInputChange('powerCapacity', cap)}
-              className={`py-2 px-3 rounded-[10px] text-[12px] font-semibold border transition-all cursor-pointer text-center ${
-                formData.powerCapacity === cap
-                  ? 'bg-blue-600 text-white border-blue-600 shadow-xs'
-                  : 'bg-white text-slate-700 border-[#CBD5E1] hover:border-blue-400 hover:bg-slate-50'
-              }`}
-            >
-              {cap}
-            </button>
-          ))}
+        <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5">
+          {POWER_CAPACITIES.map((cap) => {
+            const isSelected = !isManualPowerActive && formData.powerCapacity === cap
+            return (
+              <button
+                key={cap}
+                type="button"
+                onClick={() => {
+                  handleInputChange('powerCapacity', cap)
+                  handleInputChange('isManualPower', false)
+                }}
+                className={`py-2 px-3 rounded-[10px] text-[12px] font-semibold border transition-all cursor-pointer text-center ${
+                  isSelected
+                    ? 'bg-blue-600 text-white border-blue-600 shadow-xs'
+                    : 'bg-white text-slate-700 border-[#CBD5E1] hover:border-blue-400 hover:bg-slate-50'
+                }`}
+              >
+                {cap}
+              </button>
+            )
+          })}
+          <button
+            type="button"
+            onClick={() => {
+              handleInputChange('isManualPower', true)
+              if (POWER_CAPACITIES.includes(formData.powerCapacity)) {
+                handleInputChange(
+                  'powerCapacity',
+                  formData.customPower ? `${formData.customPower} W` : ''
+                )
+              }
+            }}
+            className={`py-2 px-3 rounded-[10px] text-[12px] font-semibold border transition-all cursor-pointer text-center ${
+              isManualPowerActive
+                ? 'bg-blue-600 text-white border-blue-600 shadow-xs'
+                : 'bg-white text-slate-700 border-[#CBD5E1] hover:border-blue-400 hover:bg-slate-50'
+            }`}
+          >
+            Input Manual
+          </button>
         </div>
+
+        {isManualPowerActive && (
+          <div className="relative max-w-xs mt-1">
+            <input
+              type="number"
+              placeholder="Contoh: 3500"
+              value={
+                formData.customPower ??
+                (formData.powerCapacity && !POWER_CAPACITIES.includes(formData.powerCapacity)
+                  ? formData.powerCapacity.replace(/\D/g, '')
+                  : '')
+              }
+              onChange={(e) => {
+                const val = e.target.value
+                handleInputChange('customPower', val)
+                handleInputChange('powerCapacity', val ? `${val} W` : '')
+              }}
+              className="w-full bg-white text-[13px] rounded-[10px] pl-3.5 pr-10 py-2.5 text-slate-800 placeholder-[#94A3B8] border border-[#CBD5E1] focus:border-[#2563EB] focus:ring-2 focus:ring-blue-100 focus:outline-none transition-all"
+            />
+            <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[13px] font-bold text-slate-500 pointer-events-none select-none">
+              W
+            </span>
+          </div>
+        )}
+
         <span className="text-[10px] text-[#64748B]">
           Daya listrik dipakai memfilter alat mesin agar sesuai kapasitas listrik toko/bengkel Anda.
         </span>
+        {errors.powerCapacity && (
+          <span className="text-[10px] text-red-500">{errors.powerCapacity}</span>
+        )}
       </div>
 
       {/* Foto Lokasi Usaha (1–2 foto) */}
@@ -112,7 +179,7 @@ export default function Step3ProfilUMKM({
           {/* Tampak Depan */}
           <div
             onClick={() => handleMockUpload('frontPhoto', 'Foto Tampak Depan')}
-            className={`h-[90px] rounded-[10px] border border-dashed flex flex-col items-center justify-center gap-1 p-2 cursor-pointer transition-all ${
+            className={`min-h-[90px] rounded-[10px] border border-dashed flex flex-col items-center justify-center gap-1 p-2.5 cursor-pointer transition-all ${
               formData.frontPhoto
                 ? 'bg-blue-50/70 border-blue-400 text-blue-700'
                 : errors.frontPhoto
@@ -128,6 +195,7 @@ export default function Step3ProfilUMKM({
                 <span className="text-[11px] font-bold text-slate-900 line-clamp-1">
                   Tampak Depan (Diunggah)
                 </span>
+                <p className="text-xs text-gray-500 mt-1">Klik untuk mengganti foto</p>
               </>
             ) : (
               <>
@@ -143,7 +211,7 @@ export default function Step3ProfilUMKM({
           {/* Area Produksi */}
           <div
             onClick={() => handleMockUpload('productionPhoto', 'Foto Area Produksi')}
-            className={`h-[90px] rounded-[10px] border border-dashed flex flex-col items-center justify-center gap-1 p-2 cursor-pointer transition-all ${
+            className={`min-h-[90px] rounded-[10px] border border-dashed flex flex-col items-center justify-center gap-1 p-2.5 cursor-pointer transition-all ${
               formData.productionPhoto
                 ? 'bg-blue-50/70 border-blue-400 text-blue-700'
                 : 'bg-[#F8FAFC] border-[#CBD5E1] text-slate-600 hover:bg-blue-50/40'
@@ -157,6 +225,7 @@ export default function Step3ProfilUMKM({
                 <span className="text-[11px] font-bold text-slate-900 line-clamp-1">
                   Area Produksi (Diunggah)
                 </span>
+                <p className="text-xs text-gray-500 mt-1">Klik untuk mengganti foto</p>
               </>
             ) : (
               <>

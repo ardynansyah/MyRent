@@ -15,7 +15,7 @@ export default function Step5ReviewKirim({ formData, errors, handleInputChange, 
         <div className="space-y-1">
           <span className="text-[10px] font-bold text-blue-600 uppercase">1. Akun &amp; Kontak</span>
           <div className="text-[13px] font-bold text-slate-900">
-            {formData.fullName || '-'} · {formData.email || '-'}
+            {formData.fullName || formData.ktpName || '-'} · {formData.email || '-'}
           </div>
           <div className="text-[11px] text-slate-500">
             WhatsApp: +62 {formData.phone || '-'}
@@ -58,7 +58,7 @@ export default function Step5ReviewKirim({ formData, errors, handleInputChange, 
         <div className="space-y-1">
           <span className="text-[10px] font-bold text-blue-600 uppercase">3. Profil UMKM</span>
           <div className="text-[13px] font-bold text-slate-900">
-            {formData.businessName || '-'} · {formData.businessSector}
+            {formData.businessName || '-'} · {formData.businessSector === 'Lainnya' && formData.customSector ? `${formData.businessSector} (${formData.customSector})` : formData.businessSector}
           </div>
           <div className="text-[11px] text-slate-500">
             Daya Listrik: <strong className="text-slate-800">{formData.powerCapacity}</strong> · NIB: {formData.nib || 'Tidak ada'}

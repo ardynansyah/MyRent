@@ -67,7 +67,11 @@ export default function RegisterPenyewaAlat({
     setFormData((prev) => {
       const updated = { ...prev, [field]: value }
 
-      // Otomatis isi nama KTP / Nama Pemilik Rekening jika masih kosong saat nama penanggung jawab diketik
+      // Otomatis isi Nama Pemilik Rekening & FullName jika masih kosong saat nama KTP diketik
+      if (field === 'ktpName') {
+        if (!prev.fullName) updated.fullName = value
+        if (!prev.bankAccountHolder) updated.bankAccountHolder = value
+      }
       if (field === 'fullName') {
         if (!prev.ktpName) updated.ktpName = value
         if (!prev.bankAccountHolder) updated.bankAccountHolder = value
@@ -131,6 +135,7 @@ export default function RegisterPenyewaAlat({
       fullName: 'Budi Santoso',
       businessName: 'Kopi Senja Roastery',
       businessSector: 'Kuliner & Kopi',
+      customSector: '',
       email: 'budi@kopisenja.id',
       phone: '081288990011',
       password: 'Password123!',
@@ -144,6 +149,8 @@ export default function RegisterPenyewaAlat({
       startYear: '2019',
       nib: '812044579921',
       powerCapacity: '1300 W',
+      customPower: '',
+      isManualPower: false,
       frontPhoto: { name: 'tampak_depan_toko.jpg', size: '3.2 MB' },
       productionPhoto: { name: 'area_roasting_kopi.jpg', size: '2.7 MB' },
       businessDesc: 'Roastery kopi kecil dengan 2 barista, produksi 40 kg green bean per minggu dan melayani 60 cangkir/hari.',
@@ -169,8 +176,6 @@ export default function RegisterPenyewaAlat({
     const newErrors = {}
 
     if (step === 1) {
-      if (!formData.fullName.trim()) newErrors.fullName = 'Nama lengkap penanggung jawab wajib diisi'
-      if (!formData.businessName.trim()) newErrors.businessName = 'Nama usaha / UMKM wajib diisi'
       if (!formData.email.trim()) {
         newErrors.email = 'Alamat email wajib diisi'
       } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email.trim())) {
@@ -243,7 +248,7 @@ export default function RegisterPenyewaAlat({
       if (handleFinish) {
         handleFinish({
           email: formData.email,
-          fullName: formData.fullName,
+          fullName: formData.fullName || formData.ktpName || 'Penyewa UMKM',
           businessName: formData.businessName,
           role: 'penyewa'
         })
