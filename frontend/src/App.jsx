@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import LandingPage from './components/LandingPage'
 import AuthPage from './components/AuthPage'
 import RegisterPenyewaAlat from './components/registerPenyewaAlat'
 import RegisterPemilikAlat from './components/registerPemilikAlat/RegisterPemilikAlat'
@@ -74,7 +75,7 @@ const initialRentals = [
 ]
 
 export default function App() {
-  const [currentPage, setCurrentPage] = useState('auth') // 'auth' | 'register-penyewa' | 'register-pemilik' | 'dashboard'
+  const [currentPage, setCurrentPage] = useState('landing') // 'landing' | 'auth' | 'register-penyewa' | 'register-pemilik' | 'dashboard'
   const [currentUser, setCurrentUser] = useState(null)
   const [selectedCategory, setSelectedCategory] = useState('Semua')
   const [searchQuery, setSearchQuery] = useState('')
@@ -99,6 +100,22 @@ export default function App() {
     setCurrentUser(user)
     showToast(`Selamat datang! Anda masuk sebagai ${user.role === 'penyewa' ? 'Penyewa UMKM' : 'Pemilik Alat'}`)
     setCurrentPage('dashboard')
+  }
+
+  // If viewing Landing Page (Default Root View)
+  if (currentPage === 'landing') {
+    return (
+      <div className="relative min-h-screen">
+        <Toast message={toastMessage} />
+        <LandingPage
+          onNavigate={(page) => setCurrentPage(page)}
+          onNavigateLogin={() => setCurrentPage('auth')}
+          onNavigateRegisterPenyewa={() => setCurrentPage('register-penyewa')}
+          onNavigateRegisterPemilik={() => setCurrentPage('register-pemilik')}
+          onNavigateCatalog={() => setCurrentPage('dashboard')}
+        />
+      </div>
+    )
   }
 
   // If viewing Register Penyewa Page
@@ -186,6 +203,7 @@ export default function App() {
         {/* Auth Page Component */}
         <AuthPage
           onLoginSuccess={handleLoginSuccess}
+          onBackToLanding={() => setCurrentPage('landing')}
           onNavigateRegister={(selectedRole) => {
             if (selectedRole === 'penyewa') {
               setCurrentPage('register-penyewa')
@@ -208,9 +226,14 @@ export default function App() {
       <header className="sticky top-0 z-40 backdrop-blur-md bg-white/90 border-b border-slate-200 px-4 sm:px-8 py-3.5 transition-all">
         <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
           <div className="flex items-center gap-4">
-            <div className="text-[18px] text-[#2563EB] font-extrabold tracking-[-0.3px] select-none">
+            <button
+              type="button"
+              onClick={() => setCurrentPage('landing')}
+              className="text-[18px] text-[#2563EB] font-extrabold tracking-[-0.3px] select-none hover:opacity-90 transition-opacity cursor-pointer"
+              title="Kembali ke Beranda MyRent"
+            >
               MyRent
-            </div>
+            </button>
             <span className="hidden sm:inline-block text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200">
               {currentUser?.role === 'pemilik' ? 'Mode Pemilik Alat' : 'Mode Penyewa UMKM'}
             </span>
@@ -250,12 +273,20 @@ export default function App() {
             </button>
 
             <button
-              onClick={() => setCurrentPage('auth')}
-              className="flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-slate-600 hover:text-red-600 border border-slate-200 hover:border-red-200 hover:bg-red-50 rounded-xl transition-all cursor-pointer"
-              title="Kembali ke halaman Auth"
+              onClick={() => setCurrentPage('landing')}
+              className="flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-slate-600 hover:text-blue-600 border border-slate-200 hover:border-blue-200 hover:bg-blue-50 rounded-xl transition-all cursor-pointer"
+              title="Kembali ke Landing Page"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
-              <span>Halaman Auth</span>
+              <span>Beranda</span>
+            </button>
+
+            <button
+              onClick={() => setCurrentPage('auth')}
+              className="flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-slate-600 hover:text-blue-600 border border-slate-200 hover:border-blue-200 hover:bg-blue-50 rounded-xl transition-all cursor-pointer"
+              title="Kembali ke halaman Auth"
+            >
+              <span>Auth</span>
             </button>
           </div>
         </div>
