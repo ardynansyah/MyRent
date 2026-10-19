@@ -7,6 +7,7 @@ import Step2IdentitasKTP from './Step2IdentitasKTP'
 import Step3GudangOperasional from './Step3GudangOperasional'
 import Step4RekeningPencairan from './Step4RekeningPencairan'
 import Step5ReviewKirim from './Step5ReviewKirim'
+import VerifikasiPemilik from './VerifikasiPemilik'
 
 const TOTAL_STEPS = 5
 const STORAGE_KEY_STEP = 'myrent_register_pemilik_step'
@@ -40,6 +41,7 @@ export default function RegisterPemilikAlat({ onBackToLogin, onFinish }) {
   })
 
   const [notification, setNotification] = useState('')
+  const [isSubmitted, setIsSubmitted] = useState(false)
 
   const clearRegistrationSession = () => {
     try {
@@ -74,13 +76,10 @@ export default function RegisterPemilikAlat({ onBackToLogin, onFinish }) {
   const goNext = () => {
     if (currentStep < TOTAL_STEPS) {
       setCurrentStep((step) => step + 1)
+      window.scrollTo({ top: 0, behavior: 'smooth' })
     } else {
-      clearRegistrationSession()
-      if (onFinish) {
-        onFinish()
-      } else {
-        notify('Data verifikasi berhasil dikirim.')
-      }
+      setIsSubmitted(true)
+      window.scrollTo({ top: 0, behavior: 'smooth' })
     }
   }
 
@@ -100,6 +99,29 @@ export default function RegisterPemilikAlat({ onBackToLogin, onFinish }) {
     onNext: goNext,
     onSaveDraft: saveDraft,
     onNotify: notify
+  }
+
+  // Tampilan Halaman Verifikasi Admin (Peninjauan Registrasi Pemilik)
+  if (isSubmitted) {
+    return (
+      <VerifikasiPemilik
+        onFinish={() => {
+          clearRegistrationSession()
+          if (onFinish) {
+            onFinish()
+          } else {
+            navigate('/dashboard')
+          }
+        }}
+        onEditData={() => {
+          setIsSubmitted(false)
+          setCurrentStep(1)
+          window.scrollTo({ top: 0, behavior: 'smooth' })
+        }}
+        onBackToHome={() => navigate('/')}
+        onBackToLogin={handleBack}
+      />
+    )
   }
 
 

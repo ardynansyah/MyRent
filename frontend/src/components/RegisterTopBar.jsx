@@ -15,7 +15,8 @@ export default function RegisterTopBar({
   onBackToHome,
   onHomeClick,
   onFillDemoData,
-  loginText = 'Masuk di sini'
+  loginText = 'Masuk di sini',
+  rightContent
 }) {
   const handleHome = onBackToHome || onHomeClick || onBackToLogin || onLoginClick
   const handleLogin = onBackToLogin || onLoginClick
@@ -41,31 +42,37 @@ export default function RegisterTopBar({
         )}
       </div>
 
-      {/* Sisi Kanan: Tombol Isi Data Demo (opsional) & Tautan Masuk */}
-      <div className="flex items-center gap-2 sm:gap-4">
-        {onFillDemoData && (
-          <button
-            type="button"
-            onClick={onFillDemoData}
-            className="hidden md:flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-semibold text-blue-600 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-lg transition-colors cursor-pointer"
-            title="Isi form otomatis untuk peninjauan cepat"
-          >
-            <Sparkles className="w-3.5 h-3.5 text-blue-600" />
-            <span>Isi Data Demo</span>
-          </button>
-        )}
-
-        <div className="flex items-center gap-1.5 text-[11px] sm:text-[12px]">
-          <span className="text-[#475569] hidden sm:inline">Sudah punya akun?</span>
-          <button
-            type="button"
-            onClick={handleLogin}
-            className="text-[#2563EB] font-bold hover:underline cursor-pointer transition-colors"
-          >
-            {loginText}
-          </button>
+      {/* Sisi Kanan: Kustom rightContent ATAU Tombol Isi Data Demo & Tautan Masuk */}
+      {rightContent ? (
+        <div className="flex items-center gap-2 sm:gap-4">
+          {rightContent}
         </div>
-      </div>
+      ) : (
+        <div className="flex items-center gap-2 sm:gap-4">
+          {onFillDemoData && (
+            <button
+              type="button"
+              onClick={onFillDemoData}
+              className="hidden md:flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-semibold text-blue-600 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-lg transition-colors cursor-pointer"
+              title="Isi form otomatis untuk peninjauan cepat"
+            >
+              <Sparkles className="w-3.5 h-3.5 text-blue-600" />
+              <span>Isi Data Demo</span>
+            </button>
+          )}
+
+          <div className="flex items-center gap-1.5 text-[11px] sm:text-[12px]">
+            <span className="text-[#475569] hidden sm:inline">Sudah punya akun?</span>
+            <button
+              type="button"
+              onClick={handleLogin}
+              className="text-[#2563EB] font-bold hover:underline cursor-pointer transition-colors"
+            >
+              {loginText}
+            </button>
+          </div>
+        </div>
+      )}
     </header>
   )
 }

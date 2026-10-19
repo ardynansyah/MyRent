@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import { ArrowLeft, ArrowRight, RotateCw } from 'lucide-react'
 import { INITIAL_FORM, getStoredDraft } from './constants'
 import RegisterTopBar from './RegisterTopBar'
-import RegisterSuccessModal from './RegisterSuccessModal'
+import VerifikasiPenyewa from './VerifikasiPenyewa'
 import StepIndicator from './StepIndicator'
 import Step1BuatAkun from './Step1BuatAkun'
 import Step2IdentitasKTP from './Step2IdentitasKTP'
@@ -311,16 +311,8 @@ export default function RegisterPenyewaAlat({
     setTimeout(() => {
       setIsSubmitting(false)
       setIsSubmitted(true)
-      clearRegistrationSession()
-      if (handleFinish) {
-        handleFinish({
-          email: formData.email,
-          fullName: formData.fullName || formData.ktpName || 'Penyewa UMKM',
-          businessName: formData.businessName,
-          role: 'penyewa'
-        })
-      }
-    }, 1200)
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    }, 1000)
   }
 
   const handleNext = () => {
@@ -351,9 +343,33 @@ export default function RegisterPenyewaAlat({
     }
   }
 
-  // Tampilan Sukses Pendaftaran
+  // Tampilan Halaman Verifikasi Admin (Peninjauan Registrasi)
   if (isSubmitted) {
-    return <RegisterSuccessModal formData={formData} onBackToLogin={handleBack} />
+    return (
+      <VerifikasiPenyewa
+        formData={formData}
+        onFinish={() => {
+          clearRegistrationSession()
+          if (handleFinish) {
+            handleFinish({
+              email: formData.email,
+              fullName: formData.fullName || formData.ktpName || 'Penyewa UMKM',
+              businessName: formData.businessName,
+              role: 'penyewa'
+            })
+          } else {
+            navigate('/dashboard')
+          }
+        }}
+        onEditData={() => {
+          setIsSubmitted(false)
+          setCurrentStep(1)
+          window.scrollTo({ top: 0, behavior: 'smooth' })
+        }}
+        onBackToHome={() => navigate('/')}
+        onBackToLogin={handleBack}
+      />
+    )
   }
 
   const stepMeta = STEP_HEADER_TITLES[currentStep] || STEP_HEADER_TITLES[1]
