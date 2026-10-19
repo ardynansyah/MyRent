@@ -125,7 +125,13 @@ export default function App() {
           path="/"
           element={
             <LandingPage
-              onNavigateLogin={() => navigate('/login')}
+              onNavigateLogin={(opts) => {
+                if (opts && (opts.state || opts.defaultRole)) {
+                  navigate('/login', { state: opts.state || opts })
+                } else {
+                  navigate('/login', { state: { defaultRole: 'penyewa' } })
+                }
+              }}
               onNavigateRegisterPenyewa={() => navigate('/register/penyewa')}
               onNavigateRegisterPemilik={() => navigate('/register/pemilik')}
               onNavigateCatalog={() => navigate('/dashboard')}

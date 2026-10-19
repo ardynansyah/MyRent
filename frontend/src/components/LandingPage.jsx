@@ -4,9 +4,7 @@ import {
   ShieldCheck,
   CheckCircle2,
   Coins,
-  TrendingUp,
   FileCheck2,
-  Sparkles,
   ArrowRight,
   ArrowUpRight,
   Building2,
@@ -23,7 +21,6 @@ import {
 } from 'lucide-react'
 
 export default function LandingPage({
-  onNavigate,
   onNavigateLogin,
   onNavigateRegisterPenyewa,
   onNavigateRegisterPemilik,
@@ -33,22 +30,39 @@ export default function LandingPage({
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [howItWorksRole, setHowItWorksRole] = useState('penyewa') // 'penyewa' | 'pemilik'
 
-  const handleNav = (target) => {
+  const handleLoginClick = (role = 'penyewa') => {
     setMobileMenuOpen(false)
-    if (typeof onNavigate === 'function') {
-      onNavigate(target)
-      return
-    }
-    if (target === 'auth' || target === 'login') {
-      navigate('/login')
-    } else if (target === 'register-penyewa') {
-      navigate('/register/penyewa')
-    } else if (target === 'register-pemilik') {
-      navigate('/register/pemilik')
-    } else if (target === 'dashboard') {
-      navigate('/dashboard')
+    if (typeof onNavigateLogin === 'function') {
+      onNavigateLogin({ state: { defaultRole: role } })
     } else {
-      navigate('/')
+      navigate('/login', { state: { defaultRole: role } })
+    }
+  }
+
+  const handleRegisterPemilikClick = () => {
+    setMobileMenuOpen(false)
+    if (typeof onNavigateRegisterPemilik === 'function') {
+      onNavigateRegisterPemilik()
+    } else {
+      navigate('/register/pemilik')
+    }
+  }
+
+  const handleRegisterPenyewaClick = () => {
+    setMobileMenuOpen(false)
+    if (typeof onNavigateRegisterPenyewa === 'function') {
+      onNavigateRegisterPenyewa()
+    } else {
+      navigate('/register/penyewa')
+    }
+  }
+
+  const handleCatalogClick = () => {
+    setMobileMenuOpen(false)
+    if (typeof onNavigateCatalog === 'function') {
+      onNavigateCatalog()
+    } else {
+      navigate('/dashboard')
     }
   }
 
@@ -156,7 +170,7 @@ export default function LandingPage({
           <div className="hidden sm:flex items-center">
             <button
               type="button"
-              onClick={onNavigateLogin || (() => handleNav('auth'))}
+              onClick={() => handleLoginClick('penyewa')}
               className="bg-[#2563EB] hover:bg-blue-700 active:scale-95 text-white text-xs sm:text-sm font-semibold px-5 py-2.5 rounded-xl shadow-xs transition-all cursor-pointer"
             >
               Masuk ke Akun
@@ -167,7 +181,7 @@ export default function LandingPage({
           <div className="flex sm:hidden items-center gap-2">
             <button
               type="button"
-              onClick={onNavigateLogin || (() => handleNav('auth'))}
+              onClick={() => handleLoginClick('penyewa')}
               className="bg-[#2563EB] hover:bg-blue-700 text-white text-xs font-semibold px-3 py-1.5 rounded-lg shadow-xs transition-all cursor-pointer"
             >
               Masuk
@@ -217,8 +231,8 @@ export default function LandingPage({
             <div className="pt-3 border-t border-slate-100 flex flex-col gap-2">
               <button
                 type="button"
-                onClick={onNavigateLogin || (() => handleNav('auth'))}
-                className="w-full py-2.5 bg-[#2563EB] hover:bg-blue-700 text-white text-center rounded-xl text-sm font-semibold shadow-xs transition-colors"
+                onClick={() => handleLoginClick('penyewa')}
+                className="w-full py-2.5 bg-[#2563EB] hover:bg-blue-700 text-white text-center rounded-xl text-sm font-semibold shadow-xs transition-colors cursor-pointer"
               >
                 Masuk ke Akun
               </button>
@@ -228,178 +242,76 @@ export default function LandingPage({
       </header>
 
       {/* 2. HERO SECTION */}
-      <section className="relative overflow-hidden pt-12 pb-20 lg:pt-20 lg:pb-28">
+      <section className="relative overflow-hidden py-16 sm:py-20 lg:py-24">
         {/* Decorative Background Elements */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-96 bg-gradient-to-b from-blue-100/60 via-indigo-50/30 to-transparent blur-3xl pointer-events-none -z-10" />
-        <div className="absolute top-20 right-10 w-72 h-72 bg-blue-200/30 rounded-full blur-3xl pointer-events-none -z-10" />
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-5xl h-96 bg-gradient-to-b from-blue-100/50 via-indigo-50/20 to-transparent blur-3xl pointer-events-none -z-10" />
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
-            
-            {/* Left Column: Headline, Value Proposition, Dual CTA */}
-            <div className="lg:col-span-7 flex flex-col items-start text-left space-y-6">
-              {/* Eyebrow Badge */}
-              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-50 border border-blue-200/80 shadow-2xs">
-                <Sparkles className="w-4 h-4 text-blue-600" />
-                <span className="text-[11px] sm:text-xs font-bold text-[#2563EB] tracking-wide uppercase">
-                  Platform Sewa Mesin &amp; Alat Produksi UMKM Pertama di Indonesia
-                </span>
+          <div className="max-w-4xl mx-auto text-center flex flex-col items-center space-y-8">
+            {/* Main Headline */}
+            <h1 className="text-3xl sm:text-5xl lg:text-[54px] font-extrabold text-slate-900 tracking-[-1px] leading-[1.15]">
+              Akses Mesin Usaha Berkualitas <span className="text-[#2563EB]">Tanpa Beban Biaya Modal</span> Tinggi.
+            </h1>
+
+            {/* Sub-headline */}
+            <p className="text-base sm:text-lg lg:text-xl text-slate-600 leading-relaxed max-w-2xl mx-auto">
+              Sewa mesin kopi, packaging, konveksi, dan bakery dengan sistem{' '}
+              <strong className="text-slate-900 font-semibold">deposit escrow transparan</strong>,{' '}
+              <strong className="text-slate-900 font-semibold">kontrak digital resmi</strong>, serta{' '}
+              <strong className="text-slate-900 font-semibold">perlindungan BAST terverifikasi</strong>.
+            </p>
+
+            {/* Dual CTA Buttons */}
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3.5 w-full sm:w-auto pt-2">
+              <button
+                type="button"
+                onClick={() => handleLoginClick('penyewa')}
+                className="w-full sm:w-auto flex items-center justify-center gap-2.5 bg-[#2563EB] hover:bg-blue-700 active:scale-98 text-white font-bold text-sm sm:text-base px-6 py-3.5 rounded-xl shadow-md shadow-blue-500/20 hover:shadow-lg hover:shadow-blue-500/30 transition-all cursor-pointer group"
+              >
+                <Search className="w-4 h-4" />
+                <span>Cari &amp; Sewa Alat Sekarang</span>
+                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+              </button>
+
+              <button
+                type="button"
+                onClick={handleRegisterPemilikClick}
+                className="w-full sm:w-auto flex items-center justify-center gap-2 bg-white hover:bg-slate-50 active:scale-98 text-slate-800 font-bold text-sm sm:text-base px-6 py-3.5 rounded-xl border border-slate-300 hover:border-slate-400 shadow-2xs transition-all cursor-pointer"
+              >
+                <Building2 className="w-4 h-4 text-slate-500" />
+                <span>Daftarkan Alat Anda (Pemilik)</span>
+              </button>
+            </div>
+
+            {/* Trust Badges / Social Proof Metrics Bar */}
+            <div className="pt-8 sm:pt-10 border-t border-slate-200/90 w-full max-w-2xl grid grid-cols-3 gap-4 sm:gap-8 text-center">
+              <div>
+                <div className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-slate-900 tracking-tight">
+                  120+
+                </div>
+                <div className="text-xs sm:text-sm text-slate-600 font-medium mt-1">
+                  UMKM Tergabung
+                </div>
               </div>
 
-              {/* Main Headline */}
-              <h1 className="text-3xl sm:text-5xl lg:text-[54px] font-extrabold text-slate-900 tracking-[-1px] sm:leading-[1.15]">
-                Akses Mesin Usaha Berkualitas <span className="text-[#2563EB]">Tanpa Beban Biaya Modal</span> Tinggi.
-              </h1>
-
-              {/* Sub-headline */}
-              <p className="text-base sm:text-lg text-slate-600 leading-relaxed max-w-2xl">
-                Sewa mesin kopi, packaging, konveksi, dan bakery dengan sistem{' '}
-                <strong className="text-slate-900 font-semibold">deposit escrow transparan</strong>,{' '}
-                <strong className="text-slate-900 font-semibold">kontrak digital resmi</strong>, serta{' '}
-                <strong className="text-slate-900 font-semibold">perlindungan BAST terverifikasi</strong>.
-              </p>
-
-              {/* Dual CTA Buttons */}
-              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3.5 w-full sm:w-auto pt-2">
-                <button
-                  type="button"
-                  onClick={onNavigateCatalog || (() => handleNav('dashboard'))}
-                  className="flex items-center justify-center gap-2.5 bg-[#2563EB] hover:bg-blue-700 active:scale-98 text-white font-bold text-sm sm:text-base px-6 py-3.5 rounded-xl shadow-md shadow-blue-500/20 hover:shadow-lg hover:shadow-blue-500/30 transition-all cursor-pointer group"
-                >
-                  <Search className="w-4 h-4" />
-                  <span>Cari &amp; Sewa Alat Sekarang</span>
-                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                </button>
-
-                <button
-                  type="button"
-                  onClick={onNavigateRegisterPemilik || (() => handleNav('register-pemilik'))}
-                  className="flex items-center justify-center gap-2 bg-white hover:bg-slate-50 active:scale-98 text-slate-800 font-bold text-sm sm:text-base px-6 py-3.5 rounded-xl border border-slate-300 hover:border-slate-400 shadow-2xs transition-all cursor-pointer"
-                >
-                  <Building2 className="w-4 h-4 text-slate-500" />
-                  <span>Daftarkan Alat Anda (Pemilik)</span>
-                </button>
+              <div>
+                <div className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-emerald-600 tracking-tight">
+                  Rp 120jt+
+                </div>
+                <div className="text-xs sm:text-sm text-slate-600 font-medium mt-1">
+                  Modal Dihemat
+                </div>
               </div>
 
-              {/* Trust Badges / Social Proof Metrics Bar */}
-              <div className="pt-6 border-t border-slate-200/90 w-full grid grid-cols-3 gap-4 sm:gap-6">
-                <div>
-                  <div className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
-                    120+
-                  </div>
-                  <div className="text-xs text-slate-600 font-medium mt-0.5">
-                    UMKM Tergabung
-                  </div>
+              <div>
+                <div className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-blue-600 tracking-tight">
+                  100%
                 </div>
-
-                <div>
-                  <div className="text-2xl sm:text-3xl font-extrabold text-emerald-600 tracking-tight">
-                    Rp 120jt+
-                  </div>
-                  <div className="text-xs text-slate-600 font-medium mt-0.5">
-                    Modal Dihemat
-                  </div>
-                </div>
-
-                <div>
-                  <div className="text-2xl sm:text-3xl font-extrabold text-blue-600 tracking-tight">
-                    100%
-                  </div>
-                  <div className="text-xs text-slate-600 font-medium mt-0.5">
-                    Terverifikasi KYC &amp; BAST
-                  </div>
+                <div className="text-xs sm:text-sm text-slate-600 font-medium mt-1">
+                  Verifikasi KYC &amp; BAST
                 </div>
               </div>
             </div>
-
-            {/* Right Column: Hero Visual Showcase Card */}
-            <div className="lg:col-span-5 relative">
-              <div className="relative mx-auto max-w-md lg:max-w-none">
-                {/* Floating Highlights */}
-                <div className="absolute -top-4 -left-4 z-20 bg-white/95 backdrop-blur-md rounded-2xl border border-slate-200 p-3 shadow-lg flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
-                    <ShieldCheck className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <div className="text-xs font-bold text-slate-900">Escrow Proteksi 100%</div>
-                    <div className="text-[10px] text-slate-500">Deposit cair otomatis pasca BAST</div>
-                  </div>
-                </div>
-
-                <div className="absolute -bottom-5 -right-3 z-20 bg-white/95 backdrop-blur-md rounded-2xl border border-slate-200 p-3 shadow-lg flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
-                    <TrendingUp className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <div className="text-xs font-bold text-slate-900">Hemat Capex s/d 78%</div>
-                    <div className="text-[10px] text-slate-500">Tanpa risiko depresiasi mesin</div>
-                  </div>
-                </div>
-
-                {/* Main Showcase Machine Preview */}
-                <div className="bg-white rounded-3xl border border-slate-200/90 shadow-xl overflow-hidden group">
-                  <div className="relative h-60 sm:h-72 overflow-hidden bg-slate-100">
-                    <img
-                      src="https://images.unsplash.com/photo-1517668808822-9ebb02f2a0e6?auto=format&fit=crop&w=800&q=80"
-                      alt="Mesin Espresso Komersial"
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950/60 via-transparent to-transparent"></div>
-                    
-                    <div className="absolute top-4 left-4 flex gap-2">
-                      <span className="bg-emerald-500 text-white text-[11px] font-bold px-2.5 py-1 rounded-full shadow-xs">
-                        Siap Kirim
-                      </span>
-                      <span className="bg-black/60 backdrop-blur text-white text-[11px] font-medium px-2.5 py-1 rounded-full">
-                        Mesin Kopi
-                      </span>
-                    </div>
-
-                    <div className="absolute bottom-4 left-4 right-4 text-white">
-                      <div className="text-[11px] font-semibold text-blue-200 uppercase tracking-wider">
-                        Terverifikasi Inspeksi Fisik
-                      </div>
-                      <div className="text-base sm:text-lg font-bold">
-                        La Marzocco Linea Mini 1-Group
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="p-5 space-y-4">
-                    <div className="flex flex-wrap gap-1.5">
-                      <span className="text-[11px] bg-slate-100 text-slate-700 px-2.5 py-1 rounded-lg font-medium">
-                        Daya 1820W
-                      </span>
-                      <span className="text-[11px] bg-slate-100 text-slate-700 px-2.5 py-1 rounded-lg font-medium">
-                        Rotary Pump
-                      </span>
-                      <span className="text-[11px] bg-emerald-50 text-emerald-700 border border-emerald-200 px-2.5 py-1 rounded-lg font-medium">
-                        Deposit Escrow Rp 2jt
-                      </span>
-                    </div>
-
-                    <div className="pt-3 border-t border-slate-100 flex items-center justify-between">
-                      <div>
-                        <div className="text-[10px] text-slate-400 font-medium">Biaya Sewa Terjangkau</div>
-                        <div className="text-lg font-extrabold text-slate-900">
-                          Rp 450.000 <span className="text-xs font-normal text-slate-500">/hari</span>
-                        </div>
-                      </div>
-
-                      <button
-                        type="button"
-                        onClick={onNavigateCatalog || (() => handleNav('dashboard'))}
-                        className="flex items-center gap-1.5 bg-blue-50 hover:bg-[#2563EB] text-[#2563EB] hover:text-white px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer"
-                      >
-                        <span>Cek Unit</span>
-                        <ArrowUpRight className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
           </div>
         </div>
       </section>
@@ -408,9 +320,6 @@ export default function LandingPage({
       <section id="keunggulan" className="py-20 bg-white border-y border-slate-200/80">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto space-y-3 mb-16">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 text-blue-700 text-xs font-bold uppercase tracking-wider">
-              3 Pilar Fondasi MyRent
-            </div>
             <h2 className="text-2xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
               Mengapa Ekosistem MyRent Jadi Pilihan Utama UMKM?
             </h2>
@@ -518,9 +427,6 @@ export default function LandingPage({
       <section id="cara-kerja" className="py-20 bg-[#F8FAFC]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto space-y-3 mb-10">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 text-blue-700 text-xs font-bold uppercase tracking-wider">
-              Alur Kerja Simpel &amp; Aman
-            </div>
             <h2 className="text-2xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
               Bagaimana MyRent Bekerja?
             </h2>
@@ -728,9 +634,6 @@ export default function LandingPage({
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
             <div>
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 text-blue-700 text-xs font-bold uppercase tracking-wider mb-2">
-                Pilihan Mesin Populer
-              </div>
               <h2 className="text-2xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
                 Kategori Alat Produksi Unggulan
               </h2>
@@ -741,7 +644,7 @@ export default function LandingPage({
 
             <button
               type="button"
-              onClick={onNavigateCatalog || (() => handleNav('dashboard'))}
+              onClick={handleCatalogClick}
               className="inline-flex items-center gap-2 bg-[#2563EB] hover:bg-blue-700 text-white text-xs sm:text-sm font-bold px-5 py-3 rounded-xl shadow-xs transition-all self-start md:self-auto cursor-pointer"
             >
               <span>Lihat Semua Katalog Mesin</span>
@@ -793,7 +696,7 @@ export default function LandingPage({
                       </span>
                       <button
                         type="button"
-                        onClick={onNavigateCatalog || (() => handleNav('dashboard'))}
+                        onClick={handleCatalogClick}
                         className="text-xs font-bold text-[#2563EB] hover:text-blue-800 inline-flex items-center gap-1 transition-colors cursor-pointer"
                       >
                         <span>Sewa</span>
@@ -817,11 +720,6 @@ export default function LandingPage({
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="bg-gradient-to-r from-blue-700 via-indigo-700 to-blue-800 rounded-3xl p-8 sm:p-14 text-white shadow-2xl border border-blue-400/30">
             <div className="max-w-3xl space-y-4">
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 backdrop-blur border border-white/20 text-white text-xs font-semibold">
-                <Sparkles className="w-3.5 h-3.5 text-amber-300" />
-                <span>Mulai Hari Ini Tanpa Resiko Modal</span>
-              </div>
-              
               <h2 className="text-2xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight leading-tight">
                 Siap Melipatgandakan Kapasitas Produksi Usaha Anda?
               </h2>
@@ -833,7 +731,7 @@ export default function LandingPage({
               <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 pt-4">
                 <button
                   type="button"
-                  onClick={onNavigateRegisterPenyewa || (() => handleNav('register-penyewa'))}
+                  onClick={handleRegisterPenyewaClick}
                   className="flex items-center justify-center gap-2 bg-white text-blue-700 hover:bg-blue-50 font-bold text-sm sm:text-base px-6 py-3.5 rounded-xl shadow-lg transition-all cursor-pointer active:scale-95"
                 >
                   <span>Daftar Sewa Alat (Penyewa)</span>
@@ -842,7 +740,7 @@ export default function LandingPage({
 
                 <button
                   type="button"
-                  onClick={onNavigateRegisterPemilik || (() => handleNav('register-pemilik'))}
+                  onClick={handleRegisterPemilikClick}
                   className="flex items-center justify-center gap-2 bg-blue-900/60 hover:bg-blue-900 text-white font-bold text-sm sm:text-base px-6 py-3.5 rounded-xl border border-blue-400/30 transition-all cursor-pointer"
                 >
                   <Building2 className="w-4 h-4" />
@@ -851,7 +749,7 @@ export default function LandingPage({
 
                 <button
                   type="button"
-                  onClick={onNavigateCatalog || (() => handleNav('dashboard'))}
+                  onClick={handleCatalogClick}
                   className="text-xs sm:text-sm text-blue-100 hover:text-white underline underline-offset-4 text-center sm:text-left transition-colors cursor-pointer"
                 >
                   Coba Jelajahi Katalog Demo →
@@ -889,7 +787,7 @@ export default function LandingPage({
                 <li>
                   <button
                     onClick={() => scrollToSection('keunggulan')}
-                    className="hover:text-blue-600 transition-colors"
+                    className="hover:text-blue-600 transition-colors cursor-pointer"
                   >
                     Fitur &amp; Keunggulan
                   </button>
@@ -897,7 +795,7 @@ export default function LandingPage({
                 <li>
                   <button
                     onClick={() => scrollToSection('cara-kerja')}
-                    className="hover:text-blue-600 transition-colors"
+                    className="hover:text-blue-600 transition-colors cursor-pointer"
                   >
                     Cara Kerja Platform
                   </button>
@@ -905,7 +803,7 @@ export default function LandingPage({
                 <li>
                   <button
                     onClick={() => scrollToSection('kategori-alat')}
-                    className="hover:text-blue-600 transition-colors"
+                    className="hover:text-blue-600 transition-colors cursor-pointer"
                   >
                     Kategori Alat Usaha
                   </button>
@@ -913,7 +811,7 @@ export default function LandingPage({
                 <li>
                   <button
                     onClick={() => scrollToSection('keamanan-escrow')}
-                    className="hover:text-blue-600 transition-colors"
+                    className="hover:text-blue-600 transition-colors cursor-pointer"
                   >
                     Keamanan Rekening Escrow
                   </button>
@@ -929,32 +827,32 @@ export default function LandingPage({
               <ul className="space-y-2 text-xs text-slate-600">
                 <li>
                   <button
-                    onClick={onNavigateRegisterPenyewa || (() => handleNav('register-penyewa'))}
-                    className="hover:text-blue-600 transition-colors"
+                    onClick={handleRegisterPenyewaClick}
+                    className="hover:text-blue-600 transition-colors cursor-pointer"
                   >
                     Daftar Penyewa UMKM
                   </button>
                 </li>
                 <li>
                   <button
-                    onClick={onNavigateRegisterPemilik || (() => handleNav('register-pemilik'))}
-                    className="hover:text-blue-600 transition-colors"
+                    onClick={handleRegisterPemilikClick}
+                    className="hover:text-blue-600 transition-colors cursor-pointer"
                   >
                     Daftarkan Alat Mesin
                   </button>
                 </li>
                 <li>
                   <button
-                    onClick={onNavigateLogin || (() => handleNav('auth'))}
-                    className="hover:text-blue-600 transition-colors"
+                    onClick={() => handleLoginClick('penyewa')}
+                    className="hover:text-blue-600 transition-colors cursor-pointer"
                   >
                     Masuk ke Akun
                   </button>
                 </li>
                 <li>
                   <button
-                    onClick={onNavigateCatalog || (() => handleNav('dashboard'))}
-                    className="hover:text-blue-600 transition-colors"
+                    onClick={handleCatalogClick}
+                    className="hover:text-blue-600 transition-colors cursor-pointer"
                   >
                     Katalog Mesin Demo
                   </button>

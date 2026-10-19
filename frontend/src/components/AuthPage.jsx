@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import {
   CheckCircle2,
   Mail,
@@ -13,7 +13,14 @@ import AuthNavbar from './AuthNavbar'
 
 export default function AuthPage({ onLoginSuccess, onNavigateRegister, onBackToLanding }) {
   const navigate = useNavigate()
-  const [role, setRole] = useState('penyewa') // 'penyewa' | 'pemilik' (preferensi visual awal)
+  const location = useLocation()
+  const [prevLocationKey, setPrevLocationKey] = useState(location.key)
+  const [role, setRole] = useState(location.state?.defaultRole || location.state?.role || 'penyewa')
+
+  if (location.key !== prevLocationKey) {
+    setPrevLocationKey(location.key)
+    setRole(location.state?.defaultRole || location.state?.role || 'penyewa')
+  }
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [rememberMe, setRememberMe] = useState(true)
