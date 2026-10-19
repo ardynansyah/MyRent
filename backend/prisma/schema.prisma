@@ -1,0 +1,46 @@
+// Prisma schema untuk MyRent
+// Dokumentasi: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  PENYEWA
+  PEMILIK
+  ADMIN
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  role      Role
+  fullName  String
+  phone     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  equipments Equipment[]
+}
+
+model Equipment {
+  id          String   @id @default(uuid())
+  name        String
+  category    String
+  pricePerDay Int
+  powerWatt   Int
+  stock       Int      @default(1)
+  ownerId     String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  owner User @relation(fields: [ownerId], references: [id])
+
+  @@index([ownerId])
+}

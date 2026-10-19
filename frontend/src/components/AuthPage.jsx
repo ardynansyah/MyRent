@@ -1,20 +1,18 @@
 import { useState } from 'react'
-import RegisterPenyewaAlat from './registerPenyewaAlat'
+import { useNavigate } from 'react-router-dom'
 import {
   CheckCircle2,
-  Store,
-  KeyRound,
   Mail,
   Lock,
   Eye,
   EyeOff,
   Check,
-  AlertCircle,
-  ArrowLeft
+  AlertCircle
 } from 'lucide-react'
+import AuthNavbar from './AuthNavbar'
 
 export default function AuthPage({ onLoginSuccess, onNavigateRegister, onBackToLanding }) {
-  const [authView, setAuthView] = useState('login') // 'login' | 'register-penyewa'
+  const navigate = useNavigate()
   const [role, setRole] = useState('penyewa') // 'penyewa' | 'pemilik' (preferensi visual awal)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -73,6 +71,8 @@ export default function AuthPage({ onLoginSuccess, onNavigateRegister, onBackToL
         role,
         rememberMe
       })
+    } else {
+      navigate('/dashboard')
     }
   }
 
@@ -80,34 +80,22 @@ export default function AuthPage({ onLoginSuccess, onNavigateRegister, onBackToL
     if (onNavigateRegister) {
       onNavigateRegister(targetRole)
     } else {
-      if (targetRole === 'penyewa') {
-        setAuthView('register-penyewa')
+      if (targetRole === 'pemilik') {
+        navigate('/register/pemilik')
       } else {
-        handleNotify('Pendaftaran akun Pemilik Alat segera hadir!')
+        navigate('/register/penyewa')
       }
     }
   }
 
-  // Fallback alur internal jika tidak dikontrol oleh router induk
-  if (authView === 'register-penyewa') {
-    return (
-      <RegisterPenyewaAlat
-        onNavigateLogin={() => setAuthView('login')}
-        onBackToLogin={() => setAuthView('login')}
-        onRegisterSuccess={(newUser) => {
-          if (onLoginSuccess) {
-            onLoginSuccess({
-              email: newUser.email,
-              role: 'penyewa',
-              name: newUser.fullName || newUser.businessName
-            })
-          } else {
-            setAuthView('login')
-          }
-        }}
-      />
-    )
+  const handleBack = () => {
+    if (onBackToLanding) {
+      onBackToLanding()
+    } else {
+      navigate('/')
+    }
   }
+
 
   return (
     <div className="min-h-screen w-full bg-[#F8FAFC] flex flex-col justify-between items-center text-slate-800 font-sans selection:bg-blue-100 selection:text-blue-700">
@@ -119,28 +107,11 @@ export default function AuthPage({ onLoginSuccess, onNavigateRegister, onBackToL
         </div>
       )}
 
-      {/* Global Top Header: Navigasi & Identitas Brand MyRent */}
-      <header className="w-full max-w-[1440px] px-5 sm:px-10 py-5 sm:py-6 flex flex-row items-center justify-between">
-        <button
-          type="button"
-          onClick={onBackToLanding}
-          className="text-[22px] sm:text-[20px] text-[#2563EB] font-extrabold tracking-[-0.3px] select-none cursor-pointer flex items-center gap-2 hover:opacity-90 transition-opacity"
-          title="Kembali ke Beranda MyRent"
-        >
-          <span>MyRent</span>
-        </button>
-
-        {onBackToLanding && (
-          <button
-            type="button"
-            onClick={onBackToLanding}
-            className="inline-flex items-center gap-2 text-xs sm:text-sm font-semibold text-slate-700 hover:text-blue-600 py-2 px-3.5 rounded-xl border border-slate-200 hover:border-blue-200 hover:bg-blue-50/50 transition-all cursor-pointer shadow-2xs"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            <span>Kembali ke Beranda</span>
-          </button>
-        )}
-      </header>
+      {/* Navbar Atas Terpadu (Mobile, Tablet, Desktop) */}
+      <AuthNavbar
+        onBackToHome={handleBack}
+        onNavigateRegister={handleRegisterRedirect}
+      />
 
       {/* Main Body */}
       <main className="w-full max-w-[1440px] flex-1 flex items-center justify-center px-4 sm:px-10 py-4 sm:py-8 lg:py-12">
@@ -149,11 +120,6 @@ export default function AuthPage({ onLoginSuccess, onNavigateRegister, onBackToL
           {/* Panel Kiri: Hero & Value Proposition
               Responsif: DISEMBUNYIKAN di layar mobile (hidden), HANYA TAMPIL di layar besar (lg:flex) */}
           <div className="hidden lg:flex w-full lg:w-[480px] shrink-0 flex-col gap-5 text-left">
-            {/* Eyebrow Dinamis dengan kontras tinggi */}
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 border border-blue-200/80 w-fit text-[11px] text-[#2563EB] font-bold tracking-[1.2px] uppercase">
-              {isPenyewa ? 'Akun Penyewa UMKM' : 'Akun Pemilik Alat'}
-            </div>
-
             {/* Headline Dinamis */}
             <h1 className="text-3xl sm:text-[36px] sm:leading-[44px] text-slate-900 font-extrabold tracking-[-0.9px]">
               {isPenyewa
@@ -254,101 +220,13 @@ export default function AuthPage({ onLoginSuccess, onNavigateRegister, onBackToL
                 <span className="text-[11px] text-slate-600 font-bold tracking-wider uppercase">
                   Masuk Sebagai
                 </span>
-                <span className="text-[11px] text-slate-500 font-medium">
-                  Preferensi Awal
-                </span>
               </div>
 
-              <div className="w-full flex flex-row gap-2.5">
-                {/* Role 1: Penyewa UMKM */}
-                <button
-                  type="button"
-                  onClick={() => handleRoleChange('penyewa')}
-                  className={`flex-1 flex flex-row items-center gap-2.5 p-3 rounded-xl text-left transition-all cursor-pointer ${
-                    isPenyewa
-                      ? 'bg-blue-50/80 border-2 border-[#2563EB] shadow-2xs ring-2 ring-[#2563EB]/10'
-                      : 'bg-white border border-slate-200 hover:border-slate-300 hover:bg-slate-50/70'
-                  }`}
-                >
-                  <div
-                    className={`w-7 h-7 shrink-0 rounded-lg flex items-center justify-center transition-colors ${
-                      isPenyewa ? 'bg-[#2563EB]' : 'bg-slate-100'
-                    }`}
-                  >
-                    <Store
-                      className={`w-4 h-4 ${isPenyewa ? 'text-white' : 'text-slate-600'}`}
-                      strokeWidth={2}
-                    />
-                  </div>
-                  <div className="flex-1 min-w-0 flex flex-col">
-                    <span
-                      className={`text-[12px] font-bold truncate ${
-                        isPenyewa ? 'text-[#1D4ED8]' : 'text-slate-800'
-                      }`}
-                    >
-                      Penyewa UMKM
-                    </span>
-                    <span
-                      className={`text-[10px] truncate ${
-                        isPenyewa ? 'text-blue-700 font-medium' : 'text-slate-600'
-                      }`}
-                    >
-                      Sewa alat usaha
-                    </span>
-                  </div>
-                  {isPenyewa && (
-                    <div className="w-4 h-4 shrink-0 rounded-full bg-[#2563EB] flex items-center justify-center">
-                      <Check className="w-2.5 h-2.5 text-white" strokeWidth={3} />
-                    </div>
-                  )}
-                </button>
-
-                {/* Role 2: Pemilik Alat */}
-                <button
-                  type="button"
-                  onClick={() => handleRoleChange('pemilik')}
-                  className={`flex-1 flex flex-row items-center gap-2.5 p-3 rounded-xl text-left transition-all cursor-pointer ${
-                    !isPenyewa
-                      ? 'bg-blue-50/80 border-2 border-[#2563EB] shadow-2xs ring-2 ring-[#2563EB]/10'
-                      : 'bg-white border border-slate-200 hover:border-slate-300 hover:bg-slate-50/70'
-                  }`}
-                >
-                  <div
-                    className={`w-7 h-7 shrink-0 rounded-lg flex items-center justify-center transition-colors ${
-                      !isPenyewa ? 'bg-[#2563EB]' : 'bg-slate-100'
-                    }`}
-                  >
-                    <KeyRound
-                      className={`w-4 h-4 ${!isPenyewa ? 'text-white' : 'text-slate-600'}`}
-                      strokeWidth={2}
-                    />
-                  </div>
-                  <div className="flex-1 min-w-0 flex flex-col">
-                    <span
-                      className={`text-[12px] font-bold truncate ${
-                        !isPenyewa ? 'text-[#1D4ED8]' : 'text-slate-800'
-                      }`}
-                    >
-                      Pemilik Alat
-                    </span>
-                    <span
-                      className={`text-[10px] truncate ${
-                        !isPenyewa ? 'text-blue-700 font-medium' : 'text-slate-600'
-                      }`}
-                    >
-                      Sewakan unit
-                    </span>
-                  </div>
-                  {!isPenyewa && (
-                    <div className="w-4 h-4 shrink-0 rounded-full bg-[#2563EB] flex items-center justify-center">
-                      <Check className="w-2.5 h-2.5 text-white" strokeWidth={3} />
-                    </div>
-                  )}
-                </button>
-              </div>
+              {/* Tab Switcher Pemilihan Role (tanpa ikon toko / kunci) */}
+              <RoleTabSwitcher activeRole={role} onRoleChange={handleRoleChange} />
 
               {/* Edukasi Single Login Flow */}
-              <p className="text-[11px] text-slate-600 leading-tight pt-0.5">
+              <p className="text-[11px] text-slate-500 leading-tight pt-0.5">
                 Sistem satu pintu otomatis mengarahkan ke hak akses akun terdaftar Anda setelah masuk.
               </p>
             </div>
@@ -484,3 +362,55 @@ export default function AuthPage({ onLoginSuccess, onNavigateRegister, onBackToL
     </div>
   )
 }
+
+/**
+ * Komponen Tab Switcher untuk pemilihan preferensi role akun (Penyewa UMKM / Pemilik Alat).
+ * Dilengkapi animated sliding background indicator yang bergeser mulus saat role berganti.
+ */
+function RoleTabSwitcher({ activeRole, onRoleChange }) {
+  const isPenyewa = activeRole === 'penyewa'
+
+  return (
+    <div
+      role="tablist"
+      aria-label="Pilih Preferensi Role Akun"
+      className="relative w-full p-1 bg-slate-100 rounded-xl border border-slate-200/80 grid grid-cols-2 select-none"
+    >
+      {/* Animated Sliding Indicator */}
+      <div
+        aria-hidden="true"
+        className={`absolute top-1 bottom-1 w-[calc(50%-4px)] bg-white rounded-lg shadow-xs border border-slate-200/70 transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] pointer-events-none ${
+          isPenyewa ? 'left-1 translate-x-0' : 'left-1 translate-x-full'
+        }`}
+      />
+
+      {/* Tab 1: Penyewa UMKM */}
+      <button
+        type="button"
+        role="tab"
+        aria-selected={isPenyewa}
+        onClick={() => onRoleChange('penyewa')}
+        className={`relative z-10 w-full py-2.5 px-3 rounded-lg text-[13px] font-bold text-center transition-colors duration-200 cursor-pointer ${
+          isPenyewa ? 'text-[#2563EB]' : 'text-slate-600 hover:text-slate-900'
+        }`}
+      >
+        Penyewa UMKM
+      </button>
+
+      {/* Tab 2: Pemilik Alat */}
+      <button
+        type="button"
+        role="tab"
+        aria-selected={!isPenyewa}
+        onClick={() => onRoleChange('pemilik')}
+        className={`relative z-10 w-full py-2.5 px-3 rounded-lg text-[13px] font-bold text-center transition-colors duration-200 cursor-pointer ${
+          !isPenyewa ? 'text-[#2563EB]' : 'text-slate-600 hover:text-slate-900'
+        }`}
+      >
+        Pemilik Alat
+      </button>
+    </div>
+  )
+}
+
+

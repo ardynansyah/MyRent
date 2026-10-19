@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import RegisterTopBar from './RegisterTopBar'
 import RegisterStepper from './RegisterStepper'
 import Step1BuatAkun from './Step1BuatAkun'
@@ -8,14 +9,62 @@ import Step4RekeningPencairan from './Step4RekeningPencairan'
 import Step5ReviewKirim from './Step5ReviewKirim'
 
 const TOTAL_STEPS = 5
+const STORAGE_KEY_STEP = 'myrent_register_pemilik_step'
 
 /**
  * Container alur pendaftaran Pemilik Alat (5 langkah).
  * Konversi dari mockup HTML frontend/AssetMyRent/register1-5PenyewaAlat.html.
  */
 export default function RegisterPemilikAlat({ onBackToLogin, onFinish }) {
-  const [currentStep, setCurrentStep] = useState(1)
+  const navigate = useNavigate()
+  const [searchParams, setSearchParams] = useSearchParams()
+
+  const handleBack = onBackToLogin || (() => navigate('/login'))
+
+  // Lazy initialization membaca URL search param atau sessionStorage terlebih dahulu
+  const [currentStep, setCurrentStep] = useState(() => {
+    const stepQuery = parseInt(searchParams.get('step'), 10)
+    if (stepQuery >= 1 && stepQuery <= TOTAL_STEPS) {
+      return stepQuery
+    }
+    try {
+      const savedStep = sessionStorage.getItem(STORAGE_KEY_STEP)
+      if (savedStep) {
+        const parsed = parseInt(savedStep, 10)
+        if (parsed >= 1 && parsed <= TOTAL_STEPS) return parsed
+      }
+    } catch (e) {
+      console.warn('Gagal membaca step pemilik alat dari sessionStorage:', e)
+    }
+    return 1
+  })
+
   const [notification, setNotification] = useState('')
+
+  const clearRegistrationSession = () => {
+    try {
+      sessionStorage.removeItem(STORAGE_KEY_STEP)
+    } catch (e) {
+      console.warn('Gagal membersihkan session pemilik alat:', e)
+    }
+  }
+
+  // Sinkronisasi otomatis currentStep ke sessionStorage dan URL Search Params
+  useEffect(() => {
+    try {
+      sessionStorage.setItem(STORAGE_KEY_STEP, String(currentStep))
+      setSearchParams(
+        (prev) => {
+          const next = new URLSearchParams(prev)
+          next.set('step', String(currentStep))
+          return next
+        },
+        { replace: true }
+      )
+    } catch (e) {
+      console.warn('Gagal menyimpan step pemilik alat:', e)
+    }
+  }, [currentStep, setSearchParams])
 
   const notify = (msg) => {
     setNotification(msg)
@@ -25,18 +74,22 @@ export default function RegisterPemilikAlat({ onBackToLogin, onFinish }) {
   const goNext = () => {
     if (currentStep < TOTAL_STEPS) {
       setCurrentStep((step) => step + 1)
-    } else if (onFinish) {
-      onFinish()
     } else {
-      notify('Data verifikasi berhasil dikirim.')
+      clearRegistrationSession()
+      if (onFinish) {
+        onFinish()
+      } else {
+        notify('Data verifikasi berhasil dikirim.')
+      }
     }
   }
 
   const goBack = () => {
     if (currentStep > 1) {
       setCurrentStep((step) => step - 1)
-    } else if (onBackToLogin) {
-      onBackToLogin()
+    } else {
+      clearRegistrationSession()
+      handleBack()
     }
   }
 
@@ -49,6 +102,7 @@ export default function RegisterPemilikAlat({ onBackToLogin, onFinish }) {
     onNotify: notify
   }
 
+
   return (
     <div className="min-h-screen w-full bg-[#F8FAFC] flex flex-col items-center text-slate-800 font-sans selection:bg-blue-100 selection:text-blue-700">
       {/* Toast Notifikasi */}
@@ -59,8 +113,11 @@ export default function RegisterPemilikAlat({ onBackToLogin, onFinish }) {
         </div>
       )}
 
-      {/* Top Bar: brand + konteks pendaftaran + tautan masuk */}
-      <RegisterTopBar onLoginClick={onBackToLogin} />
+      <RegisterTopBar
+        roleTitle="Daftar sebagai Pemilik Alat"
+        onLoginClick={handleBack}
+        onHomeClick={() => navigate('/')}
+      />
 
       {/* Body: panel stepper (kiri) + kartu form (kanan) */}
       <main className="w-full max-w-[1140px] flex-1 flex flex-col lg:flex-row gap-9 pt-8 pb-11 px-4 sm:px-6">

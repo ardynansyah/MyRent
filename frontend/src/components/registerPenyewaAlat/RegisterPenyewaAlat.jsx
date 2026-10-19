@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { ArrowLeft, ArrowRight, RotateCw } from 'lucide-react'
 import { INITIAL_FORM, getStoredDraft } from './constants'
 import RegisterTopBar from './RegisterTopBar'
@@ -9,6 +10,9 @@ import Step2IdentitasKTP from './Step2IdentitasKTP'
 import Step3ProfilUMKM from './Step3ProfilUMKM'
 import Step4AlamatRekening from './Step4AlamatRekening'
 import Step5ReviewKirim from './Step5ReviewKirim'
+
+const STORAGE_KEY_STEP = 'myrent_register_penyewa_step'
+const STORAGE_KEY_FORM = 'myrent_register_penyewa_form'
 
 const STEP_HEADER_TITLES = {
   1: {
@@ -39,14 +43,44 @@ export default function RegisterPenyewaAlat({
   onRegisterSuccess,
   onFinish
 }) {
-  const handleBack = onBackToLogin || onNavigateLogin
+  const navigate = useNavigate()
+  const [searchParams, setSearchParams] = useSearchParams()
+
+  const handleBack = onBackToLogin || onNavigateLogin || (() => navigate('/login'))
   const handleFinish = onFinish || onRegisterSuccess
 
-  const [currentStep, setCurrentStep] = useState(1)
+  // 1. Lazy initialization currentStep dari URL (?step=X) atau sessionStorage (default: 1)
+  const [currentStep, setCurrentStep] = useState(() => {
+    const stepQuery = parseInt(searchParams.get('step'), 10)
+    if (stepQuery >= 1 && stepQuery <= 5) {
+      return stepQuery
+    }
+    try {
+      const savedStep = sessionStorage.getItem(STORAGE_KEY_STEP)
+      if (savedStep) {
+        const parsed = parseInt(savedStep, 10)
+        if (parsed >= 1 && parsed <= 5) return parsed
+      }
+    } catch (e) {
+      console.warn('Gagal membaca step dari sessionStorage:', e)
+    }
+    return 1
+  })
+
+  // 2. Lazy initialization formData dari sessionStorage atau localStorage draft (default: INITIAL_FORM)
   const [formData, setFormData] = useState(() => {
+    try {
+      const savedForm = sessionStorage.getItem(STORAGE_KEY_FORM)
+      if (savedForm) {
+        return { ...INITIAL_FORM, ...JSON.parse(savedForm) }
+      }
+    } catch (e) {
+      console.warn('Gagal membaca formData dari sessionStorage:', e)
+    }
     const draft = getStoredDraft()
     return draft ? { ...INITIAL_FORM, ...draft } : INITIAL_FORM
   })
+
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [errors, setErrors] = useState({})
@@ -57,6 +91,43 @@ export default function RegisterPenyewaAlat({
   const [isGpsLoading, setIsGpsLoading] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isSubmitted, setIsSubmitted] = useState(false)
+
+  // Membersihkan data sesi form saat submit berhasil atau pendaftaran dibatalkan
+  const clearRegistrationSession = () => {
+    try {
+      sessionStorage.removeItem(STORAGE_KEY_STEP)
+      sessionStorage.removeItem(STORAGE_KEY_FORM)
+      localStorage.removeItem('myrent_register_penyewa_draft')
+    } catch (e) {
+      console.warn('Gagal menghapus session form:', e)
+    }
+  }
+
+  // Sinkronisasi otomatis currentStep ke sessionStorage dan URL Search Params
+  useEffect(() => {
+    try {
+      sessionStorage.setItem(STORAGE_KEY_STEP, String(currentStep))
+      setSearchParams(
+        (prev) => {
+          const next = new URLSearchParams(prev)
+          next.set('step', String(currentStep))
+          return next
+        },
+        { replace: true }
+      )
+    } catch (e) {
+      console.warn('Gagal menyimpan step ke sessionStorage:', e)
+    }
+  }, [currentStep, setSearchParams])
+
+  // Sinkronisasi otomatis formData ke sessionStorage setiap kali ada input berubah
+  useEffect(() => {
+    try {
+      sessionStorage.setItem(STORAGE_KEY_FORM, JSON.stringify(formData))
+    } catch (e) {
+      console.warn('Gagal menyimpan formData ke sessionStorage:', e)
+    }
+  }, [formData])
 
   const showToast = (msg) => {
     setNotification(msg)
@@ -240,11 +311,7 @@ export default function RegisterPenyewaAlat({
     setTimeout(() => {
       setIsSubmitting(false)
       setIsSubmitted(true)
-      try {
-        localStorage.removeItem('myrent_register_penyewa_draft')
-      } catch {
-        // Abaikan
-      }
+      clearRegistrationSession()
       if (handleFinish) {
         handleFinish({
           email: formData.email,
@@ -273,8 +340,14 @@ export default function RegisterPenyewaAlat({
     if (currentStep > 1) {
       setCurrentStep((prev) => prev - 1)
       window.scrollTo({ top: 0, behavior: 'smooth' })
-    } else if (handleBack) {
-      handleBack()
+    } else {
+      // Bersihkan session storage pendaftaran saat user memilih batal & kembali
+      clearRegistrationSession()
+      if (handleBack) {
+        handleBack()
+      } else {
+        navigate('/login')
+      }
     }
   }
 
@@ -295,8 +368,12 @@ export default function RegisterPenyewaAlat({
         </div>
       )}
 
-      {/* TopBar */}
-      <RegisterTopBar onBackToLogin={handleBack} onFillDemoData={handleFillDemoData} />
+      <RegisterTopBar
+        roleTitle="Daftar sebagai Penyewa UMKM"
+        onBackToLogin={handleBack}
+        onBackToHome={() => navigate('/')}
+        onFillDemoData={handleFillDemoData}
+      />
 
       {/* Body: 2 Kolom (Stepper Kiri + Form Kanan) */}
       <main className="w-full max-w-[1240px] flex-1 px-4 sm:px-8 py-6 sm:py-10">

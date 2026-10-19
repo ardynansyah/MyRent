@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import {
   ShieldCheck,
   CheckCircle2,
@@ -28,6 +29,7 @@ export default function LandingPage({
   onNavigateRegisterPemilik,
   onNavigateCatalog
 }) {
+  const navigate = useNavigate()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [howItWorksRole, setHowItWorksRole] = useState('penyewa') // 'penyewa' | 'pemilik'
 
@@ -35,6 +37,18 @@ export default function LandingPage({
     setMobileMenuOpen(false)
     if (typeof onNavigate === 'function') {
       onNavigate(target)
+      return
+    }
+    if (target === 'auth' || target === 'login') {
+      navigate('/login')
+    } else if (target === 'register-penyewa') {
+      navigate('/register/penyewa')
+    } else if (target === 'register-pemilik') {
+      navigate('/register/pemilik')
+    } else if (target === 'dashboard') {
+      navigate('/dashboard')
+    } else {
+      navigate('/')
     }
   }
 

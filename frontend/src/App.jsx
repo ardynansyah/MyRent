@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Routes, Route, useNavigate, Navigate } from 'react-router-dom'
 import LandingPage from './components/LandingPage'
 import AuthPage from './components/AuthPage'
 import RegisterPenyewaAlat from './components/registerPenyewaAlat'
@@ -75,7 +76,7 @@ const initialRentals = [
 ]
 
 export default function App() {
-  const [currentPage, setCurrentPage] = useState('landing') // 'landing' | 'auth' | 'register-penyewa' | 'register-pemilik' | 'dashboard'
+  const navigate = useNavigate()
   const [currentUser, setCurrentUser] = useState(null)
   const [selectedCategory, setSelectedCategory] = useState('Semua')
   const [searchQuery, setSearchQuery] = useState('')
@@ -99,124 +100,161 @@ export default function App() {
   const handleLoginSuccess = (user) => {
     setCurrentUser(user)
     showToast(`Selamat datang! Anda masuk sebagai ${user.role === 'penyewa' ? 'Penyewa UMKM' : 'Pemilik Alat'}`)
-    setCurrentPage('dashboard')
+    navigate('/dashboard')
   }
 
-  // If viewing Landing Page (Default Root View)
-  if (currentPage === 'landing') {
-    return (
-      <div className="relative min-h-screen">
-        <Toast message={toastMessage} />
-        <LandingPage
-          onNavigate={(page) => setCurrentPage(page)}
-          onNavigateLogin={() => setCurrentPage('auth')}
-          onNavigateRegisterPenyewa={() => setCurrentPage('register-penyewa')}
-          onNavigateRegisterPemilik={() => setCurrentPage('register-pemilik')}
-          onNavigateCatalog={() => setCurrentPage('dashboard')}
+  const handleRegisterPenyewaFinish = (newUser) => {
+    handleLoginSuccess({
+      email: newUser?.email,
+      role: 'penyewa',
+      name: newUser?.fullName || newUser?.businessName || 'Penyewa UMKM'
+    })
+  }
+
+  const handleRegisterPemilikFinish = () => {
+    handleLoginSuccess({ role: 'pemilik', name: 'Pemilik Alat' })
+  }
+
+  return (
+    <div className="relative min-h-screen">
+      <Toast message={toastMessage} />
+
+      <Routes>
+        {/* Halaman Landing / Beranda */}
+        <Route
+          path="/"
+          element={
+            <LandingPage
+              onNavigateLogin={() => navigate('/login')}
+              onNavigateRegisterPenyewa={() => navigate('/register/penyewa')}
+              onNavigateRegisterPemilik={() => navigate('/register/pemilik')}
+              onNavigateCatalog={() => navigate('/dashboard')}
+            />
+          }
         />
-      </div>
-    )
-  }
 
-  // If viewing Register Penyewa Page
-  if (currentPage === 'register-penyewa') {
-    return (
-      <div className="relative min-h-screen">
-        {/* Floating View Switcher Button (hanya tampil di desktop/tablet agar tidak menutupi mobile) */}
-        <div className="fixed bottom-4 right-4 z-40 hidden sm:block">
-          <button
-            type="button"
-            onClick={() => setCurrentPage('dashboard')}
-            className="flex items-center gap-2 bg-slate-900/90 hover:bg-slate-900 text-white text-xs font-semibold px-4 py-2.5 rounded-full shadow-lg backdrop-blur border border-slate-700 hover:scale-105 active:scale-95 transition-all cursor-pointer"
-          >
-            <span>Buka Dashboard Demo</span>
-            <ArrowRight className="w-3.5 h-3.5" />
-          </button>
-        </div>
+        {/* Halaman Autentikasi / Login */}
+        <Route
+          path="/login"
+          element={
+            <>
+              {/* Floating Demo Switcher */}
+              <div className="fixed bottom-4 right-4 z-40 hidden sm:block">
+                <button
+                  type="button"
+                  onClick={() => navigate('/dashboard')}
+                  className="flex items-center gap-2 bg-slate-900/90 hover:bg-slate-900 text-white text-xs font-semibold px-4 py-2.5 rounded-full shadow-lg backdrop-blur border border-slate-700 hover:scale-105 active:scale-95 transition-all cursor-pointer"
+                >
+                  <span>Buka Dashboard Demo</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </button>
+              </div>
 
-        <RegisterPenyewaAlat
-          onNavigateLogin={() => setCurrentPage('auth')}
-          onBackToLogin={() => setCurrentPage('auth')}
-          onRegisterSuccess={(newUser) => {
-            handleLoginSuccess({
-              email: newUser.email,
-              role: 'penyewa',
-              name: newUser.fullName || newUser.businessName
-            })
-          }}
-          onFinish={(newUser) => {
-            handleLoginSuccess({
-              email: newUser?.email,
-              role: 'penyewa',
-              name: newUser?.fullName || newUser?.businessName || 'Penyewa UMKM'
-            })
-          }}
+              <AuthPage
+                onLoginSuccess={handleLoginSuccess}
+                onBackToLanding={() => navigate('/')}
+                onNavigateRegister={(selectedRole) => {
+                  if (selectedRole === 'pemilik') {
+                    navigate('/register/pemilik')
+                  } else {
+                    navigate('/register/penyewa')
+                  }
+                }}
+              />
+            </>
+          }
         />
-      </div>
-    )
-  }
 
-  // If viewing Register Pemilik Alat Page
-  if (currentPage === 'register-pemilik') {
-    return (
-      <div className="relative min-h-screen">
-        {/* Floating View Switcher Button (hanya tampil di desktop/tablet agar tidak menutupi mobile) */}
-        <div className="fixed bottom-4 right-4 z-40 hidden sm:block">
-          <button
-            type="button"
-            onClick={() => setCurrentPage('dashboard')}
-            className="flex items-center gap-2 bg-slate-900/90 hover:bg-slate-900 text-white text-xs font-semibold px-4 py-2.5 rounded-full shadow-lg backdrop-blur border border-slate-700 hover:scale-105 active:scale-95 transition-all cursor-pointer"
-          >
-            <span>Buka Dashboard Demo</span>
-            <ArrowRight className="w-3.5 h-3.5" />
-          </button>
-        </div>
+        {/* Form Register Multi-step: Penyewa Alat */}
+        <Route
+          path="/register/penyewa"
+          element={
+            <>
+              {/* Floating Demo Switcher */}
+              <div className="fixed bottom-4 right-4 z-40 hidden sm:block">
+                <button
+                  type="button"
+                  onClick={() => navigate('/dashboard')}
+                  className="flex items-center gap-2 bg-slate-900/90 hover:bg-slate-900 text-white text-xs font-semibold px-4 py-2.5 rounded-full shadow-lg backdrop-blur border border-slate-700 hover:scale-105 active:scale-95 transition-all cursor-pointer"
+                >
+                  <span>Buka Dashboard Demo</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </button>
+              </div>
 
-        <RegisterPemilikAlat
-          onBackToLogin={() => setCurrentPage('auth')}
-          onFinish={() => {
-            handleLoginSuccess({ role: 'pemilik', name: 'Pemilik Alat' })
-          }}
+              <RegisterPenyewaAlat
+                onNavigateLogin={() => navigate('/login')}
+                onBackToLogin={() => navigate('/login')}
+                onRegisterSuccess={handleRegisterPenyewaFinish}
+                onFinish={handleRegisterPenyewaFinish}
+              />
+            </>
+          }
         />
-      </div>
-    )
-  }
 
-  // If viewing Auth Page
-  if (currentPage === 'auth') {
-    return (
-      <div className="relative min-h-screen">
-        <Toast message={toastMessage} />
+        {/* Form Register Multi-step: Pemilik Alat */}
+        <Route
+          path="/register/pemilik"
+          element={
+            <>
+              {/* Floating Demo Switcher */}
+              <div className="fixed bottom-4 right-4 z-40 hidden sm:block">
+                <button
+                  type="button"
+                  onClick={() => navigate('/dashboard')}
+                  className="flex items-center gap-2 bg-slate-900/90 hover:bg-slate-900 text-white text-xs font-semibold px-4 py-2.5 rounded-full shadow-lg backdrop-blur border border-slate-700 hover:scale-105 active:scale-95 transition-all cursor-pointer"
+                >
+                  <span>Buka Dashboard Demo</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </button>
+              </div>
 
-        {/* Floating View Switcher Button (hanya tampil di desktop/tablet agar tidak menutupi mobile) */}
-        <div className="fixed bottom-4 right-4 z-40 hidden sm:block">
-          <button
-            type="button"
-            onClick={() => setCurrentPage('dashboard')}
-            className="flex items-center gap-2 bg-slate-900/90 hover:bg-slate-900 text-white text-xs font-semibold px-4 py-2.5 rounded-full shadow-lg backdrop-blur border border-slate-700 hover:scale-105 active:scale-95 transition-all cursor-pointer"
-          >
-            <span>Buka Dashboard Demo</span>
-            <ArrowRight className="w-3.5 h-3.5" />
-          </button>
-        </div>
-
-        {/* Auth Page Component */}
-        <AuthPage
-          onLoginSuccess={handleLoginSuccess}
-          onBackToLanding={() => setCurrentPage('landing')}
-          onNavigateRegister={(selectedRole) => {
-            if (selectedRole === 'penyewa') {
-              setCurrentPage('register-penyewa')
-            } else if (selectedRole === 'pemilik') {
-              setCurrentPage('register-pemilik')
-            }
-          }}
+              <RegisterPemilikAlat
+                onBackToLogin={() => navigate('/login')}
+                onFinish={handleRegisterPemilikFinish}
+              />
+            </>
+          }
         />
-      </div>
-    )
-  }
 
-  // If viewing Demo Dashboard (MyRent Portal)
+        {/* Dashboard Demo / Portal Katalog MyRent */}
+        <Route
+          path="/dashboard"
+          element={
+            <DashboardView
+              currentUser={currentUser}
+              searchQuery={searchQuery}
+              setSearchQuery={setSearchQuery}
+              selectedCategory={selectedCategory}
+              setSelectedCategory={setSelectedCategory}
+              filteredRentals={filteredRentals}
+              categories={categories}
+              showToast={showToast}
+              onNavigateHome={() => navigate('/')}
+              onNavigateLogin={() => navigate('/login')}
+            />
+          }
+        />
+
+        {/* Fallback jika route tidak ditemukan */}
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </div>
+  )
+}
+
+function DashboardView({
+  currentUser,
+  searchQuery,
+  setSearchQuery,
+  selectedCategory,
+  setSelectedCategory,
+  filteredRentals,
+  categories,
+  showToast,
+  onNavigateHome,
+  onNavigateLogin
+}) {
   return (
     <div className="min-h-screen bg-[#F8FAFC] text-slate-800 flex flex-col font-sans">
       {/* Toast Notification */}
@@ -228,7 +266,7 @@ export default function App() {
           <div className="flex items-center gap-4">
             <button
               type="button"
-              onClick={() => setCurrentPage('landing')}
+              onClick={onNavigateHome}
               className="text-[18px] text-[#2563EB] font-extrabold tracking-[-0.3px] select-none hover:opacity-90 transition-opacity cursor-pointer"
               title="Kembali ke Beranda MyRent"
             >
@@ -273,7 +311,7 @@ export default function App() {
             </button>
 
             <button
-              onClick={() => setCurrentPage('landing')}
+              onClick={onNavigateHome}
               className="flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-slate-600 hover:text-blue-600 border border-slate-200 hover:border-blue-200 hover:bg-blue-50 rounded-xl transition-all cursor-pointer"
               title="Kembali ke Landing Page"
             >
@@ -282,7 +320,7 @@ export default function App() {
             </button>
 
             <button
-              onClick={() => setCurrentPage('auth')}
+              onClick={onNavigateLogin}
               className="flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-slate-600 hover:text-blue-600 border border-slate-200 hover:border-blue-200 hover:bg-blue-50 rounded-xl transition-all cursor-pointer"
               title="Kembali ke halaman Auth"
             >
