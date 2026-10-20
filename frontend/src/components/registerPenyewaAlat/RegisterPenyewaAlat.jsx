@@ -10,6 +10,7 @@ import Step2IdentitasKTP from './Step2IdentitasKTP'
 import Step3ProfilUMKM from './Step3ProfilUMKM'
 import Step4AlamatRekening from './Step4AlamatRekening'
 import Step5ReviewKirim from './Step5ReviewKirim'
+import AlertModal from '../common/AlertModal'
 import {
   clearDraft,
   clearPending,
@@ -122,6 +123,22 @@ export default function RegisterPenyewaAlat({
   const [isGpsLoading, setIsGpsLoading] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isSubmitted, setIsSubmitted] = useState(false)
+
+  const [alertModal, setAlertModal] = useState({
+    isOpen: false,
+    title: '',
+    message: '',
+    type: 'error',
+    secondaryAction: null
+  })
+
+  const showAlert = (title, message, type = 'error', secondaryAction = null) => {
+    setAlertModal({ isOpen: true, title, message, type, secondaryAction })
+  }
+
+  const closeAlert = () => {
+    setAlertModal((prev) => ({ ...prev, isOpen: false }))
+  }
 
   const showToast = (msg) => {
     setNotification(msg)
@@ -448,8 +465,23 @@ export default function RegisterPenyewaAlat({
       window.scrollTo({ top: 0, behavior: 'smooth' })
     } catch (err) {
       setIsSubmitting(false)
-      showToast(err.message || 'Gagal mengirim pendaftaran')
-      alert(`Pendaftaran Gagal: ${err.message}`)
+      const errorMsg = err.message || 'Pendaftaran gagal diproses oleh server'
+      const isEmailTaken = errorMsg.toLowerCase().includes('email sudah terdaftar')
+
+      showAlert(
+        'Pendaftaran Gagal',
+        errorMsg,
+        'error',
+        isEmailTaken
+          ? {
+              label: 'Masuk ke Akun Sekarang',
+              onClick: () => {
+                closeAlert()
+                navigate('/login')
+              }
+            }
+          : null
+      )
     }
   }
 
@@ -592,6 +624,16 @@ export default function RegisterPenyewaAlat({
           <span>{notification}</span>
         </div>
       )}
+
+      {/* Alert Modal Dinamis di Tengah Layar */}
+      <AlertModal
+        isOpen={alertModal.isOpen}
+        onClose={closeAlert}
+        title={alertModal.title}
+        message={alertModal.message}
+        type={alertModal.type}
+        secondaryAction={alertModal.secondaryAction}
+      />
 
       <RegisterTopBar
         roleTitle="Daftar sebagai Penyewa UMKM"
