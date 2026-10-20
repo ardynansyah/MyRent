@@ -6,7 +6,8 @@ export default function Step4AlamatRekening({
   handleInputChange,
   errors,
   handleRefreshGps,
-  isGpsLoading
+  isGpsLoading,
+  onBlurCheck
 }) {
   return (
     <div className="space-y-4 animate-in fade-in duration-200">
@@ -157,6 +158,7 @@ export default function Step4AlamatRekening({
             placeholder="4471 8890 221"
             value={formData.bankAccount}
             onChange={(e) => handleInputChange('bankAccount', e.target.value)}
+            onBlur={() => onBlurCheck?.('bankAccount')}
             className={`w-full bg-white text-[13px] rounded-[10px] px-3.5 py-2.5 text-slate-800 placeholder:text-slate-400 border ${
               errors.bankAccount ? 'border-red-400 focus:ring-red-200' : 'border-slate-300 focus:border-blue-600 focus:ring-blue-100'
             } focus:outline-none focus:ring-2 transition-all font-mono tabular-nums tracking-wide`}

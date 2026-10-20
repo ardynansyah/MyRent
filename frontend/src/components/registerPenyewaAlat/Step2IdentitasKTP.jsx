@@ -6,7 +6,8 @@ export default function Step2IdentitasKTP({
   handleInputChange,
   errors,
   handleFileUpload,
-  handleRemoveUpload
+  handleRemoveUpload,
+  onBlurCheck
 }) {
   return (
     <div className="space-y-4 animate-in fade-in duration-200">
@@ -22,6 +23,7 @@ export default function Step2IdentitasKTP({
             placeholder="3174 0921 8845 0003"
             value={formData.nik}
             onChange={(e) => handleInputChange('nik', e.target.value.replace(/\D/g, ''))}
+            onBlur={() => onBlurCheck?.('nik')}
             className={`w-full bg-white text-[13px] rounded-[10px] px-3.5 py-2.5 text-slate-800 placeholder:text-slate-400 border ${
               errors.nik ? 'border-red-400 focus:ring-red-200' : 'border-slate-300 focus:border-blue-600 focus:ring-blue-100'
             } focus:outline-none focus:ring-2 transition-all font-mono tabular-nums tracking-wide`}

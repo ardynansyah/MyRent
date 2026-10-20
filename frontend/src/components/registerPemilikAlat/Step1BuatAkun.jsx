@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Mail, Phone, Lock, Eye, EyeOff } from 'lucide-react'
 import RegisterFormCard from './RegisterFormCard'
 import { TextField, CheckItem } from './FormControls'
+import { checkUniqueness } from '../../lib/registration'
 
 export default function Step1BuatAkun({
   formData = {},
@@ -28,7 +29,7 @@ export default function Step1BuatAkun({
     }
   }
 
-  const validateAndProceed = () => {
+  const validateAndProceed = async () => {
     const newErrors = {}
 
     const cleanEmail = email ? email.trim() : ''
@@ -70,6 +71,18 @@ export default function Step1BuatAkun({
       return
     }
 
+    try {
+      const check = await checkUniqueness({ email: cleanEmail, phone: cleanWhatsapp })
+      if (!check.available && Object.keys(check.errors).length > 0) {
+        setErrors((prev) => ({ ...prev, ...check.errors }))
+        const firstErr = check.errors.email || check.errors.phone || check.errors.whatsapp
+        alert(firstErr)
+        return
+      }
+    } catch (e) {
+      console.warn('Pengecekan keunikan data Step 1 gagal:', e)
+    }
+
     setErrors({})
     onNext?.({
       email: cleanEmail,
@@ -79,6 +92,30 @@ export default function Step1BuatAkun({
       agreeTerms,
       agreeEscrow
     })
+  }
+
+  const handleBlurEmail = async () => {
+    const cleanEmail = email ? email.trim().toLowerCase() : ''
+    if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail)) {
+      try {
+        const check = await checkUniqueness({ email: cleanEmail })
+        if (check.errors?.email) setErrors((prev) => ({ ...prev, email: check.errors.email }))
+      } catch {
+        // ignore
+      }
+    }
+  }
+
+  const handleBlurWhatsapp = async () => {
+    const clean = whatsapp ? whatsapp.replace(/\D/g, '') : ''
+    if (clean.length >= 9) {
+      try {
+        const check = await checkUniqueness({ phone: clean })
+        if (check.errors?.phone) setErrors((prev) => ({ ...prev, whatsapp: check.errors.phone }))
+      } catch {
+        // ignore
+      }
+    }
   }
 
   const passwordToggle = (isVisible, onToggle, label) => (
@@ -111,6 +148,7 @@ export default function Step1BuatAkun({
             icon={Mail}
             value={email}
             onChange={(val) => handleFieldChange('email', val, setEmail)}
+            onBlur={handleBlurEmail}
             error={errors.email}
             placeholder="nama@domain.com"
           />
@@ -119,6 +157,7 @@ export default function Step1BuatAkun({
             icon={Phone}
             value={whatsapp}
             onChange={(val) => handleFieldChange('whatsapp', val, setWhatsapp)}
+            onBlur={handleBlurWhatsapp}
             error={errors.whatsapp}
             placeholder="+62 812 8899 0011"
           />

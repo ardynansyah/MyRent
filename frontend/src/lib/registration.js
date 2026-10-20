@@ -297,3 +297,34 @@ export function formatDateTime(value) {
     minute: '2-digit'
   })
 }
+
+/**
+ * Periksa keunikan data form (email, nomor telepon, NIK, bankAccount) ke backend.
+ * Digunakan untuk validasi per-step formulir registrasi.
+ *
+ * @param {object} params
+ * @param {string} [params.email]
+ * @param {string} [params.phone]
+ * @param {string} [params.whatsapp]
+ * @param {string} [params.nik]
+ * @param {string} [params.bankAccount]
+ * @param {string} [params.excludeUserId]
+ * @returns {Promise<{ available: boolean, errors: Record<string, string> }>}
+ */
+export async function checkUniqueness(params) {
+  try {
+    const res = await fetch(`${API_BASE}/auth/check-unique`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(params)
+    })
+    if (!res.ok) {
+      return { available: true, errors: {} }
+    }
+    return await res.json()
+  } catch (e) {
+    console.warn('Gagal memverifikasi keunikan data:', e)
+    return { available: true, errors: {} }
+  }
+}
+

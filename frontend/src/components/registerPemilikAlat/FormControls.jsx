@@ -11,7 +11,7 @@ export function FieldRow({ children }) {
 }
 
 /** Input teks dengan ikon leading opsional dan elemen trailing opsional */
-export function TextField({ label, icon: Icon, value, onChange, placeholder, type = 'text', trailing, error, inputClassName = '' }) {
+export function TextField({ label, icon: Icon, value, onChange, onBlur, placeholder, type = 'text', trailing, error, inputClassName = '' }) {
   return (
     <div className="w-full min-w-0 flex flex-col gap-1.5">
       <FieldLabel>{label}</FieldLabel>
@@ -23,6 +23,7 @@ export function TextField({ label, icon: Icon, value, onChange, placeholder, typ
           type={type}
           value={value}
           onChange={(e) => onChange?.(e.target.value)}
+          onBlur={onBlur}
           placeholder={placeholder}
           className={`flex-1 min-w-0 bg-transparent text-[13px] text-slate-900 placeholder:text-slate-400 focus:outline-none ${inputClassName}`}
         />

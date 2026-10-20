@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { User, CreditCard } from 'lucide-react'
 import RegisterFormCard from './RegisterFormCard'
 import { TextField, FieldRow, SelectField, CheckItem } from './FormControls'
+import { checkUniqueness } from '../../lib/registration'
 
 const BANK_OPTIONS = [
   'BCA — Bank Central Asia',
@@ -36,7 +37,7 @@ export default function Step4RekeningPencairan({
     }
   }
 
-  const validateAndProceed = () => {
+  const validateAndProceed = async () => {
     const newErrors = {}
 
     const cleanRek = nomorRekening ? nomorRekening.replace(/\s+/g, '') : ''
@@ -64,6 +65,17 @@ export default function Step4RekeningPencairan({
       return
     }
 
+    try {
+      const check = await checkUniqueness({ bankAccount: cleanRek })
+      if (!check.available && check.errors?.bankAccount) {
+        setErrors((prev) => ({ ...prev, nomorRekening: check.errors.bankAccount }))
+        alert(check.errors.bankAccount)
+        return
+      }
+    } catch (e) {
+      console.warn('Pengecekan nomor rekening gagal:', e)
+    }
+
     setErrors({})
     onNext?.({
       bank,
@@ -72,6 +84,20 @@ export default function Step4RekeningPencairan({
       konfirmasiKepemilikan,
       konfirmasiKomisi
     })
+  }
+
+  const handleBlurRekening = async () => {
+    const clean = nomorRekening ? nomorRekening.replace(/\s+/g, '') : ''
+    if (clean.length >= 5) {
+      try {
+        const check = await checkUniqueness({ bankAccount: clean })
+        if (check.errors?.bankAccount) {
+          setErrors((prev) => ({ ...prev, nomorRekening: check.errors.bankAccount }))
+        }
+      } catch {
+        // ignore
+      }
+    }
   }
 
   return (
@@ -99,6 +125,7 @@ export default function Step4RekeningPencairan({
             icon={CreditCard}
             value={nomorRekening}
             onChange={(val) => handleFieldChange('nomorRekening', val, setNomorRekening)}
+            onBlur={handleBlurRekening}
             error={errors.nomorRekening}
             placeholder="Contoh: 4471 8890 221"
           />

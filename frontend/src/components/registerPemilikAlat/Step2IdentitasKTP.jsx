@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { IdCard, User, Calendar, CircleCheck, Receipt } from 'lucide-react'
 import RegisterFormCard from './RegisterFormCard'
 import { TextField, FieldRow, PillGroup, UploadBox } from './FormControls'
-import { fileToPreviewDataUrl, formatFileSize } from '../../lib/registration'
+import { fileToPreviewDataUrl, formatFileSize, checkUniqueness } from '../../lib/registration'
 
 export default function Step2IdentitasKTP({
   formData = {},
@@ -42,7 +42,7 @@ export default function Step2IdentitasKTP({
     }
   }
 
-  const validateAndProceed = () => {
+  const validateAndProceed = async () => {
     const newErrors = {}
 
     const cleanNik = nik ? nik.replace(/\D/g, '') : ''
@@ -70,6 +70,17 @@ export default function Step2IdentitasKTP({
       return
     }
 
+    try {
+      const check = await checkUniqueness({ nik: cleanNik })
+      if (!check.available && check.errors?.nik) {
+        setErrors((prev) => ({ ...prev, nik: check.errors.nik }))
+        alert(check.errors.nik)
+        return
+      }
+    } catch (e) {
+      console.warn('Pengecekan NIK gagal:', e)
+    }
+
     setErrors({})
     onNext?.({
       nik: cleanNik,
@@ -81,6 +92,18 @@ export default function Step2IdentitasKTP({
       ktpFile,
       selfieFile
     })
+  }
+
+  const handleBlurNik = async () => {
+    const cleanNik = nik ? nik.replace(/\D/g, '') : ''
+    if (cleanNik.length === 16) {
+      try {
+        const check = await checkUniqueness({ nik: cleanNik })
+        if (check.errors?.nik) setErrors((prev) => ({ ...prev, nik: check.errors.nik }))
+      } catch {
+        // ignore
+      }
+    }
   }
 
   return (
@@ -101,6 +124,7 @@ export default function Step2IdentitasKTP({
             icon={IdCard}
             value={nik}
             onChange={(val) => handleFieldChange('nik', val, setNik)}
+            onBlur={handleBlurNik}
             error={errors.nik}
             placeholder="3174 0921 8845 0003"
             inputClassName="font-mono tabular-nums tracking-wide"

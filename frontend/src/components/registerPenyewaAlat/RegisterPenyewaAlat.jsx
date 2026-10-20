@@ -20,7 +20,8 @@ import {
   readDraft,
   readPending,
   writeDraft,
-  writePending
+  writePending,
+  checkUniqueness
 } from '../../lib/registration'
 
 const STORAGE_KEY_STEP = 'myrent_register_penyewa_step'
@@ -123,6 +124,7 @@ export default function RegisterPenyewaAlat({
   const [isGpsLoading, setIsGpsLoading] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isSubmitted, setIsSubmitted] = useState(false)
+  const [isCheckingUnique, setIsCheckingUnique] = useState(false)
 
   const [alertModal, setAlertModal] = useState({
     isOpen: false,
@@ -245,6 +247,58 @@ export default function RegisterPenyewaAlat({
 
     if (errors[field]) {
       setErrors((prev) => ({ ...prev, [field]: '' }))
+    }
+  }
+
+  const handleBlurCheck = async (field) => {
+    if (field === 'email' && formData.email) {
+      const cleanEmail = formData.email.trim().toLowerCase()
+      if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail)) {
+        try {
+          const check = await checkUniqueness({ email: cleanEmail, excludeUserId: pending?.userId })
+          if (check.errors?.email) {
+            setErrors((prev) => ({ ...prev, email: check.errors.email }))
+          }
+        } catch {
+          // ignore
+        }
+      }
+    } else if (field === 'phone' && formData.phone) {
+      const digits = formData.phone.replace(/\D/g, '')
+      if (digits.length >= 9) {
+        try {
+          const check = await checkUniqueness({ phone: formData.phone, excludeUserId: pending?.userId })
+          if (check.errors?.phone) {
+            setErrors((prev) => ({ ...prev, phone: check.errors.phone }))
+          }
+        } catch {
+          // ignore
+        }
+      }
+    } else if (field === 'nik' && formData.nik) {
+      const digits = formData.nik.replace(/\D/g, '')
+      if (digits.length === 16) {
+        try {
+          const check = await checkUniqueness({ nik: formData.nik, excludeUserId: pending?.userId })
+          if (check.errors?.nik) {
+            setErrors((prev) => ({ ...prev, nik: check.errors.nik }))
+          }
+        } catch {
+          // ignore
+        }
+      }
+    } else if (field === 'bankAccount' && formData.bankAccount) {
+      const digits = formData.bankAccount.replace(/\D/g, '')
+      if (digits.length >= 5) {
+        try {
+          const check = await checkUniqueness({ bankAccount: formData.bankAccount, excludeUserId: pending?.userId })
+          if (check.errors?.bankAccount) {
+            setErrors((prev) => ({ ...prev, bankAccount: check.errors.bankAccount }))
+          }
+        } catch {
+          // ignore
+        }
+      }
     }
   }
 
@@ -485,16 +539,79 @@ export default function RegisterPenyewaAlat({
     }
   }
 
-  const handleNext = () => {
-    if (validateStep(currentStep)) {
-      if (currentStep < 5) {
-        setCurrentStep((prev) => prev + 1)
-        window.scrollTo({ top: 0, behavior: 'smooth' })
-      } else {
-        handleSubmitFinal()
-      }
-    } else {
+  const handleNext = async () => {
+    if (!validateStep(currentStep)) {
       showToast('Harap periksa kolom formulir yang masih belum terisi dengan benar.')
+      return
+    }
+
+    // Step 1: Validasi keunikan Email & Nomor Telepon sebelum lanjut ke Step 2
+    if (currentStep === 1) {
+      setIsCheckingUnique(true)
+      try {
+        const check = await checkUniqueness({
+          email: formData.email,
+          phone: formData.phone,
+          excludeUserId: pending?.userId
+        })
+        if (!check.available && Object.keys(check.errors).length > 0) {
+          setErrors((prev) => ({ ...prev, ...check.errors }))
+          const firstErr = check.errors.email || check.errors.phone || 'Data sudah digunakan oleh akun lain.'
+          showToast(firstErr)
+          return
+        }
+      } catch (err) {
+        console.warn('Pengecekan keunikan data Step 1 gagal:', err)
+      } finally {
+        setIsCheckingUnique(false)
+      }
+    }
+
+    // Step 2: Validasi keunikan NIK KTP sebelum lanjut ke Step 3
+    if (currentStep === 2) {
+      setIsCheckingUnique(true)
+      try {
+        const check = await checkUniqueness({
+          nik: formData.nik,
+          excludeUserId: pending?.userId
+        })
+        if (!check.available && check.errors?.nik) {
+          setErrors((prev) => ({ ...prev, nik: check.errors.nik }))
+          showToast(check.errors.nik)
+          return
+        }
+      } catch (err) {
+        console.warn('Pengecekan keunikan NIK Step 2 gagal:', err)
+      } finally {
+        setIsCheckingUnique(false)
+      }
+    }
+
+    // Step 4: Validasi keunikan Nomor Rekening sebelum lanjut ke Step 5
+    if (currentStep === 4) {
+      setIsCheckingUnique(true)
+      try {
+        const check = await checkUniqueness({
+          bankAccount: formData.bankAccount,
+          excludeUserId: pending?.userId
+        })
+        if (!check.available && check.errors?.bankAccount) {
+          setErrors((prev) => ({ ...prev, bankAccount: check.errors.bankAccount }))
+          showToast(check.errors.bankAccount)
+          return
+        }
+      } catch (err) {
+        console.warn('Pengecekan keunikan rekening Step 4 gagal:', err)
+      } finally {
+        setIsCheckingUnique(false)
+      }
+    }
+
+    if (currentStep < 5) {
+      setCurrentStep((prev) => prev + 1)
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    } else {
+      handleSubmitFinal()
     }
   }
 
@@ -700,6 +817,7 @@ export default function RegisterPenyewaAlat({
                   setShowPassword={setShowPassword}
                   showConfirmPassword={showConfirmPassword}
                   setShowConfirmPassword={setShowConfirmPassword}
+                  onBlurCheck={handleBlurCheck}
                 />
               )}
 
@@ -710,6 +828,7 @@ export default function RegisterPenyewaAlat({
                   errors={errors}
                   handleFileUpload={handleFileUpload}
                   handleRemoveUpload={handleRemoveUpload}
+                  onBlurCheck={handleBlurCheck}
                 />
               )}
 
@@ -730,6 +849,7 @@ export default function RegisterPenyewaAlat({
                   errors={errors}
                   handleRefreshGps={handleRefreshGps}
                   isGpsLoading={isGpsLoading}
+                  onBlurCheck={handleBlurCheck}
                 />
               )}
 
@@ -766,13 +886,18 @@ export default function RegisterPenyewaAlat({
 
                   <button
                     type="submit"
-                    disabled={isSubmitting}
-                    className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 active:scale-[0.99] text-white text-xs font-semibold rounded-[10px] transition-all shadow-xs cursor-pointer"
+                    disabled={isSubmitting || isCheckingUnique}
+                    className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 active:scale-[0.99] text-white text-xs font-semibold rounded-[10px] transition-all shadow-xs cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
                   >
                     {isSubmitting ? (
                       <>
                         <RotateCw className="w-3.5 h-3.5 animate-spin" />
                         <span>Mengirim Data...</span>
+                      </>
+                    ) : isCheckingUnique ? (
+                      <>
+                        <RotateCw className="w-3.5 h-3.5 animate-spin" />
+                        <span>Memeriksa Data...</span>
                       </>
                     ) : (
                       <>
