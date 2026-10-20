@@ -41,7 +41,9 @@ export default function AuthPage({ onLoginSuccess, onNavigateRegister, onBackToL
     if (error) setError('')
   }
 
-  const handleSubmit = (e) => {
+  const [isLoading, setIsLoading] = useState(false)
+
+  const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
 
@@ -68,18 +70,51 @@ export default function AuthPage({ onLoginSuccess, onNavigateRegister, onBackToL
       return
     }
 
-    // Single entrance: Akun langsung diproses ke sistem autentikasi
-    const roleLabel = isPenyewa ? 'Penyewa UMKM' : 'Pemilik Alat'
-    handleNotify(`Berhasil masuk! Mengalihkan ke akun ${roleLabel}...`)
-
-    if (onLoginSuccess) {
-      onLoginSuccess({
-        email: trimmedEmail,
-        role,
-        rememberMe
+    setIsLoading(true)
+    try {
+      const response = await fetch('http://localhost:3000/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          email: trimmedEmail,
+          password
+        })
       })
-    } else {
-      navigate('/dashboard')
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error?.message || 'Email atau kata sandi tidak valid')
+      }
+
+      // Simpan JWT token dan data user ke localStorage
+      if (data.token) {
+        localStorage.setItem('token', data.token)
+      }
+      if (data.user) {
+        localStorage.setItem('user', JSON.stringify(data.user))
+      }
+
+      const userRole = String(data.user?.role || '').toUpperCase()
+      const roleLabel = userRole === 'PEMILIK' ? 'Pemilik Alat' : 'Penyewa UMKM'
+      handleNotify(`Berhasil masuk! Mengalihkan ke akun ${roleLabel}...`)
+
+      if (onLoginSuccess) {
+        onLoginSuccess(data.user)
+      }
+
+      // Role-Based Routing
+      if (userRole === 'PEMILIK') {
+        navigate('/dashboard-pemilik')
+      } else {
+        navigate('/beranda-sewa')
+      }
+    } catch (err) {
+      setError(err.message || 'Gagal terhubung ke server autentikasi.')
+    } finally {
+      setIsLoading(false)
     }
   }
 
@@ -330,9 +365,17 @@ export default function AuthPage({ onLoginSuccess, onNavigateRegister, onBackToL
               {/* Tombol Utama (Primary CTA): Masuk */}
               <button
                 type="submit"
-                className="w-full h-[46px] bg-[#2563EB] hover:bg-blue-700 active:scale-[0.99] text-white font-bold text-[14px] rounded-xl flex items-center justify-center gap-2 transition-all cursor-pointer shadow-xs mt-1"
+                disabled={isLoading}
+                className="w-full h-[46px] bg-[#2563EB] hover:bg-blue-700 active:scale-[0.99] text-white font-bold text-[14px] rounded-xl flex items-center justify-center gap-2 transition-all cursor-pointer shadow-xs mt-1 disabled:opacity-75 disabled:cursor-not-allowed"
               >
-                Masuk
+                {isLoading ? (
+                  <>
+                    <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    <span>Memverifikasi...</span>
+                  </>
+                ) : (
+                  <span>Masuk</span>
+                )}
               </button>
 
               {/* Opsi Registrasi Baru: Tautan Teks Bersih Menggantikan Tombol Outline Sekunder */}

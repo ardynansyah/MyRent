@@ -11,18 +11,46 @@ import VerifikasiPemilik from './VerifikasiPemilik'
 
 const TOTAL_STEPS = 5
 const STORAGE_KEY_STEP = 'myrent_register_pemilik_step'
+const STORAGE_KEY_FORM = 'myrent_register_pemilik_form'
 
-/**
- * Container alur pendaftaran Pemilik Alat (5 langkah).
- * Konversi dari mockup HTML frontend/AssetMyRent/register1-5PenyewaAlat.html.
- */
+const INITIAL_PEMILIK_FORM = {
+  email: 'pemilik@kopisenja.id',
+  whatsapp: '081288990011',
+  password: 'Password123!',
+  konfirmasi: 'Password123!',
+  agreeTerms: true,
+  agreeEscrow: true,
+  nik: '3174092188450003',
+  namaKtp: 'Budi Santoso',
+  tempatLahir: 'Jakarta',
+  tanggalLahir: '1991-04-12',
+  badanUsaha: 'Perorangan',
+  npwp: '09.254.294.3-407.000',
+  namaLokasi: 'Lokasi Cilandak',
+  alamat: 'Jl. Cilandak Tengah No. 24, RT 04/RW 06, Cilandak Barat, Jakarta Selatan 12430',
+  kota: 'Jakarta Selatan',
+  kodePos: '12430',
+  gps: '(-6.2891, 106.8001)',
+  hariOperasional: 'Senin - Sabtu',
+  jamBuka: '08:00',
+  jamTutup: '18:00',
+  fasilitasJaga: true,
+  fasilitasParkir: true,
+  fasilitasDalamRuangan: true,
+  bank: 'BCA — Bank Central Asia',
+  nomorRekening: '44718890221',
+  namaRekening: 'Budi Santoso',
+  konfirmasiKepemilikan: true,
+  konfirmasiKomisi: true,
+  agreeTruth: true
+}
+
 export default function RegisterPemilikAlat({ onBackToLogin, onFinish }) {
   const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
 
   const handleBack = onBackToLogin || (() => navigate('/login'))
 
-  // Lazy initialization membaca URL search param atau sessionStorage terlebih dahulu
   const [currentStep, setCurrentStep] = useState(() => {
     const stepQuery = parseInt(searchParams.get('step'), 10)
     if (stepQuery >= 1 && stepQuery <= TOTAL_STEPS) {
@@ -40,18 +68,29 @@ export default function RegisterPemilikAlat({ onBackToLogin, onFinish }) {
     return 1
   })
 
+  const [formData, setFormData] = useState(() => {
+    try {
+      const saved = sessionStorage.getItem(STORAGE_KEY_FORM)
+      if (saved) return { ...INITIAL_PEMILIK_FORM, ...JSON.parse(saved) }
+    } catch (e) {
+      console.warn('Gagal membaca form pemilik:', e)
+    }
+    return INITIAL_PEMILIK_FORM
+  })
+
   const [notification, setNotification] = useState('')
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const [isSubmitted, setIsSubmitted] = useState(false)
 
   const clearRegistrationSession = () => {
     try {
       sessionStorage.removeItem(STORAGE_KEY_STEP)
+      sessionStorage.removeItem(STORAGE_KEY_FORM)
     } catch (e) {
       console.warn('Gagal membersihkan session pemilik alat:', e)
     }
   }
 
-  // Sinkronisasi otomatis currentStep ke sessionStorage dan URL Search Params
   useEffect(() => {
     try {
       sessionStorage.setItem(STORAGE_KEY_STEP, String(currentStep))
@@ -68,24 +107,81 @@ export default function RegisterPemilikAlat({ onBackToLogin, onFinish }) {
     }
   }, [currentStep, setSearchParams])
 
+  useEffect(() => {
+    try {
+      sessionStorage.setItem(STORAGE_KEY_FORM, JSON.stringify(formData))
+    } catch (e) {
+      console.warn('Gagal menyimpan formData pemilik:', e)
+    }
+  }, [formData])
+
   const notify = (msg) => {
     setNotification(msg)
     setTimeout(() => setNotification(''), 3500)
   }
 
-  const goNext = () => {
+  const handleFieldChange = (field, value) => {
+    setFormData((prev) => ({ ...prev, [field]: value }))
+  }
+
+  const handleStepSubmit = (stepData) => {
+    const updated = { ...formData, ...stepData }
+    setFormData(updated)
+
     if (currentStep < TOTAL_STEPS) {
       setCurrentStep((step) => step + 1)
       window.scrollTo({ top: 0, behavior: 'smooth' })
     } else {
+      handleFinalRegister(updated)
+    }
+  }
+
+  const handleFinalRegister = async (finalData) => {
+    setIsSubmitting(true)
+    try {
+      const response = await fetch('http://localhost:3000/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: finalData.email,
+          password: finalData.password,
+          role: 'PEMILIK',
+          fullName: finalData.namaKtp || finalData.namaRekening || 'Pemilik Alat',
+          phone: finalData.whatsapp || '-',
+          ktpName: finalData.namaKtp,
+          nik: finalData.nik,
+          // Mock files
+          ktpFile: 'ktp_pemilik.jpg',
+          selfieFile: 'selfie_pemilik.jpg'
+        })
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error?.message || 'Gagal melakukan pendaftaran akun pemilik.')
+      }
+
+      if (data.token) {
+        localStorage.setItem('token', data.token)
+        localStorage.setItem('user', JSON.stringify(data.user))
+      }
+
+      notify('Pendaftaran pemilik alat berhasil!')
+      setIsSubmitting(false)
       setIsSubmitted(true)
       window.scrollTo({ top: 0, behavior: 'smooth' })
+    } catch (err) {
+      setIsSubmitting(false)
+      notify(err.message || 'Pendaftaran gagal.')
+      alert(`Pendaftaran Gagal: ${err.message}`)
     }
   }
 
   const goBack = () => {
     if (currentStep > 1) {
       setCurrentStep((step) => step - 1)
+      window.scrollTo({ top: 0, behavior: 'smooth' })
     } else {
       clearRegistrationSession()
       handleBack()
@@ -95,22 +191,25 @@ export default function RegisterPemilikAlat({ onBackToLogin, onFinish }) {
   const saveDraft = () => notify('Draf pendaftaran tersimpan.')
 
   const stepProps = {
+    formData,
+    onChange: handleFieldChange,
     onBack: goBack,
-    onNext: goNext,
+    onNext: handleStepSubmit,
     onSaveDraft: saveDraft,
-    onNotify: notify
+    onNotify: notify,
+    isSubmitting
   }
 
-  // Tampilan Halaman Verifikasi Admin (Peninjauan Registrasi Pemilik)
   if (isSubmitted) {
     return (
       <VerifikasiPemilik
+        formData={formData}
         onFinish={() => {
           clearRegistrationSession()
           if (onFinish) {
             onFinish()
           } else {
-            navigate('/dashboard')
+            navigate('/dashboard-pemilik')
           }
         }}
         onEditData={() => {
@@ -123,7 +222,6 @@ export default function RegisterPemilikAlat({ onBackToLogin, onFinish }) {
       />
     )
   }
-
 
   return (
     <div className="min-h-screen w-full bg-[#F8FAFC] flex flex-col items-center text-slate-800 font-sans selection:bg-blue-100 selection:text-blue-700">
@@ -146,9 +244,7 @@ export default function RegisterPemilikAlat({ onBackToLogin, onFinish }) {
         <RegisterStepper currentStep={currentStep} />
 
         <div className="flex-1 min-w-0 flex flex-col items-center lg:items-start">
-          {currentStep === 1 && (
-            <Step1BuatAkun {...stepProps} />
-          )}
+          {currentStep === 1 && <Step1BuatAkun {...stepProps} />}
           {currentStep === 2 && <Step2IdentitasKTP {...stepProps} />}
           {currentStep === 3 && <Step3GudangOperasional {...stepProps} />}
           {currentStep === 4 && <Step4RekeningPencairan {...stepProps} />}

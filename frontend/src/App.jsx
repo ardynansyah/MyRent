@@ -6,6 +6,10 @@ import RegisterPenyewaAlat from './components/registerPenyewaAlat'
 import RegisterPemilikAlat from './components/registerPemilikAlat/RegisterPemilikAlat'
 import BerandaSewa from './components/berandaPenyewa/BerandaSewa'
 import DetailAlat from './components/detailAlat/DetailAlat'
+import AdminAuthWrapper from './components/adminAuth/AdminAuthWrapper'
+import AdminDashboardPlaceholder from './components/adminAuth/AdminDashboardPlaceholder'
+import AdminProtectedRoute from './components/adminAuth/AdminProtectedRoute'
+import AdminDetailPengajuan from './components/adminDashboard/AdminDetailPengajuan'
 import {
   Building2,
   KeyRound,
@@ -101,21 +105,36 @@ export default function App() {
 
   const handleLoginSuccess = (user) => {
     setCurrentUser(user)
-    showToast(`Selamat datang! Anda masuk sebagai ${user.role === 'penyewa' ? 'Penyewa UMKM' : 'Pemilik Alat'}`)
-    navigate('/dashboard')
+    const normalizedRole = String(user?.role || '').toUpperCase()
+    if (normalizedRole === 'ADMIN') {
+      showToast('Selamat datang Super Administrator HQ!')
+      navigate('/portal-internal-hq/dashboard')
+      return
+    }
+    showToast(`Selamat datang! Anda masuk sebagai ${normalizedRole === 'PEMILIK' ? 'Pemilik Alat' : 'Penyewa UMKM'}`)
+    if (normalizedRole === 'PEMILIK') {
+      navigate('/dashboard-pemilik')
+    } else {
+      navigate('/beranda-sewa')
+    }
   }
 
   const handleRegisterPenyewaFinish = (newUser) => {
     handleLoginSuccess({
       email: newUser?.email,
-      role: 'penyewa',
+      role: 'PENYEWA',
       name: newUser?.fullName || newUser?.businessName || 'Penyewa UMKM'
     })
   }
 
-  const handleRegisterPemilikFinish = () => {
-    handleLoginSuccess({ role: 'pemilik', name: 'Pemilik Alat' })
+  const handleRegisterPemilikFinish = (newUser) => {
+    handleLoginSuccess({
+      email: newUser?.email,
+      role: 'PEMILIK',
+      name: newUser?.fullName || 'Pemilik Alat'
+    })
   }
+
 
   return (
     <div className="relative min-h-screen">
@@ -267,6 +286,36 @@ export default function App() {
               onBack={() => navigate('/beranda-sewa')}
               onNavigateHome={() => navigate('/')}
             />
+          }
+        />
+
+        {/* Dashboard Pemilik Placeholder */}
+        <Route
+          path="/dashboard-pemilik"
+          element={<DashboardPemilikPlaceholder />}
+        />
+
+        {/* Portal Rahasia Internal HQ Admin (2-Step Verification) */}
+        <Route
+          path="/portal-internal-hq"
+          element={<AdminAuthWrapper onAdminLoginSuccess={handleLoginSuccess} />}
+        />
+        {/* Semua rute dashboard dilindungi AdminProtectedRoute:
+            tanpa token admin di localStorage pengguna langsung kembali ke portal login. */}
+        <Route
+          path="/portal-internal-hq/dashboard"
+          element={
+            <AdminProtectedRoute>
+              <AdminDashboardPlaceholder />
+            </AdminProtectedRoute>
+          }
+        />
+        <Route
+          path="/portal-internal-hq/dashboard/pengajuan/:id"
+          element={
+            <AdminProtectedRoute>
+              <AdminDetailPengajuan />
+            </AdminProtectedRoute>
           }
         />
 
@@ -589,3 +638,84 @@ function ArrowRight(props) {
     </svg>
   )
 }
+
+function DashboardPemilikPlaceholder() {
+  const navigate = useNavigate()
+  return (
+    <div className="min-h-screen bg-[#F8FAFC] flex flex-col justify-between text-slate-800 font-sans">
+      <header className="sticky top-0 z-40 backdrop-blur-md bg-white/90 border-b border-slate-200 px-4 sm:px-8 py-3.5 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={() => navigate('/')}
+            className="text-[18px] text-[#2563EB] font-extrabold tracking-[-0.3px] cursor-pointer"
+          >
+            MyRent
+          </button>
+          <span className="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200">
+            Mode Pemilik Alat
+          </span>
+        </div>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => navigate('/')}
+            className="text-xs font-semibold px-3 py-1.5 rounded-lg border border-slate-200 hover:bg-slate-50 transition-colors cursor-pointer"
+          >
+            Beranda
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              // Hapus kredensial lalu arahkan dengan `replace` agar halaman dashboard
+              // tidak bisa dibuka kembali lewat tombol Back browser.
+              localStorage.removeItem('token')
+              localStorage.removeItem('user')
+              navigate('/login', { replace: true })
+            }}
+            className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 transition-colors cursor-pointer"
+          >
+            Keluar
+          </button>
+        </div>
+      </header>
+
+      <main className="flex-1 flex items-center justify-center p-6">
+        <div className="max-w-md w-full bg-white border border-slate-200/90 rounded-2xl p-8 shadow-md shadow-slate-200/50 text-center space-y-4">
+          <div className="w-16 h-16 rounded-2xl bg-blue-50 border border-blue-100 text-blue-600 flex items-center justify-center mx-auto text-2xl shadow-xs">
+            🏭
+          </div>
+          <div className="space-y-1.5">
+            <h1 className="text-xl font-bold text-slate-900 tracking-tight">
+              Dashboard Pemilik
+            </h1>
+            <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-medium">
+              Dashboard Pemilik dalam tahap pengembangan
+            </p>
+          </div>
+          <div className="pt-2 flex flex-col gap-2">
+            <button
+              type="button"
+              onClick={() => navigate('/')}
+              className="w-full h-10 bg-[#2563EB] hover:bg-blue-700 active:scale-[0.99] text-white font-semibold text-xs rounded-xl transition-all cursor-pointer shadow-xs"
+            >
+              Kembali ke Beranda Utama
+            </button>
+            <button
+              type="button"
+              onClick={() => navigate('/beranda-sewa')}
+              className="w-full h-10 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs rounded-xl transition-all cursor-pointer"
+            >
+              Lihat Katalog Sewa Alat
+            </button>
+          </div>
+        </div>
+      </main>
+
+      <footer className="w-full py-4 text-center text-xs text-slate-500 border-t border-slate-200 bg-white">
+        © 2026 MyRent. Platform Sewa Alat Terverifikasi untuk UMKM Indonesia.
+      </footer>
+    </div>
+  )
+}
+

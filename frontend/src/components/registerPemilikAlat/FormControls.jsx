@@ -11,12 +11,14 @@ export function FieldRow({ children }) {
 }
 
 /** Input teks dengan ikon leading opsional dan elemen trailing opsional */
-export function TextField({ label, icon: Icon, value, onChange, placeholder, type = 'text', trailing }) {
+export function TextField({ label, icon: Icon, value, onChange, placeholder, type = 'text', trailing, error }) {
   return (
     <div className="w-full min-w-0 flex flex-col gap-1.5">
       <FieldLabel>{label}</FieldLabel>
-      <div className="w-full h-[44px] flex flex-row items-center gap-2.5 px-3 bg-white border border-[#E2E8F0] rounded-[10px] transition-all focus-within:border-[#2563EB] focus-within:ring-2 focus-within:ring-[#2563EB]/15">
-        {Icon && <Icon className="w-4 h-4 text-[#94A3B8] shrink-0" strokeWidth={2} />}
+      <div className={`w-full h-[44px] flex flex-row items-center gap-2.5 px-3 bg-white border ${
+        error ? 'border-red-400 focus-within:ring-red-200' : 'border-[#E2E8F0] focus-within:border-[#2563EB] focus-within:ring-[#2563EB]/15'
+      } rounded-[10px] transition-all focus-within:ring-2`}>
+        {Icon && <Icon className={`w-4 h-4 ${error ? 'text-red-400' : 'text-[#94A3B8]'} shrink-0`} strokeWidth={2} />}
         <input
           type={type}
           value={value}
@@ -26,12 +28,13 @@ export function TextField({ label, icon: Icon, value, onChange, placeholder, typ
         />
         {trailing}
       </div>
+      {error && <span className="text-[10px] text-red-500">{error}</span>}
     </div>
   )
 }
 
 /** Textarea untuk alamat / catatan panjang */
-export function TextAreaField({ label, value, onChange, placeholder, rows = 2 }) {
+export function TextAreaField({ label, value, onChange, placeholder, rows = 2, error }) {
   return (
     <div className="w-full min-w-0 flex flex-col gap-1.5">
       <FieldLabel>{label}</FieldLabel>
@@ -40,11 +43,15 @@ export function TextAreaField({ label, value, onChange, placeholder, rows = 2 })
         value={value}
         onChange={(e) => onChange?.(e.target.value)}
         placeholder={placeholder}
-        className="w-full min-h-[58px] py-[9px] px-[11px] bg-white border border-[#E2E8F0] rounded-[10px] text-[12px] leading-[19px] text-[#0F172A] placeholder-[#94A3B8] resize-none focus:outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-[#2563EB]/15 transition-all"
+        className={`w-full min-h-[58px] py-[9px] px-[11px] bg-white border ${
+          error ? 'border-red-400 focus:ring-red-200' : 'border-[#E2E8F0] focus:border-[#2563EB] focus:ring-[#2563EB]/15'
+        } rounded-[10px] text-[12px] leading-[19px] text-[#0F172A] placeholder-[#94A3B8] resize-none focus:outline-none focus:ring-2 transition-all`}
       />
+      {error && <span className="text-[10px] text-red-500">{error}</span>}
     </div>
   )
 }
+
 
 /** Dropdown dengan gaya yang sama seperti input teks */
 export function SelectField({ label, value, onChange, options }) {
@@ -95,10 +102,11 @@ export function PillGroup({ options, value, onChange }) {
 }
 
 /** Kotak unggah berkas (foto KTP, Lokasi, buku tabungan, dsb) */
-export function UploadBox({ icon: Icon, title, subtitle, uploaded = false }) {
+export function UploadBox({ icon: Icon, title, subtitle, uploaded = false, onClick }) {
   return (
     <button
       type="button"
+      onClick={onClick}
       className={`flex-1 min-w-0 h-[100px] flex flex-col items-center justify-center gap-1 rounded-[10px] transition-all cursor-pointer ${
         uploaded
           ? 'bg-[#EFF6FF] border border-[#93C5FD]'

@@ -306,14 +306,56 @@ export default function RegisterPenyewaAlat({
     return Object.keys(newErrors).length === 0
   }
 
-  const handleSubmitFinal = () => {
+  const handleSubmitFinal = async () => {
     setIsSubmitting(true)
-    setTimeout(() => {
+    try {
+      const response = await fetch('http://localhost:3000/api/auth/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password,
+          role: 'PENYEWA',
+          fullName: formData.fullName || formData.ktpName || formData.businessName || 'Penyewa UMKM',
+          phone: formData.phone,
+          businessName: formData.businessName,
+          ktpName: formData.ktpName,
+          nik: formData.nik,
+          birthPlace: formData.birthPlace,
+          birthDate: formData.birthDate,
+          // Mock upload files
+          ktpFile: formData.ktpFile?.name || 'ktp_penyewa.jpg',
+          selfieFile: formData.selfieFile?.name || 'selfie_penyewa.jpg',
+          frontPhoto: formData.frontPhoto?.name || 'toko_depan.jpg',
+          productionPhoto: formData.productionPhoto?.name || 'area_produksi.jpg'
+        })
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        const errorMsg = data.error?.message || 'Pendaftaran gagal diproses oleh server'
+        throw new Error(errorMsg)
+      }
+
+      if (data.token) {
+        localStorage.setItem('token', data.token)
+        localStorage.setItem('user', JSON.stringify(data.user))
+      }
+
+      showToast('Pendaftaran berhasil! Akun Anda siap diverifikasi.')
       setIsSubmitting(false)
       setIsSubmitted(true)
       window.scrollTo({ top: 0, behavior: 'smooth' })
-    }, 1000)
+    } catch (err) {
+      setIsSubmitting(false)
+      showToast(err.message || 'Gagal mengirim pendaftaran')
+      alert(`Pendaftaran Gagal: ${err.message}`)
+    }
   }
+
 
   const handleNext = () => {
     if (validateStep(currentStep)) {

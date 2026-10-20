@@ -9,11 +9,15 @@ import { categoriesRouter } from './routes/categories.js'
 import { healthRouter } from './routes/health.js'
 import { rentalsRouter } from './routes/rentals.js'
 import { statsRouter } from './routes/stats.js'
+import { authRouter } from './routes/auth.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 const ENDPOINTS = [
   'GET /api/health',
+  'POST /api/auth/register',
+  'POST /api/auth/login',
+  'GET /api/auth/me',
   'GET /api/rentals',
   'POST /api/rentals',
   'GET /api/rentals/:id',
@@ -44,9 +48,11 @@ export function createApp() {
   })
 
   app.use('/api/health', healthRouter)
+  app.use('/api/auth', authRouter)
   app.use('/api/rentals', rentalsRouter)
   app.use('/api/categories', categoriesRouter)
   app.use('/api/stats', statsRouter)
+
 
   app.use(notFoundHandler)
   app.use(errorHandler)
