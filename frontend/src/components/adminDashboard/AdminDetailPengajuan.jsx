@@ -55,6 +55,35 @@ import {
  *
  * @param {function} props.onLogout - callback logout opsional
  */
+const CHECKLIST_STORAGE_PREFIX = 'myrent_admin_checklist_'
+
+function readChecklistFromStorage(keys) {
+  const keyList = (Array.isArray(keys) ? keys : [keys]).filter(Boolean)
+  for (const k of keyList) {
+    try {
+      const raw = localStorage.getItem(`${CHECKLIST_STORAGE_PREFIX}${k}`)
+      if (raw !== null) {
+        const parsed = JSON.parse(raw)
+        if (Array.isArray(parsed)) return parsed
+      }
+    } catch {
+      // abaikan error storage
+    }
+  }
+  return []
+}
+
+function writeChecklistToStorage(keys, items) {
+  const keyList = (Array.isArray(keys) ? keys : [keys]).filter(Boolean)
+  for (const k of keyList) {
+    try {
+      localStorage.setItem(`${CHECKLIST_STORAGE_PREFIX}${k}`, JSON.stringify(items))
+    } catch {
+      // abaikan error storage
+    }
+  }
+}
+
 export default function AdminDetailPengajuan({ onLogout }) {
   const navigate = useNavigate()
   const params = useParams()
@@ -63,9 +92,9 @@ export default function AdminDetailPengajuan({ onLogout }) {
   const [modalTolak, setModalTolak] = useState(false)
   const [toast, setToast] = useState('')
   const [stepTerbuka, setStepTerbuka] = useState(() => [true, true, true, true, true])
-  // Checklist verifikasi: default kosong. Admin wajib mencentang manual,
-  // tidak ada data mock yang otomatis tercentang saat halaman dibuka.
-  const [checkedItems, setCheckedItems] = useState([])
+  // Checklist verifikasi: tersimpan di localStorage agar saat admin keluar dan masuk lagi,
+  // status centang tidak hilang.
+  const [checkedItems, setCheckedItems] = useState(() => readChecklistFromStorage([params.id]))
 
   const [pengajuan, setPengajuan] = useState(null)
   const [daftar, setDaftar] = useState([])
@@ -128,13 +157,24 @@ export default function AdminDetailPengajuan({ onLogout }) {
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [zoomedImage])
 
-  // Reset state lokal saat admin berpindah ke pengajuan lain.
+  // Sinkronkan state checklist saat admin berpindah ke pengajuan lain.
   const [idTerpantau, setIdTerpantau] = useState(params.id)
   if (params.id !== idTerpantau) {
     setIdTerpantau(params.id)
-    setCheckedItems([])
+    setCheckedItems(readChecklistFromStorage([params.id]))
     setZoomedImage(null)
   }
+
+  // Sinkronkan checklist begitu data pengajuan (ID / submissionCode) selesai dimuat
+  useEffect(() => {
+    if (pengajuan) {
+      const keys = [pengajuan.id, pengajuan.submissionCode, params.id].filter(Boolean)
+      const hasStored = keys.some((k) => localStorage.getItem(`${CHECKLIST_STORAGE_PREFIX}${k}`) !== null)
+      if (hasStored) {
+        setCheckedItems(readChecklistFromStorage(keys))
+      }
+    }
+  }, [pengajuan, params.id])
 
   const langkah = useMemo(
     () =>
@@ -208,9 +248,12 @@ export default function AdminDetailPengajuan({ onLogout }) {
   }
 
   const toggleChecklist = (index) => {
-    setCheckedItems((prev) =>
-      prev.includes(index) ? prev.filter((item) => item !== index) : [...prev, index]
-    )
+    setCheckedItems((prev) => {
+      const next = prev.includes(index) ? prev.filter((item) => item !== index) : [...prev, index]
+      const keys = [params.id, pengajuan?.id, pengajuan?.submissionCode].filter(Boolean)
+      writeChecklistToStorage(keys, next)
+      return next
+    })
   }
 
   const checklistSelesai = checkedItems.length
