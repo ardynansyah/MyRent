@@ -224,20 +224,7 @@ export default function RegisterPenyewaAlat({
   }, [])
 
   const handleInputChange = (field, value) => {
-    setFormData((prev) => {
-      const updated = { ...prev, [field]: value }
-
-      // Otomatis isi Nama Pemilik Rekening & FullName jika masih kosong saat nama KTP diketik
-      if (field === 'ktpName') {
-        if (!prev.fullName) updated.fullName = value
-        if (!prev.bankAccountHolder) updated.bankAccountHolder = value
-      }
-      if (field === 'fullName') {
-        if (!prev.ktpName) updated.ktpName = value
-        if (!prev.bankAccountHolder) updated.bankAccountHolder = value
-      }
-      return updated
-    })
+    setFormData((prev) => ({ ...prev, [field]: value }))
 
     if (errors[field]) {
       setErrors((prev) => ({ ...prev, [field]: '' }))
