@@ -213,16 +213,14 @@ export function buildStepsFromKycData(kycData, role, fallback = {}) {
   if (isPemilik) {
     content = [
       {
+        // Step 1 form Pemilik hanya berisi: email, whatsapp, password, dan persetujuan.
         fields: buildFields(data, [
           ['email', 'Email'],
-          ['whatsapp', 'Nomor WhatsApp'],
-          ['namaLokasi', 'Nama Lokasi / Toko'],
-          ['badanUsaha', 'Bentuk Badan Usaha']
+          ['whatsapp', 'Nomor WhatsApp / Telepon'],
+          ['agreeTerms', 'Persetujuan Syarat & Ketentuan'],
+          ['agreeEscrow', 'Persetujuan Escrow Deposit']
         ]),
-        documents: buildDocuments(data, [
-          ['ktpFile', 'Foto KTP'],
-          ['selfieFile', 'Selfie + KTP']
-        ])
+        documents: []
       },
       {
         fields: buildFields(data, [
@@ -233,7 +231,10 @@ export function buildStepsFromKycData(kycData, role, fallback = {}) {
           ['badanUsaha', 'Status Badan Usaha'],
           ['npwp', 'NPWP']
         ]),
-        documents: buildDocuments(data, [['ktpFile', 'Foto KTP']])
+        documents: buildDocuments(data, [
+          ['ktpFile', 'Foto KTP'],
+          ['selfieFile', 'Selfie + KTP']
+        ])
       },
       {
         fields: buildFields(data, [
@@ -277,13 +278,13 @@ export function buildStepsFromKycData(kycData, role, fallback = {}) {
   } else {
     content = [
       {
+        // Step 1 form Penyewa hanya berisi: email, nomor whatsapp, dan kredensial.
+        // Nama Penanggung Jawab / Nama UMKM / Kategori Usaha TIDAK ada di step ini
+        // (nama diambil dari Step 2 Identitas, UMKM & kategori dari Step 3 Profil),
+        // sehingga tidak boleh ditampilkan di sini. Password tidak pernah ditampilkan.
         fields: buildFields(data, [
-          ['fullName', 'Nama Penanggung Jawab'],
           ['email', 'Email'],
-          ['phone', 'Nomor WhatsApp'],
-          ['businessName', 'Nama UMKM'],
-          ['businessSector', 'Kategori Usaha'],
-          ['customSector', 'Kategori Usaha (custom)']
+          ['phone', 'Nomor WhatsApp / Telepon']
         ]),
         documents: []
       },

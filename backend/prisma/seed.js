@@ -4,6 +4,25 @@ import bcrypt from 'bcrypt'
 const prisma = new PrismaClient()
 
 /**
+ * Placeholder dokumen (data URL SVG) untuk demo pratinjau gambar di portal admin.
+ * Ukurannya kecil sehingga aman disimpan di kolom JSON MySQL.
+ */
+const PLACEHOLDER_DOKUMEN = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(
+  `<svg xmlns="http://www.w3.org/2000/svg" width="640" height="400" viewBox="0 0 640 400">
+  <rect width="640" height="400" fill="#e2e8f0"/>
+  <rect x="24" y="24" width="592" height="352" rx="16" fill="#f8fafc" stroke="#94a3b8" stroke-width="3"/>
+  <text x="52" y="88" font-family="Arial, sans-serif" font-size="30" fill="#0f172a">DOKUMEN KYC MyRent</text>
+  <rect x="52" y="120" width="180" height="220" rx="10" fill="#cbd5e1"/>
+  <text x="86" y="240" font-family="Arial, sans-serif" font-size="24" fill="#475569">FOTO</text>
+  <rect x="268" y="130" width="320" height="22" rx="6" fill="#e2e8f0"/>
+  <rect x="268" y="172" width="260" height="18" rx="6" fill="#e2e8f0"/>
+  <rect x="268" y="210" width="300" height="18" rx="6" fill="#e2e8f0"/>
+  <rect x="268" y="248" width="220" height="18" rx="6" fill="#e2e8f0"/>
+  <rect x="268" y="286" width="280" height="18" rx="6" fill="#e2e8f0"/>
+</svg>`
+)}`
+
+/**
  * Data demo pengajuan KYC.
  *
  * Dipakai supaya Portal Verifikasi Admin langsung punya data nyata
@@ -28,8 +47,8 @@ const DEMO_PENYEWA = {
     ktpName: 'Andini Rahmawati',
     birthPlace: 'Makassar',
     birthDate: '1994-04-12',
-    ktpFile: { name: 'ktp-andini.jpg', size: 1887436, type: 'image/jpeg' },
-    selfieFile: { name: 'selfie-ktp.jpg', size: 1258291, type: 'image/jpeg' },
+    ktpFile: { name: 'ktp-andini.jpg', size: 1887436, type: 'image/jpeg', preview: PLACEHOLDER_DOKUMEN },
+    selfieFile: { name: 'selfie-ktp.jpg', size: 1258291, type: 'image/jpeg', preview: PLACEHOLDER_DOKUMEN },
     nib: '8120019456723',
     startYear: '2019',
     powerCapacity: '2200 W',
@@ -48,7 +67,12 @@ const DEMO_PENYEWA = {
     confirmAccountOwner: true,
     confirmDeduction: true,
     agreeTruth: true,
-    agreeTerms: true
+    agreeTerms: true,
+    email: 'demo.penyewa@myrent.id',
+    phone: '082144557788',
+    fullName: 'Andini Rahmawati',
+    frontPhoto: { name: 'tampak-depan-usaha.jpg', size: 2097152, type: 'image/jpeg', preview: PLACEHOLDER_DOKUMEN },
+    productionPhoto: { name: 'area-produksi.jpg', size: 1048576, type: 'image/jpeg', preview: PLACEHOLDER_DOKUMEN }
   }
 }
 
@@ -79,10 +103,10 @@ const DEMO_PEMILIK = {
     fasilitasJaga: true,
     fasilitasParkir: true,
     fasilitasDalamRuangan: true,
-    ktpFile: { name: 'ktp-pemilik.jpg', size: 2048000, type: 'image/jpeg' },
-    selfieFile: { name: 'selfie-pemilik.jpg', size: 1400000, type: 'image/jpeg' },
-    frontPhoto: { name: 'gudang-depan.jpg', size: 1600000, type: 'image/jpeg' },
-    storagePhoto: { name: 'gudang-area-penyimpanan.jpg', size: 2000000, type: 'image/jpeg' },
+    ktpFile: { name: 'ktp-pemilik.jpg', size: 2048000, type: 'image/jpeg', preview: PLACEHOLDER_DOKUMEN },
+    selfieFile: { name: 'selfie-pemilik.jpg', size: 1400000, type: 'image/jpeg', preview: PLACEHOLDER_DOKUMEN },
+    frontPhoto: { name: 'gudang-depan.jpg', size: 1600000, type: 'image/jpeg', preview: PLACEHOLDER_DOKUMEN },
+    storagePhoto: { name: 'gudang-area-penyimpanan.jpg', size: 2000000, type: 'image/jpeg', preview: PLACEHOLDER_DOKUMEN },
     bank: 'BCA — Bank Central Asia',
     nomorRekening: '44718890221',
     namaRekening: 'Budi Santoso',

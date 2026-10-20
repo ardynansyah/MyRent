@@ -43,6 +43,9 @@ const KNOWN_FILE_KEYS = new Set([
 /** Field bertipe password / kredensial yang tidak boleh masuk ke kycData. */
 const SENSITIVE_KEYS = new Set(['password', 'confirmPassword', 'konfirmasi', 'passwordHash'])
 
+/** Field tingkat atas yang bukan bagian dari data formulir. */
+const NON_FORM_KEYS = new Set(['role'])
+
 const isPlainObject = (value) =>
   typeof value === 'object' && value !== null && !Array.isArray(value)
 
@@ -136,6 +139,10 @@ export function normalizeFileValue(value) {
 /**
  * Bersihkan & normalisasi seluruh isi form registrasi menjadi objek kycData.
  *
+ * `kycData` memirror payload formulir apa adanya (Step 1-5), termasuk
+ * `email` dan nomor whatsapp/telepon, sehingga portal admin bisa memetakan
+ * data sesuai step aslinya. Yang dibuang hanya kredensial (password).
+ *
  * @param {object} raw - payload mentah dari frontend
  * @returns {object} kycData siap disimpan ke kolom JSON
  */
@@ -146,7 +153,7 @@ export function buildKycData(raw) {
 
   for (const [key, value] of Object.entries(raw)) {
     if (SENSITIVE_KEYS.has(key)) continue
-    if (key === 'email' || key === 'role' || key === 'fullName' || key === 'phone') continue
+    if (NON_FORM_KEYS.has(key)) continue
     if (value === undefined) continue
 
     const isFileKey = KNOWN_FILE_KEYS.has(key) || looksLikeFileValue(value)
@@ -166,9 +173,12 @@ export function buildKycData(raw) {
 export function extractFormPayload(body) {
   if (!isPlainObject(body)) return {}
 
+  // Bentuk bersarang: apa adanya yang dikirim formulir.
   if (isPlainObject(body.formData)) return body.formData
   if (isPlainObject(body.kycData)) return body.kycData
 
+  // Bentuk datar: buang field kredensial & email tingkat atas (sudah disimpan
+  // di kolom User), sisanya tetap dianggap data formulir.
   const { email, password, role, ...rest } = body
   return rest
 }

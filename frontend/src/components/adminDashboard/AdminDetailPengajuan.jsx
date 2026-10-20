@@ -72,6 +72,8 @@ export default function AdminDetailPengajuan({ onLogout }) {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
   const [isActing, setIsActing] = useState(false)
+  // Pratinjau dokumen layar penuh (KTP / foto usaha).
+  const [zoomedImage, setZoomedImage] = useState(null)
 
   const handleLogout = () => {
     if (onLogout) {
@@ -114,11 +116,24 @@ export default function AdminDetailPengajuan({ onLogout }) {
     loadPengajuan()
   }, [loadPengajuan])
 
+  // Tutup pratinjau gambar dengan tombol Escape.
+  useEffect(() => {
+    if (!zoomedImage) return undefined
+
+    const handleKeyDown = (event) => {
+      if (event.key === 'Escape') setZoomedImage(null)
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [zoomedImage])
+
   // Reset state lokal saat admin berpindah ke pengajuan lain.
   const [idTerpantau, setIdTerpantau] = useState(params.id)
   if (params.id !== idTerpantau) {
     setIdTerpantau(params.id)
     setChecklist(CHECKLIST_VERIFIKASI.map((item) => item.checked))
+    setZoomedImage(null)
   }
 
   const langkah = useMemo(
@@ -473,14 +488,21 @@ export default function AdminDetailPengajuan({ onLogout }) {
                             {step.documents.map((doc) => (
                               <div
                                 key={doc.nama}
-                                className="flex-1 flex items-center gap-3 p-3 rounded-[10px] bg-[#F8FAFC] border border-[#E2E8F0] text-left"
+                                className={`flex-1 flex items-center gap-3 p-3 rounded-[10px] bg-[#F8FAFC] border border-[#E2E8F0] text-left ${
+                                  doc.preview
+                                    ? 'cursor-pointer hover:border-[#BFDBFE] hover:bg-[#EFF6FF] transition-colors'
+                                    : ''
+                                }`}
+                                onClick={() => {
+                                  if (doc.preview) setZoomedImage(doc.preview)
+                                }}
                               >
                                 <div className="w-9 h-9 shrink-0 rounded-[8px] bg-[#EFF6FF] flex items-center justify-center overflow-hidden">
                                   {doc.preview ? (
                                     <img
                                       src={doc.preview}
                                       alt={doc.nama}
-                                      className="w-full h-full object-cover"
+                                      className="w-full h-full object-cover cursor-pointer hover:opacity-80 transition-opacity"
                                     />
                                   ) : (
                                     <ImageIcon className="w-4 h-4 text-[#2563EB]" />
@@ -492,7 +514,9 @@ export default function AdminDetailPengajuan({ onLogout }) {
                                   </span>
                                   <span className="text-xs text-[#94A3B8] truncate">{doc.meta}</span>
                                 </div>
-                                {doc.preview ? <Maximize2 className="w-4 h-4 shrink-0 text-[#94A3B8]" /> : null}
+                                {doc.preview ? (
+                                  <Maximize2 className="w-4 h-4 shrink-0 text-[#94A3B8]" />
+                                ) : null}
                               </div>
                             ))}
                           </div>
@@ -618,6 +642,33 @@ export default function AdminDetailPengajuan({ onLogout }) {
         namaPengajuan={pengajuan.nama || pengajuan.fullName}
         tipePengajuan={pengajuan.tipe}
       />
+
+      {/* Image viewer — pratinjau dokumen layar penuh */}
+      {zoomedImage ? (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Pratinjau dokumen"
+          onClick={() => setZoomedImage(null)}
+        >
+          <img
+            src={zoomedImage}
+            alt="Pratinjau dokumen"
+            className="max-h-[90vh] max-w-[90vw] object-contain"
+            onClick={(event) => event.stopPropagation()}
+          />
+
+          <button
+            type="button"
+            onClick={() => setZoomedImage(null)}
+            aria-label="Tutup pratinjau"
+            className="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center cursor-pointer transition-colors"
+          >
+            <X className="w-6 h-6" />
+          </button>
+        </div>
+      ) : null}
     </div>
   )
 }
