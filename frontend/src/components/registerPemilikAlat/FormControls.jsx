@@ -101,24 +101,59 @@ export function PillGroup({ options, value, onChange }) {
   )
 }
 
-/** Kotak unggah berkas (foto KTP, Lokasi, buku tabungan, dsb) */
-export function UploadBox({ icon: Icon, title, subtitle, uploaded = false, onClick }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`flex-1 min-w-0 h-[100px] flex flex-col items-center justify-center gap-1 rounded-[10px] transition-all cursor-pointer ${
-        uploaded
-          ? 'bg-[#EFF6FF] border border-[#93C5FD]'
-          : 'bg-[#F8FAFC] border border-[#E2E8F0] hover:border-slate-300'
-      }`}
-    >
+/**
+ * Kotak unggah berkas (foto KTP, Lokasi, buku tabungan, dsb).
+ *
+ * Bila `onFileSelect` diberikan, kotak berubah menjadi label berisi input file
+ * sehingga pengguna bebas memilih file gambar apa pun dari komputer.
+ */
+export function UploadBox({
+  icon: Icon,
+  title,
+  subtitle,
+  uploaded = false,
+  onClick,
+  onFileSelect,
+  accept = 'image/*'
+}) {
+  const classes = `flex-1 min-w-0 h-[100px] flex flex-col items-center justify-center gap-1 rounded-[10px] transition-all cursor-pointer ${
+    uploaded
+      ? 'bg-[#EFF6FF] border border-[#93C5FD]'
+      : 'bg-[#F8FAFC] border border-[#E2E8F0] hover:border-slate-300'
+  }`
+
+  const content = (
+    <>
       <Icon
         className={`w-4 h-4 shrink-0 ${uploaded ? 'text-[#15803D]' : 'text-[#94A3B8]'}`}
         strokeWidth={2}
       />
       <span className="text-[10px] font-semibold text-[#0F172A] whitespace-nowrap">{title}</span>
       <span className="text-[9px] text-[#94A3B8] whitespace-nowrap">{subtitle}</span>
+    </>
+  )
+
+  if (onFileSelect) {
+    return (
+      <label className={classes}>
+        <input
+          type="file"
+          accept={accept}
+          className="hidden"
+          onChange={(event) => {
+            const file = event.target.files?.[0]
+            if (file) onFileSelect(file)
+            event.target.value = ''
+          }}
+        />
+        {content}
+      </label>
+    )
+  }
+
+  return (
+    <button type="button" onClick={onClick} className={classes}>
+      {content}
     </button>
   )
 }

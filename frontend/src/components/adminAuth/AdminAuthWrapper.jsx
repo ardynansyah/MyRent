@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import AdminLoginStep1 from './AdminLoginStep1'
 import AdminLoginStep2 from './AdminLoginStep2'
+import { setAdminSession } from './adminSession'
 
 export default function AdminAuthWrapper({ onAdminLoginSuccess }) {
   const navigate = useNavigate()
@@ -48,13 +49,15 @@ export default function AdminAuthWrapper({ onAdminLoginSuccess }) {
         return
       }
 
-      // Fallback jika akun bukan admin
+      // Fallback jika akun bukan admin: pakai sesi user biasa (token/user),
+      // bukan sesi admin, supaya key localStorage penyewa tidak tertimpa.
       if (data.token && data.user) {
-        localStorage.setItem('token', data.token)
-        localStorage.setItem('user', JSON.stringify(data.user))
-        if (data.user.role === 'ADMIN') {
+        if (String(data.user.role).toUpperCase() === 'ADMIN') {
+          setAdminSession(data.token, data.user)
           navigate('/portal-internal-hq/dashboard')
         } else {
+          localStorage.setItem('token', data.token)
+          localStorage.setItem('user', JSON.stringify(data.user))
           navigate('/beranda-sewa')
         }
       }
@@ -88,12 +91,10 @@ export default function AdminAuthWrapper({ onAdminLoginSuccess }) {
         throw new Error(data.error?.message || 'Kode verifikasi tidak valid')
       }
 
-      // Berhasil verifikasi: Simpan token & user ke localStorage
+      // Berhasil verifikasi: Simpan token & user ke key sesi admin terpisah
+      // (`admin_token` / `admin_user`) supaya sesi penyewa tidak tertimpa.
       if (data.token) {
-        localStorage.setItem('token', data.token)
-      }
-      if (data.user) {
-        localStorage.setItem('user', JSON.stringify(data.user))
+        setAdminSession(data.token, data.user)
       }
 
       if (onAdminLoginSuccess) {

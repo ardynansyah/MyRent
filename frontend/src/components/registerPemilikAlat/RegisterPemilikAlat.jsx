@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import RegisterTopBar from './RegisterTopBar'
 import RegisterStepper from './RegisterStepper'
@@ -8,10 +8,21 @@ import Step3GudangOperasional from './Step3GudangOperasional'
 import Step4RekeningPencairan from './Step4RekeningPencairan'
 import Step5ReviewKirim from './Step5ReviewKirim'
 import VerifikasiPemilik from './VerifikasiPemilik'
+import {
+  clearDraft,
+  clearPending,
+  fetchSubmissionStatus,
+  getTokenForUser,
+  readDraft,
+  readPending,
+  writeDraft,
+  writePending
+} from '../../lib/registration'
 
 const TOTAL_STEPS = 5
 const STORAGE_KEY_STEP = 'myrent_register_pemilik_step'
 const STORAGE_KEY_FORM = 'myrent_register_pemilik_form'
+const ROLE = 'PEMILIK'
 
 const INITIAL_PEMILIK_FORM = {
   email: 'pemilik@kopisenja.id',
@@ -56,6 +67,13 @@ export default function RegisterPemilikAlat({ onBackToLogin, onFinish }) {
     if (stepQuery >= 1 && stepQuery <= TOTAL_STEPS) {
       return stepQuery
     }
+
+    // Checkpoint draft: user kembali dari halaman login → lanjut di step terakhir.
+    const draft = readDraft(ROLE)
+    if (draft?.currentStep >= 1 && draft?.currentStep <= TOTAL_STEPS) {
+      return draft.currentStep
+    }
+
     try {
       const savedStep = sessionStorage.getItem(STORAGE_KEY_STEP)
       if (savedStep) {
@@ -69,18 +87,32 @@ export default function RegisterPemilikAlat({ onBackToLogin, onFinish }) {
   })
 
   const [formData, setFormData] = useState(() => {
+    const base = { ...INITIAL_PEMILIK_FORM }
     try {
       const saved = sessionStorage.getItem(STORAGE_KEY_FORM)
-      if (saved) return { ...INITIAL_PEMILIK_FORM, ...JSON.parse(saved) }
+      if (saved) return { ...base, ...JSON.parse(saved) }
     } catch (e) {
       console.warn('Gagal membaca form pemilik:', e)
     }
-    return INITIAL_PEMILIK_FORM
+
+    const draft = readDraft(ROLE)
+    if (draft?.formData && Object.keys(draft.formData).length > 0) {
+      return { ...base, ...draft.formData }
+    }
+
+    return base
   })
 
   const [notification, setNotification] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isSubmitted, setIsSubmitted] = useState(false)
+
+  // Lock anti-spam + status verifikasi
+  const [pending, setPending] = useState(() => readPending(ROLE))
+  const [statusInfo, setStatusInfo] = useState(null)
+  const [isCheckingStatus, setIsCheckingStatus] = useState(false)
+  const [isApproved, setIsApproved] = useState(false)
+  const [isFormUnlocked, setIsFormUnlocked] = useState(false)
 
   const clearRegistrationSession = () => {
     try {
@@ -90,6 +122,57 @@ export default function RegisterPemilikAlat({ onBackToLogin, onFinish }) {
       console.warn('Gagal membersihkan session pemilik alat:', e)
     }
   }
+
+  // Checkpoint draft otomatis (step terakhir + data form)
+  useEffect(() => {
+    try {
+      writeDraft(ROLE, currentStep, formData)
+    } catch {
+      console.warn('Gagal menyimpan checkpoint draft pemilik.')
+    }
+  }, [currentStep, formData])
+
+  const loadStatus = useCallback(async (identifier, ownerId) => {
+    if (!identifier) return
+
+    setIsCheckingStatus(true)
+    try {
+      // Token hanya dikirim bila memang milik pemilik pengajuan ini.
+      const token = getTokenForUser(ownerId)
+
+      const status = await fetchSubmissionStatus(identifier, token)
+      setStatusInfo(status)
+
+      setPending((prev) =>
+        prev
+          ? {
+              ...prev,
+              submissionCode: status.submissionCode ?? prev.submissionCode,
+              verificationStatus: status.verificationStatus ?? prev.verificationStatus
+            }
+          : prev
+      )
+
+      if (status.verificationStatus === 'DISETUJUI') {
+        setIsApproved(true)
+        clearPending(ROLE)
+      }
+    } catch (err) {
+      setNotification(err.message || 'Gagal memuat status pengajuan.')
+      setTimeout(() => setNotification(''), 3500)
+    } finally {
+      setIsCheckingStatus(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!pending) return
+    loadStatus(
+      pending.email || pending.submissionCode || pending.userId,
+      pending.userId
+    )
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   useEffect(() => {
     try {
@@ -148,11 +231,8 @@ export default function RegisterPemilikAlat({ onBackToLogin, onFinish }) {
           role: 'PEMILIK',
           fullName: finalData.namaKtp || finalData.namaRekening || 'Pemilik Alat',
           phone: finalData.whatsapp || '-',
-          ktpName: finalData.namaKtp,
-          nik: finalData.nik,
-          // Mock files
-          ktpFile: 'ktp_pemilik.jpg',
-          selfieFile: 'selfie_pemilik.jpg'
+          // Seluruh data Step 1-5 (termasuk metadata file foto) dikirim apa adanya.
+          formData: { ...finalData, konfirmasi: undefined }
         })
       })
 
@@ -167,7 +247,30 @@ export default function RegisterPemilikAlat({ onBackToLogin, onFinish }) {
         localStorage.setItem('user', JSON.stringify(data.user))
       }
 
-      notify('Pendaftaran pemilik alat berhasil!')
+      // Draft selesai dipakai → hapus, lalu pasang lock anti-spam.
+      clearDraft(ROLE)
+      clearRegistrationSession()
+
+      const lock = {
+        userId: data.user?.id ?? null,
+        email: data.user?.email ?? finalData.email,
+        submissionCode: data.user?.submissionCode ?? null,
+        verificationStatus: data.user?.verificationStatus ?? 'MENUNGGU'
+      }
+      writePending(ROLE, lock)
+      setPending(lock)
+
+      setStatusInfo({
+        id: lock.userId,
+        email: lock.email,
+        submissionCode: lock.submissionCode,
+        verificationStatus: lock.verificationStatus,
+        revisionSteps: data.user?.revisionSteps ?? [],
+        adminNote: data.user?.adminNote ?? null,
+        kycData: {}
+      })
+
+      notify('Pendaftaran pemilik alat berhasil! Pengajuan Anda masuk antrean verifikasi admin.')
       setIsSubmitting(false)
       setIsSubmitted(true)
       window.scrollTo({ top: 0, behavior: 'smooth' })
@@ -176,6 +279,37 @@ export default function RegisterPemilikAlat({ onBackToLogin, onFinish }) {
       notify(err.message || 'Pendaftaran gagal.')
       alert(`Pendaftaran Gagal: ${err.message}`)
     }
+  }
+
+  const handleStatusPrimaryAction = () => {
+    const status = statusInfo?.verificationStatus || pending?.verificationStatus || 'MENUNGGU'
+
+    if (status === 'DISETUJUI') {
+      clearPending(ROLE)
+      if (onFinish) {
+        onFinish()
+      } else {
+        navigate('/dashboard-pemilik')
+      }
+      return
+    }
+
+    if (status === 'PERLU_PERBAIKAN') {
+      const kycData = statusInfo?.kycData
+      if (kycData && typeof kycData === 'object') {
+        setFormData((prev) => ({ ...prev, ...kycData }))
+      }
+
+      const steps = Array.isArray(statusInfo?.revisionSteps) ? statusInfo.revisionSteps : []
+      const targetStep = steps.length > 0 ? Math.min(...steps) : 1
+
+      setIsFormUnlocked(true)
+      setCurrentStep(targetStep)
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+      return
+    }
+
+    navigate('/login')
   }
 
   const goBack = () => {
@@ -188,7 +322,10 @@ export default function RegisterPemilikAlat({ onBackToLogin, onFinish }) {
     }
   }
 
-  const saveDraft = () => notify('Draf pendaftaran tersimpan.')
+  const saveDraft = () => {
+    writeDraft(ROLE, currentStep, formData)
+    notify('Draf pendaftaran tersimpan.')
+  }
 
   const stepProps = {
     formData,
@@ -200,23 +337,62 @@ export default function RegisterPemilikAlat({ onBackToLogin, onFinish }) {
     isSubmitting
   }
 
-  if (isSubmitted) {
+  // Mulai pendaftaran baru (dipakai ketika pengajuan ditolak permanen)
+  const handleStartNewRegistration = () => {
+    clearPending(ROLE)
+    clearDraft(ROLE)
+    clearRegistrationSession()
+    setPending(null)
+    setStatusInfo(null)
+    setIsApproved(false)
+    setIsSubmitted(false)
+    setIsFormUnlocked(true)
+    setFormData(INITIAL_PEMILIK_FORM)
+    setCurrentStep(1)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
+  const statusViewAktif =
+    isSubmitted ||
+    isApproved ||
+    (pending && !isFormUnlocked) ||
+    statusInfo?.verificationStatus === 'DITOLAK'
+
+  if (statusViewAktif) {
+    const status = statusInfo?.verificationStatus || pending?.verificationStatus || 'MENUNGGU'
+
     return (
       <VerifikasiPemilik
-        formData={formData}
-        onFinish={() => {
-          clearRegistrationSession()
-          if (onFinish) {
-            onFinish()
-          } else {
-            navigate('/dashboard-pemilik')
-          }
+        formData={{
+          ...formData,
+          fullName: formData.fullName || statusInfo?.fullName || '',
+          email: formData.email || statusInfo?.email || ''
         }}
-        onEditData={() => {
-          setIsSubmitted(false)
-          setCurrentStep(1)
-          window.scrollTo({ top: 0, behavior: 'smooth' })
-        }}
+        status={status}
+        submissionCode={statusInfo?.submissionCode || pending?.submissionCode || null}
+        revisionSteps={statusInfo?.revisionSteps || pending?.revisionSteps || []}
+        adminNote={statusInfo?.adminNote ?? pending?.adminNote ?? null}
+        isRefreshing={isCheckingStatus}
+        onRefreshStatus={() =>
+          loadStatus(
+            statusInfo?.email || pending?.email || statusInfo?.submissionCode || pending?.submissionCode,
+            statusInfo?.id || pending?.userId
+          )
+        }
+        onFinish={handleStatusPrimaryAction}
+        onEditData={
+          status === 'PERLU_PERBAIKAN'
+            ? () => {
+                setIsFormUnlocked(true)
+                setCurrentStep(
+                  Array.isArray(statusInfo?.revisionSteps) && statusInfo.revisionSteps.length > 0
+                    ? Math.min(...statusInfo.revisionSteps)
+                    : 1
+                )
+              }
+            : undefined
+        }
+        onStartNewRegistration={status === 'DITOLAK' ? handleStartNewRegistration : undefined}
         onBackToHome={() => navigate('/')}
         onBackToLogin={handleBack}
       />

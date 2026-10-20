@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { IdCard, User, Calendar, CircleCheck, Receipt } from 'lucide-react'
 import RegisterFormCard from './RegisterFormCard'
 import { TextField, FieldRow, PillGroup, UploadBox } from './FormControls'
+import { fileToPreviewDataUrl, formatFileSize } from '../../lib/registration'
 
 export default function Step2IdentitasKTP({
   formData = {},
@@ -16,9 +17,22 @@ export default function Step2IdentitasKTP({
   const [tanggalLahir, setTanggalLahir] = useState(formData.tanggalLahir ?? '1991-04-12')
   const [badanUsaha, setBadanUsaha] = useState(formData.badanUsaha ?? 'Perorangan')
   const [npwp, setNpwp] = useState(formData.npwp ?? '09.254.294.3-407.000')
-  const [ktpUploaded, setKtpUploaded] = useState(true)
-  const [selfieUploaded, setSelfieUploaded] = useState(true)
+  const [ktpFile, setKtpFile] = useState(formData.ktpFile ?? null)
+  const [selfieFile, setSelfieFile] = useState(formData.selfieFile ?? null)
   const [errors, setErrors] = useState({})
+
+  const handleFile = async (field, setter, file) => {
+    const preview = await fileToPreviewDataUrl(file)
+    const value = {
+      name: file.name,
+      size: file.size,
+      type: file.type || 'application/octet-stream',
+      preview: preview || null,
+      lastModified: file.lastModified
+    }
+    setter(value)
+    onChange?.(field, value)
+  }
 
   const handleFieldChange = (field, value, setter) => {
     setter(value)
@@ -61,11 +75,11 @@ export default function Step2IdentitasKTP({
       nik: cleanNik,
       namaKtp: namaKtp.trim(),
       tempatLahir: tempatLahir.trim(),
-      tanggalLahir,
+      tanggalLahir: tanggalLahir.trim(),
       badanUsaha,
       npwp: npwp.trim(),
-      ktpFile: ktpUploaded ? 'ktp_pemilik.jpg' : null,
-      selfieFile: selfieUploaded ? 'selfie_pemilik.jpg' : null
+      ktpFile,
+      selfieFile
     })
   }
 
@@ -126,16 +140,22 @@ export default function Step2IdentitasKTP({
             <UploadBox
               icon={CircleCheck}
               title="Foto KTP"
-              subtitle={ktpUploaded ? 'Sudah diunggah' : 'Klik untuk unggah'}
-              uploaded={ktpUploaded}
-              onClick={() => setKtpUploaded((prev) => !prev)}
+              subtitle={
+                ktpFile ? `${ktpFile.name} · ${formatFileSize(ktpFile.size)}` : 'Klik untuk unggah'
+              }
+              uploaded={Boolean(ktpFile)}
+              onFileSelect={(file) => handleFile('ktpFile', setKtpFile, file)}
             />
             <UploadBox
               icon={CircleCheck}
               title="Selfie + KTP"
-              subtitle={selfieUploaded ? 'Sudah diunggah' : 'Klik untuk unggah'}
-              uploaded={selfieUploaded}
-              onClick={() => setSelfieUploaded((prev) => !prev)}
+              subtitle={
+                selfieFile
+                  ? `${selfieFile.name} · ${formatFileSize(selfieFile.size)}`
+                  : 'Klik untuk unggah'
+              }
+              uploaded={Boolean(selfieFile)}
+              onFileSelect={(file) => handleFile('selfieFile', setSelfieFile, file)}
             />
           </div>
         </div>

@@ -10,6 +10,7 @@ import {
   AlertCircle
 } from 'lucide-react'
 import AuthNavbar from './AuthNavbar'
+import { clearPending, writePending } from '../lib/registration'
 
 export default function AuthPage({ onLoginSuccess, onNavigateRegister, onBackToLanding }) {
   const navigate = useNavigate()
@@ -89,6 +90,50 @@ export default function AuthPage({ onLoginSuccess, onNavigateRegister, onBackToL
         throw new Error(data.error?.message || 'Email atau kata sandi tidak valid')
       }
 
+      const userRole = String(data.user?.role || '').toUpperCase()
+      const verificationStatus = String(data.user?.verificationStatus || 'DISETUJUI').toUpperCase()
+      const isPenyewaOrPemilik = userRole === 'PENYEWA' || userRole === 'PEMILIK'
+
+      // ── Gatekeeper verifikasi KYC ────────────────────────────────────────
+      // Akun yang belum diverifikasi admin tidak boleh masuk ke beranda sewa.
+      if (isPenyewaOrPemilik && (verificationStatus === 'MENUNGGU' || verificationStatus === 'PERLU_PERBAIKAN')) {
+        writePending(userRole, {
+          userId: data.user?.id,
+          email: data.user?.email,
+          submissionCode: data.user?.submissionCode,
+          verificationStatus
+        })
+
+        // Sesi lama dibersihkan supaya tidak ada data akun lain yang tertinggal.
+        localStorage.removeItem('token')
+        localStorage.removeItem('user')
+
+        handleNotify(
+          verificationStatus === 'PERLU_PERBAIKAN'
+            ? 'Ada data yang perlu diperbaiki sebelum akun bisa aktif.'
+            : 'Akun Anda sedang menunggu verifikasi admin.'
+        )
+
+        navigate(userRole === 'PEMILIK' ? '/register/pemilik' : '/register/penyewa')
+        return
+      }
+
+      // Pengajuan ditolak permanen → stays di form login dengan pesan jelas.
+      if (isPenyewaOrPemilik && verificationStatus === 'DITOLAK') {
+        const alasan = data.user?.adminNote ? ` Alasan dari admin: ${data.user.adminNote}` : ''
+        setError(
+          `Pengajuan verifikasi akun Anda ditolak secara permanen dan tidak dapat diperbaiki lagi.${alasan}`
+        )
+        localStorage.removeItem('token')
+        localStorage.removeItem('user')
+        return
+      }
+
+      // Akun sudah disetujui → bebaskan lock anti-spam.
+      if (isPenyewaOrPemilik) {
+        clearPending(userRole)
+      }
+
       // Simpan JWT token dan data user ke localStorage
       if (data.token) {
         localStorage.setItem('token', data.token)
@@ -97,7 +142,6 @@ export default function AuthPage({ onLoginSuccess, onNavigateRegister, onBackToL
         localStorage.setItem('user', JSON.stringify(data.user))
       }
 
-      const userRole = String(data.user?.role || '').toUpperCase()
       const roleLabel = userRole === 'PEMILIK' ? 'Pemilik Alat' : 'Penyewa UMKM'
       handleNotify(`Berhasil masuk! Mengalihkan ke akun ${roleLabel}...`)
 

@@ -10,6 +10,7 @@ import { healthRouter } from './routes/health.js'
 import { rentalsRouter } from './routes/rentals.js'
 import { statsRouter } from './routes/stats.js'
 import { authRouter } from './routes/auth.js'
+import { adminRouter } from './routes/admin.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
@@ -18,6 +19,12 @@ const ENDPOINTS = [
   'POST /api/auth/register',
   'POST /api/auth/login',
   'GET /api/auth/me',
+  'GET /api/auth/submission-status/:emailOrId',
+  'GET /api/admin/submissions',
+  'GET /api/admin/submissions/:id',
+  'PATCH /api/admin/submissions/:id/approve',
+  'PATCH /api/admin/submissions/:id/revision',
+  'PATCH /api/admin/submissions/:id/reject',
   'GET /api/rentals',
   'POST /api/rentals',
   'GET /api/rentals/:id',
@@ -35,7 +42,8 @@ export function createApp() {
   app.use(requestId)
   app.use(requestLogger)
   app.use(cors({ origin: config.corsOrigins }))
-  app.use(express.json({ limit: '1mb' }))
+  // Batas body 12mb supaya unggahan foto (data URL base64) tetap diterima utuh.
+  app.use(express.json({ limit: '12mb' }))
 
   app.get('/', (req, res) => {
     res.json({ name: 'MyRent API', version: config.version, docs: '/openapi.yaml', endpoints: ENDPOINTS })
@@ -49,6 +57,7 @@ export function createApp() {
 
   app.use('/api/health', healthRouter)
   app.use('/api/auth', authRouter)
+  app.use('/api/admin', adminRouter)
   app.use('/api/rentals', rentalsRouter)
   app.use('/api/categories', categoriesRouter)
   app.use('/api/stats', statsRouter)

@@ -1,8 +1,11 @@
 import { Router } from 'express'
 import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken'
+import { Prisma } from '@prisma/client'
 import { prisma } from '../lib/prisma.js'
 import { config } from '../config.js'
+import { buildKycData, extractFormPayload } from '../lib/kyc.js'
+import { generateSubmissionCode } from '../lib/submissionCode.js'
 
 export const authRouter = Router()
 
@@ -17,26 +20,38 @@ function normalizeRole(role) {
 }
 
 /**
+ * Bentuk objek user yang dikembalikan ke frontend.
+ * Termasuk data status verifikasi supaya frontend bisa melakukan gatekeeping.
+ *
+ * @param {object} user - baris user dari Prisma
+ * @returns {object}
+ */
+function presentUser(user) {
+  return {
+    id: user.id,
+    email: user.email,
+    fullName: user.fullName,
+    phone: user.phone,
+    role: user.role,
+    submissionCode: user.submissionCode ?? null,
+    verificationStatus: user.verificationStatus ?? 'MENUNGGU',
+    revisionSteps: Array.isArray(user.revisionSteps) ? user.revisionSteps : [],
+    adminNote: user.adminNote ?? null,
+    createdAt: user.createdAt
+  }
+}
+
+/**
  * POST /api/auth/register
  * Mendaftarkan akun baru (Penyewa UMKM atau Pemilik Alat)
+ *
+ * Seluruh data Step 1 - Step 5 diterima apa adanya (termasuk metadata file
+ * foto dalam berbagai bentuk: nama file, objek { name, size, type }, atau data URL)
+ * lalu disimpan pada kolom JSON `kycData`.
  */
 authRouter.post('/register', async (req, res, next) => {
   try {
-    const {
-      email,
-      password,
-      role,
-      fullName,
-      ktpName,
-      businessName,
-      phone,
-      whatsapp,
-      // Mock uploads & extra data yang diterima tapi tidak disimpan ke kolom dasar user
-      ktpFile,
-      selfieFile,
-      frontPhoto,
-      productionPhoto
-    } = req.body
+    const { email, password, role, fullName, phone, ktpName, businessName, whatsapp } = req.body ?? {}
 
     const cleanEmail = email ? String(email).trim().toLowerCase() : ''
     if (!cleanEmail) {
@@ -61,20 +76,6 @@ authRouter.post('/register', async (req, res, next) => {
       })
     }
 
-    // Cek apakah email sudah terdaftar sebelumnya
-    const existingUser = await prisma.user.findUnique({
-      where: { email: cleanEmail }
-    })
-
-    if (existingUser) {
-      return res.status(409).json({
-        error: {
-          code: 'EMAIL_ALREADY_EXISTS',
-          message: 'Email sudah terdaftar. Silakan gunakan email lain atau masuk.'
-        }
-      })
-    }
-
     const targetRole = normalizeRole(role)
     const resolvedName =
       (fullName && String(fullName).trim()) ||
@@ -87,19 +88,97 @@ authRouter.post('/register', async (req, res, next) => {
       (whatsapp && String(whatsapp).trim()) ||
       '-'
 
+    // Cek apakah email sudah terdaftar sebelumnya
+    const existingUser = await prisma.user.findUnique({
+      where: { email: cleanEmail }
+    })
+
+    // Kumpulkan seluruh detail form Step 1-5 (validasi file dibebaskan).
+    const kycData = buildKycData(extractFormPayload(req.body ?? {}))
+
     // Hash kata sandi dengan bcrypt (saltRounds = 10)
     const hashedPassword = await bcrypt.hash(password, 10)
 
-    // Simpan ke database melalui Prisma
-    const newUser = await prisma.user.create({
-      data: {
-        email: cleanEmail,
-        password: hashedPassword,
-        role: targetRole,
-        fullName: resolvedName,
-        phone: resolvedPhone
+    // ── Kirim ulang pengajuan ──────────────────────────────────────────────
+    // Admin bisa meminta perbaikan (status PERLU_PERBAIKAN). Pada kondisi itu
+    // pengguna mengirim ulang formulir dengan email & kata sandi yang sama,
+    // sehingga akun diperbarui (bukan didaftarkan ulang) dan status kembali
+    // ke MENUNGGU untuk ditinjau admin kembali.
+    //
+    // Catatan: pengiriman ulang HANYA boleh untuk status PERLU_PERBAIKAN.
+    // Pengajuan berstatus MENUNGGU tetap mengembalikan 409 agar tidak bisa
+    // dipakai menghindari lock anti-spam di halaman registrasi.
+    if (existingUser) {
+      const bisaDikirimUlang =
+        existingUser.verificationStatus === 'PERLU_PERBAIKAN' &&
+        (await bcrypt.compare(password, existingUser.password))
+
+      if (!bisaDikirimUlang) {
+        return res.status(409).json({
+          error: {
+            code: 'EMAIL_ALREADY_EXISTS',
+            message: 'Email sudah terdaftar. Silakan gunakan email lain atau masuk.'
+          }
+        })
       }
-    })
+
+      const updatedUser = await prisma.user.update({
+        where: { id: existingUser.id },
+        data: {
+          fullName: resolvedName,
+          phone: resolvedPhone,
+          verificationStatus: 'MENUNGGU',
+          revisionSteps: Prisma.DbNull,
+          adminNote: null,
+          kycData
+        }
+      })
+
+      const token = jwt.sign(
+        { userId: updatedUser.id, role: updatedUser.role, email: updatedUser.email },
+        config.jwtSecret,
+        { expiresIn: config.jwtExpiresIn }
+      )
+
+      return res.status(200).json({
+        message: 'Pengajuan berhasil diperbarui dan masuk antrean verifikasi admin.',
+        token,
+        user: presentUser(updatedUser)
+      })
+    }
+
+    // Simpan ke database melalui Prisma (dengan retry bila submissionCode bentrok).
+    let newUser = null
+    for (let attempt = 0; attempt < 3 && !newUser; attempt += 1) {
+      const submissionCode = await generateSubmissionCode(attempt)
+
+      try {
+        newUser = await prisma.user.create({
+          data: {
+            email: cleanEmail,
+            password: hashedPassword,
+            role: targetRole,
+            fullName: resolvedName,
+            phone: resolvedPhone,
+            submissionCode,
+            verificationStatus: 'MENUNGGU',
+            kycData
+          }
+        })
+      } catch (createError) {
+        if (createError?.code === 'P2002' && attempt < 2) continue
+        throw createError
+      }
+    }
+
+    if (!newUser) {
+      return res.status(500).json({
+        error: {
+          code: 'SUBMISSION_CODE_CONFLICT',
+          message: 'Gagal membuat kode pengajuan. Silakan coba lagi.'
+        }
+      })
+    }
 
     // Buat token JWT
     const token = jwt.sign(
@@ -110,16 +189,9 @@ authRouter.post('/register', async (req, res, next) => {
 
     // Response tanpa mengekspos field password
     return res.status(201).json({
-      message: 'Registrasi berhasil',
+      message: 'Registrasi berhasil. Pengajuan Anda sedang menunggu verifikasi admin.',
       token,
-      user: {
-        id: newUser.id,
-        email: newUser.email,
-        fullName: newUser.fullName,
-        phone: newUser.phone,
-        role: newUser.role,
-        createdAt: newUser.createdAt
-      }
+      user: presentUser(newUser)
     })
   } catch (error) {
     next(error)
@@ -188,14 +260,7 @@ authRouter.post('/login', async (req, res, next) => {
     return res.json({
       message: 'Login berhasil',
       token,
-      user: {
-        id: user.id,
-        email: user.email,
-        fullName: user.fullName,
-        phone: user.phone,
-        role: user.role,
-        createdAt: user.createdAt
-      }
+      user: presentUser(user)
     })
   } catch (error) {
     next(error)
@@ -256,14 +321,7 @@ authRouter.post('/verify-admin-otp', async (req, res, next) => {
     return res.json({
       message: 'Verifikasi admin berhasil',
       token,
-      user: {
-        id: user.id,
-        email: user.email,
-        fullName: user.fullName,
-        phone: user.phone,
-        role: user.role,
-        createdAt: user.createdAt
-      }
+      user: presentUser(user)
     })
   } catch (error) {
     next(error)
@@ -304,13 +362,88 @@ authRouter.get('/me', async (req, res, next) => {
     }
 
     return res.json({
-      user: {
+      user: presentUser(user)
+    })
+  } catch (error) {
+    next(error)
+  }
+})
+
+/**
+ * GET /api/auth/submission-status/:emailOrId
+ * Mengecek status terkini pengajuan verifikasi (KYC).
+ *
+ * Bisa dipanggil tanpa login (frontend memakainya di layar "tunggu verifikasi"),
+ * namun bila header Authorization tersedia, data yang sama hanya dikembalikan
+ * untuk akun yang sedang login.
+ *
+ * Response memuat: verificationStatus, submissionCode, revisionSteps,
+ * adminNote, dan kycData (seluruh data Step 1-5).
+ */
+authRouter.get('/submission-status/:emailOrId', async (req, res, next) => {
+  try {
+    const identifier = String(req.params.emailOrId ?? '').trim()
+    if (!identifier) {
+      return res.status(400).json({
+        error: { code: 'IDENTIFIER_REQUIRED', message: 'Email atau id pengajuan wajib diisi' }
+      })
+    }
+
+    // Bila ada token, pastikan user yang login adalah pemilik pengajuan ini.
+    // Admin boleh melihat pengajuan siapa pun.
+    let authenticatedUserId = null
+    let authenticatedRole = null
+    const authHeader = req.headers.authorization
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      try {
+        const decoded = jwt.verify(authHeader.slice('Bearer '.length).trim(), config.jwtSecret)
+        authenticatedUserId = decoded.userId
+        authenticatedRole = String(decoded.role || '').toUpperCase()
+      } catch {
+        // Token tidak valid → tetap boleh melihat status publik (endpoint ini publik).
+      }
+    }
+
+    const lowered = identifier.toLowerCase()
+    const user = await prisma.user.findFirst({
+      where: {
+        OR: [
+          { email: lowered },
+          { id: identifier },
+          { submissionCode: identifier.toUpperCase() }
+        ]
+      }
+    })
+
+    if (!user) {
+      return res.status(404).json({
+        error: { code: 'SUBMISSION_NOT_FOUND', message: 'Pengajuan tidak ditemukan' }
+      })
+    }
+
+    if (authenticatedUserId && authenticatedRole !== 'ADMIN' && authenticatedUserId !== user.id) {
+      return res.status(403).json({
+        error: {
+          code: 'ACCESS_DENIED',
+          message: 'Pengajuan ini bukan milik akun yang sedang login'
+        }
+      })
+    }
+
+    return res.json({
+      message: 'Status pengajuan berhasil dimuat',
+      status: {
         id: user.id,
         email: user.email,
         fullName: user.fullName,
-        phone: user.phone,
         role: user.role,
-        createdAt: user.createdAt
+        submissionCode: user.submissionCode ?? null,
+        verificationStatus: user.verificationStatus ?? 'MENUNGGU',
+        revisionSteps: Array.isArray(user.revisionSteps) ? user.revisionSteps : [],
+        adminNote: user.adminNote ?? null,
+        kycData: user.kycData ?? {},
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt
       }
     })
   } catch (error) {

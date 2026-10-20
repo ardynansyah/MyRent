@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Warehouse, MapPin, Timer, CircleCheck, ImagePlus } from 'lucide-react'
 import RegisterFormCard from './RegisterFormCard'
 import { TextField, TextAreaField, FieldRow, UploadBox, CheckItem } from './FormControls'
+import { fileToPreviewDataUrl, formatFileSize } from '../../lib/registration'
 
 export default function Step3GudangOperasional({
   formData = {},
@@ -28,6 +29,22 @@ export default function Step3GudangOperasional({
     formData.fasilitasDalamRuangan ?? true
   )
   const [errors, setErrors] = useState({})
+  const [frontPhoto, setFrontPhoto] = useState(formData.frontPhoto ?? null)
+  const [storagePhoto, setStoragePhoto] = useState(formData.storagePhoto ?? null)
+  const [rackPhoto, setRackPhoto] = useState(formData.rackPhoto ?? null)
+
+  const handleFile = async (field, setter, file) => {
+    const preview = await fileToPreviewDataUrl(file)
+    const value = {
+      name: file.name,
+      size: file.size,
+      type: file.type || 'application/octet-stream',
+      preview: preview || null,
+      lastModified: file.lastModified
+    }
+    setter(value)
+    onChange?.(field, value)
+  }
 
   const handleFieldChange = (field, value, setter) => {
     setter(value)
@@ -95,7 +112,10 @@ export default function Step3GudangOperasional({
       jamTutup,
       fasilitasJaga,
       fasilitasParkir,
-      fasilitasDalamRuangan
+      fasilitasDalamRuangan,
+      frontPhoto,
+      storagePhoto,
+      rackPhoto
     })
   }
 
@@ -203,14 +223,33 @@ export default function Step3GudangOperasional({
             Foto lokasi / tempat penyimpanan alat *
           </div>
           <div className="w-full flex flex-row gap-2.5">
-            <UploadBox icon={CircleCheck} title="Tampak Depan" subtitle="Sudah diunggah" uploaded />
+            <UploadBox
+              icon={CircleCheck}
+              title="Tampak Depan"
+              subtitle={
+                frontPhoto ? `${frontPhoto.name} · ${formatFileSize(frontPhoto.size)}` : 'Klik untuk unggah'
+              }
+              uploaded={Boolean(frontPhoto)}
+              onFileSelect={(file) => handleFile('frontPhoto', setFrontPhoto, file)}
+            />
             <UploadBox
               icon={CircleCheck}
               title="Area Penyimpanan"
-              subtitle="Sudah diunggah"
-              uploaded
+              subtitle={
+                storagePhoto
+                  ? `${storagePhoto.name} · ${formatFileSize(storagePhoto.size)}`
+                  : 'Klik untuk unggah'
+              }
+              uploaded={Boolean(storagePhoto)}
+              onFileSelect={(file) => handleFile('storagePhoto', setStoragePhoto, file)}
             />
-            <UploadBox icon={ImagePlus} title="Rak / Etalase" subtitle="Opsional" />
+            <UploadBox
+              icon={ImagePlus}
+              title="Rak / Etalase"
+              subtitle={rackPhoto ? rackPhoto.name : 'Opsional'}
+              uploaded={Boolean(rackPhoto)}
+              onFileSelect={(file) => handleFile('rackPhoto', setRackPhoto, file)}
+            />
           </div>
         </div>
 

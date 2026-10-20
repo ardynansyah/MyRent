@@ -1,11 +1,12 @@
-import { Check, UploadCloud } from 'lucide-react'
+import { Check, UploadCloud, X } from 'lucide-react'
 import { SECTORS, POWER_CAPACITIES } from './constants'
 
 export default function Step3ProfilUMKM({
   formData,
   handleInputChange,
   errors,
-  handleMockUpload
+  handleFileUpload,
+  handleRemoveUpload
 }) {
   const isManualPowerActive =
     Boolean(formData.isManualPower) ||
@@ -177,8 +178,7 @@ export default function Step3ProfilUMKM({
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {/* Tampak Depan */}
-          <div
-            onClick={() => handleMockUpload('frontPhoto', 'Foto Tampak Depan')}
+          <label
             className={`min-h-[90px] rounded-[10px] border border-dashed flex flex-col items-center justify-center gap-1 p-2.5 cursor-pointer transition-all ${
               formData.frontPhoto
                 ? 'bg-blue-50/70 border-blue-400 text-blue-700'
@@ -187,13 +187,23 @@ export default function Step3ProfilUMKM({
                 : 'bg-[#F8FAFC] border-[#CBD5E1] text-slate-600 hover:bg-blue-50/40'
             }`}
           >
+            <input
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={(e) => {
+                const file = e.target.files?.[0]
+                if (file) handleFileUpload?.('frontPhoto', file)
+                e.target.value = ''
+              }}
+            />
             {formData.frontPhoto ? (
               <>
                 <div className="w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center">
                   <Check className="w-3 h-3" />
                 </div>
                 <span className="text-[11px] font-bold text-slate-900 line-clamp-1">
-                  Tampak Depan (Diunggah)
+                  {formData.frontPhoto.name}
                 </span>
                 <p className="text-xs text-gray-500 mt-1">Klik untuk mengganti foto</p>
               </>
@@ -206,24 +216,33 @@ export default function Step3ProfilUMKM({
                 <span className="text-[9px] text-[#94A3B8]">Plang / etalase usaha</span>
               </>
             )}
-          </div>
+          </label>
 
           {/* Area Produksi */}
-          <div
-            onClick={() => handleMockUpload('productionPhoto', 'Foto Area Produksi')}
+          <label
             className={`min-h-[90px] rounded-[10px] border border-dashed flex flex-col items-center justify-center gap-1 p-2.5 cursor-pointer transition-all ${
               formData.productionPhoto
                 ? 'bg-blue-50/70 border-blue-400 text-blue-700'
                 : 'bg-[#F8FAFC] border-[#CBD5E1] text-slate-600 hover:bg-blue-50/40'
             }`}
           >
+            <input
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={(e) => {
+                const file = e.target.files?.[0]
+                if (file) handleFileUpload?.('productionPhoto', file)
+                e.target.value = ''
+              }}
+            />
             {formData.productionPhoto ? (
               <>
                 <div className="w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center">
                   <Check className="w-3 h-3" />
                 </div>
                 <span className="text-[11px] font-bold text-slate-900 line-clamp-1">
-                  Area Produksi (Diunggah)
+                  {formData.productionPhoto.name}
                 </span>
                 <p className="text-xs text-gray-500 mt-1">Klik untuk mengganti foto</p>
               </>
@@ -236,8 +255,34 @@ export default function Step3ProfilUMKM({
                 <span className="text-[9px] text-[#94A3B8]">Dapur / meja kerja</span>
               </>
             )}
-          </div>
+          </label>
         </div>
+
+        {/* Tombol hapus berkas foto usaha */}
+        {formData.frontPhoto || formData.productionPhoto ? (
+          <div className="flex flex-wrap items-center gap-2">
+            {formData.frontPhoto ? (
+              <button
+                type="button"
+                onClick={() => handleRemoveUpload?.('frontPhoto', 'Foto Tampak Depan')}
+                className="inline-flex items-center gap-1.5 text-[10px] font-semibold text-red-600 hover:text-red-700 border border-red-200 bg-red-50 hover:bg-red-100 rounded-full px-2.5 py-1 transition-colors cursor-pointer"
+              >
+                <X className="w-3 h-3" />
+                <span>Hapus Tampak Depan</span>
+              </button>
+            ) : null}
+            {formData.productionPhoto ? (
+              <button
+                type="button"
+                onClick={() => handleRemoveUpload?.('productionPhoto', 'Foto Area Produksi')}
+                className="inline-flex items-center gap-1.5 text-[10px] font-semibold text-red-600 hover:text-red-700 border border-red-200 bg-red-50 hover:bg-red-100 rounded-full px-2.5 py-1 transition-colors cursor-pointer"
+              >
+                <X className="w-3 h-3" />
+                <span>Hapus Area Produksi</span>
+              </button>
+            ) : null}
+          </div>
+        ) : null}
         {errors.frontPhoto && <span className="text-[10px] text-red-500">{errors.frontPhoto}</span>}
       </div>
 

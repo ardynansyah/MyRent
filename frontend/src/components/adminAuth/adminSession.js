@@ -7,12 +7,21 @@ export const ADMIN_LOGIN_PATH = '/portal-internal-hq'
 export const ADMIN_DASHBOARD_PATH = '/portal-internal-hq/dashboard'
 
 /**
+ * Key localStorage khusus sesi admin.
+ *
+ * Sengaja dipisah dari `token` / `user` milik Penyewa & Pemilik supaya
+ * menguji portal admin di browser yang sama tidak menimpa sesi pengguna.
+ */
+export const ADMIN_TOKEN_KEY = 'admin_token'
+export const ADMIN_USER_KEY = 'admin_user'
+
+/**
  * Ambil token admin dari localStorage.
  * @returns {string|null}
  */
 export function getAdminToken() {
   try {
-    return localStorage.getItem('token')
+    return localStorage.getItem(ADMIN_TOKEN_KEY)
   } catch {
     // localStorage tidak tersedia (mis. mode privat / SSR)
     return null
@@ -25,10 +34,24 @@ export function getAdminToken() {
  */
 export function getAdminUser() {
   try {
-    const raw = localStorage.getItem('user')
+    const raw = localStorage.getItem(ADMIN_USER_KEY)
     return raw ? JSON.parse(raw) : null
   } catch {
     return null
+  }
+}
+
+/**
+ * Simpan token & data user admin ke localStorage.
+ * @param {string} token
+ * @param {object} user
+ */
+export function setAdminSession(token, user) {
+  try {
+    if (token) localStorage.setItem(ADMIN_TOKEN_KEY, token)
+    if (user) localStorage.setItem(ADMIN_USER_KEY, JSON.stringify(user))
+  } catch {
+    // abaikan error storage
   }
 }
 
@@ -58,11 +81,12 @@ export function hasAdminSession() {
 
 /**
  * Hapus seluruh kredensial admin dari localStorage.
+ * Key `token` / `user` milik penyewa tidak disentuh.
  */
 export function clearAdminSession() {
   try {
-    localStorage.removeItem('token')
-    localStorage.removeItem('user')
+    localStorage.removeItem(ADMIN_TOKEN_KEY)
+    localStorage.removeItem(ADMIN_USER_KEY)
   } catch {
     // abaikan error storage, token sudah dianggap tidak berlaku
   }

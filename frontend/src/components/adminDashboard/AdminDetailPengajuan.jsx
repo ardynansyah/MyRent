@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import {
   ArrowLeft,
@@ -15,36 +15,43 @@ import {
   Maximize2,
   Zap,
   Store,
-  CheckCircle2
+  CheckCircle2,
+  RefreshCw,
+  AlertCircle
 } from 'lucide-react'
 import AdminSidebar from './AdminSidebar'
 import ModalTolakPengajuan from './ModalTolakPengajuan'
 import ModalMintaPerbaikan from './ModalMintaPerbaikan'
+import StatusBadge from './StatusBadge'
 import { logoutAdmin } from '../adminAuth/adminSession'
 import {
-  CATATAN_INTERNAL,
+  approveSubmission,
+  fetchSubmission,
+  fetchSubmissions,
+  rejectSubmission,
+  requestRevision
+} from './adminApi'
+import { formatDateTime, formatRelativeTime } from '../../lib/registration'
+import {
   CHECKLIST_VERIFIKASI,
-  DAFTAR_PENGAJUAN,
-  LANGKAH_PENGAJUAN,
-  PENGAJUAN_AKTIF,
-  RIWAYAT_PENGAJUAN,
-  STATUS_DISETUJUI,
-  STATUS_DITOLAK,
   STATUS_MENUNGGU,
-  STATUS_META,
-  STATUS_PERLU_PERBAIKAN,
-  setStatusPengajuan
+  buildRiwayatPengajuan,
+  buildStepsFromKycData
 } from './adminDashboardData'
 
 /**
  * Halaman detail pengajuan admin HQ.
- * Konversi dari `frontend/assetAdmin/AdminPanel-export.html`.
  *
- * PENTING: alur registrasi MyRent memakai 5 step
- * (1. Identitas & KTP, 2. Profil & Daya Listrik, 3. Gudang/Lokasi Operasional,
- * 4. Alamat & Rekening, 5. Review). Versi HTML export hanya berisi 3 step,
- * karena itu step 3 & 5 dirender memakai data dummy sampai endpoint
- * detail pengajuan tersedia di backend.
+ * Data diambil dari backend:
+ *  - `GET /api/admin/submissions/:id`  → detail pengajuan + `kycData`
+ *  - `GET /api/admin/submissions`      → daftar pengajuan (posisi & navigasi)
+ *
+ * `kycData` dipetakan menjadi 5 kartu langkah sesuai alur registrasi MyRent:
+ *  1. Akun & Kredensial
+ *  2. Identitas & KTP
+ *  3. Profil UMKM & Daya Listrik (Penyewa) / Lokasi & Gudang Operasional (Pemilik)
+ *  4. Alamat & Rekening (Penyewa) / Rekening Pencairan (Pemilik)
+ *  5. Review & Persetujuan
  *
  * @param {function} props.onLogout - callback logout opsional
  */
@@ -54,37 +61,17 @@ export default function AdminDetailPengajuan({ onLogout }) {
 
   const [modalPerbaikan, setModalPerbaikan] = useState(false)
   const [modalTolak, setModalTolak] = useState(false)
-  const [catatan, setCatatan] = useState(CATATAN_INTERNAL)
   const [toast, setToast] = useState('')
-  const [stepTerbuka, setStepTerbuka] = useState(() =>
-    LANGKAH_PENGAJUAN.map(() => true)
-  )
-  const [statusLokal, setStatusLokal] = useState(null)
+  const [stepTerbuka, setStepTerbuka] = useState(() => [true, true, true, true, true])
   const [checklist, setChecklist] = useState(() =>
     CHECKLIST_VERIFIKASI.map((item) => item.checked)
   )
 
-  const pengajuan = useMemo(() => {
-    const list = DAFTAR_PENGAJUAN
-    const index = list.findIndex((item) => item.id === params.id)
-    // ID yang tidak dikenal tetap displaying pengajuan pertama supaya halaman tidak kosong.
-    return index === -1 ? { ...PENGAJUAN_AKTIF, ...(list[0] || {}) } : list[index]
-  }, [params.id])
-
-  // Reset state lokal saat admin berpindah ke pengajuan lain.
-  const [idTerpantau, setIdTerpantau] = useState(params.id)
-  if (params.id !== idTerpantau) {
-    setIdTerpantau(params.id)
-    setStatusLokal(null)
-    setChecklist(CHECKLIST_VERIFIKASI.map((item) => item.checked))
-  }
-
-  const posisi = DAFTAR_PENGAJUAN.findIndex((item) => item.id === pengajuan.id)
-  const navigasiSebelumnya = posisi > 0 ? DAFTAR_PENGAJUAN[posisi - 1] : null
-  const navigasiBerikutnya =
-    posisi > -1 && posisi < DAFTAR_PENGAJUAN.length - 1 ? DAFTAR_PENGAJUAN[posisi + 1] : null
-  const statusAktif = statusLokal ?? pengajuan.status
-  const statusMeta = STATUS_META[statusAktif] || STATUS_META[STATUS_MENUNGGU]
+  const [pengajuan, setPengajuan] = useState(null)
+  const [daftar, setDaftar] = useState([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState('')
+  const [isActing, setIsActing] = useState(false)
 
   const handleLogout = () => {
     if (onLogout) {
@@ -99,23 +86,106 @@ export default function AdminDetailPengajuan({ onLogout }) {
     setTimeout(() => setToast(''), 3500)
   }
 
-  const handleSetujui = () => {
-    setStatusLokal(STATUS_DISETUJUI)
-    setStatusPengajuan(pengajuan.id, STATUS_DISETUJUI)
-    showToast(`Akun ${pengajuan.nama} disetujui dan notifikasi telah dikirim.`)
+  const loadPengajuan = useCallback(async () => {
+    setIsLoading(true)
+    setError('')
+    try {
+      const [detail, list] = await Promise.all([
+        fetchSubmission(params.id),
+        fetchSubmissions()
+      ])
+
+      if (!detail) {
+        setError('Pengajuan tidak ditemukan.')
+        setPengajuan(null)
+      } else {
+        setPengajuan(detail)
+      }
+
+      setDaftar(Array.isArray(list) ? list : [])
+    } catch (err) {
+      setError(err.message || 'Gagal memuat detail pengajuan.')
+    } finally {
+      setIsLoading(false)
+    }
+  }, [params.id])
+
+  useEffect(() => {
+    loadPengajuan()
+  }, [loadPengajuan])
+
+  // Reset state lokal saat admin berpindah ke pengajuan lain.
+  const [idTerpantau, setIdTerpantau] = useState(params.id)
+  if (params.id !== idTerpantau) {
+    setIdTerpantau(params.id)
+    setChecklist(CHECKLIST_VERIFIKASI.map((item) => item.checked))
   }
 
-  const handleMintaPerbaikan = (payload) => {
-    setStatusLokal(STATUS_PERLU_PERBAIKAN)
-    setStatusPengajuan(pengajuan.id, STATUS_PERLU_PERBAIKAN)
-    const daftarStep = payload.steps.map((nomor) => `Step ${nomor}`).join(', ')
-    showToast(`Permintaan perbaikan dikirim ke pengaju untuk ${daftarStep}.`)
+  const langkah = useMemo(
+    () =>
+      buildStepsFromKycData(pengajuan?.kycData, pengajuan?.role, {
+        fullName: pengajuan?.fullName,
+        email: pengajuan?.email,
+        phone: pengajuan?.phone,
+        whatsapp: pengajuan?.phone
+      }),
+    [pengajuan]
+  )
+
+  const posisi = daftar.findIndex(
+    (item) => item.id === pengajuan?.id || item.submissionCode === pengajuan?.submissionCode
+  )
+  const navigasiSebelumnya = posisi > 0 ? daftar[posisi - 1] : null
+  const navigasiBerikutnya =
+    posisi > -1 && posisi < daftar.length - 1 ? daftar[posisi + 1] : null
+
+  const statusAktif = pengajuan?.verificationStatus || STATUS_MENUNGGU
+  const jumlahMenunggu = daftar.filter((item) => item.verificationStatus === STATUS_MENUNGGU).length
+  const riwayat = useMemo(() => buildRiwayatPengajuan(pengajuan), [pengajuan])
+
+  const handleSetujui = async () => {
+    if (!pengajuan) return
+    setIsActing(true)
+    try {
+      const updated = await approveSubmission(pengajuan.id)
+      if (updated) setPengajuan(updated)
+      showToast(
+        `Akun ${pengajuan.nama || pengajuan.fullName} disetujui. Pengaju sudah bisa masuk ke beranda.`
+      )
+    } catch (err) {
+      showToast(err.message || 'Gagal menyetujui pengajuan.')
+    } finally {
+      setIsActing(false)
+    }
   }
 
-  const handleTolak = (payload) => {
-    setStatusLokal(STATUS_DITOLAK)
-    setStatusPengajuan(pengajuan.id, STATUS_DITOLAK)
-    showToast(`Pengajuan ditolak permanen · ${payload.alasan}.`)
+  const handleMintaPerbaikan = async (payload) => {
+    if (!pengajuan) return
+    setIsActing(true)
+    try {
+      const updated = await requestRevision(pengajuan.id, payload.steps, payload.pesan)
+      if (updated) setPengajuan(updated)
+      const daftarStep = payload.steps.map((nomor) => `Step ${nomor}`).join(', ')
+      showToast(`Permintaan perbaikan dikirim ke pengaju untuk ${daftarStep}.`)
+    } catch (err) {
+      showToast(err.message || 'Gagal mengirim permintaan perbaikan.')
+    } finally {
+      setIsActing(false)
+    }
+  }
+
+  const handleTolak = async (payload) => {
+    if (!pengajuan) return
+    setIsActing(true)
+    try {
+      const updated = await rejectSubmission(pengajuan.id, payload.alasan, payload.pesan)
+      if (updated) setPengajuan(updated)
+      showToast(`Pengajuan ditolak permanen · ${payload.alasan}.`)
+    } catch (err) {
+      showToast(err.message || 'Gagal menolak pengajuan.')
+    } finally {
+      setIsActing(false)
+    }
   }
 
   const toggleStep = (index) => {
@@ -128,14 +198,59 @@ export default function AdminDetailPengajuan({ onLogout }) {
 
   const checklistSelesai = checklist.filter(Boolean).length
 
+  // ── Tampilan memuat ─────────────────────────────────────────────────────
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-[#F8FAFC] text-[#0F172A] flex flex-row items-stretch">
+        <AdminSidebar activeKey="verifikasi" counts={{ verifikasi: 0, mediasi: 2 }} onLogout={handleLogout} />
+        <div className="flex-1 min-w-0 flex items-center justify-center">
+          <div className="flex flex-col items-center gap-3 text-center">
+            <RefreshCw className="w-5 h-5 text-[#2563EB] animate-spin" />
+            <p className="text-sm font-semibold text-[#475569]">Memuat detail pengajuan...</p>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // ── Tampilan error ──────────────────────────────────────────────────────
+  if (error || !pengajuan) {
+    return (
+      <div className="min-h-screen bg-[#F8FAFC] text-[#0F172A] flex flex-row items-stretch">
+        <AdminSidebar activeKey="verifikasi" counts={{ verifikasi: jumlahMenunggu, mediasi: 2 }} onLogout={handleLogout} />
+        <div className="flex-1 min-w-0 flex items-center justify-center p-6">
+          <div className="w-full max-w-md bg-white border border-[#E2E8F0] rounded-[14px] p-8 text-center flex flex-col gap-4">
+            <div className="w-12 h-12 rounded-full bg-red-50 border border-red-200 flex items-center justify-center mx-auto">
+              <AlertCircle className="w-5 h-5 text-red-600" />
+            </div>
+            <p className="text-sm font-semibold text-[#0F172A]">{error || 'Pengajuan tidak ditemukan.'}</p>
+            <div className="flex flex-col sm:flex-row gap-2 justify-center">
+              <button
+                type="button"
+                onClick={loadPengajuan}
+                className="px-4 h-10 rounded-[10px] bg-white border border-[#E2E8F0] text-sm font-semibold text-[#475569] hover:bg-[#F8FAFC] transition-colors cursor-pointer"
+              >
+                Coba lagi
+              </button>
+              <button
+                type="button"
+                onClick={() => navigate('/portal-internal-hq/dashboard')}
+                className="px-4 h-10 rounded-[10px] bg-[#2563EB] text-white text-sm font-semibold hover:bg-blue-700 transition-colors cursor-pointer"
+              >
+                Kembali ke daftar
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen bg-[#F8FAFC] text-[#0F172A] flex flex-row items-stretch">
       <AdminSidebar
         activeKey="verifikasi"
-        counts={{
-          verifikasi: DAFTAR_PENGAJUAN.filter((item) => item.status === STATUS_MENUNGGU).length,
-          mediasi: 2
-        }}
+        counts={{ verifikasi: jumlahMenunggu, mediasi: 2 }}
         onLogout={handleLogout}
       />
 
@@ -182,19 +297,23 @@ export default function AdminDetailPengajuan({ onLogout }) {
               <span className="text-xs text-[#94A3B8]">Verifikasi akun</span>
               <span className="text-xs text-[#94A3B8]">/</span>
               <span className="text-xs font-semibold text-[#0F172A]">
-                Pengajuan #{pengajuan.id}
+                Pengajuan #{pengajuan.submissionCode || pengajuan.id}
               </span>
             </div>
 
             <div className="flex items-center gap-2">
               <span className="text-xs text-[#94A3B8]">
-                Pengajuan {posisi + 1} dari {DAFTAR_PENGAJUAN.length}
+                Pengajuan {posisi > -1 ? posisi + 1 : '-'} dari {daftar.length}
               </span>
               <button
                 type="button"
                 disabled={!navigasiSebelumnya}
                 onClick={() =>
-                  navigate(`/portal-internal-hq/dashboard/pengajuan/${navigasiSebelumnya.id}`)
+                  navigate(
+                    `/portal-internal-hq/dashboard/pengajuan/${
+                      navigasiSebelumnya?.submissionCode || navigasiSebelumnya?.id
+                    }`
+                  )
                 }
                 aria-label="Pengajuan sebelumnya"
                 className="w-9 h-9 rounded-[9px] bg-white border border-[#E2E8F0] flex items-center justify-center text-[#64748B] hover:text-[#0F172A] disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
@@ -205,7 +324,11 @@ export default function AdminDetailPengajuan({ onLogout }) {
                 type="button"
                 disabled={!navigasiBerikutnya}
                 onClick={() =>
-                  navigate(`/portal-internal-hq/dashboard/pengajuan/${navigasiBerikutnya.id}`)
+                  navigate(
+                    `/portal-internal-hq/dashboard/pengajuan/${
+                      navigasiBerikutnya?.submissionCode || navigasiBerikutnya?.id
+                    }`
+                  )
                 }
                 aria-label="Pengajuan berikutnya"
                 className="w-9 h-9 rounded-[9px] bg-white border border-[#E2E8F0] flex items-center justify-center text-[#64748B] hover:text-[#0F172A] disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
@@ -220,14 +343,9 @@ export default function AdminDetailPengajuan({ onLogout }) {
             <div className="flex flex-col gap-3 min-w-0">
               <div className="flex flex-wrap items-center gap-3">
                 <h1 className="text-2xl font-extrabold tracking-[-0.5px] text-[#0F172A]">
-                  {pengajuan.nama}
+                  {pengajuan.nama || pengajuan.fullName}
                 </h1>
-                <span
-                  className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full border text-xs font-semibold ${statusMeta.chip}`}
-                >
-                  <span className={`w-1.5 h-1.5 rounded-full ${statusMeta.dot}`} />
-                  {statusMeta.label}
-                </span>
+                <StatusBadge status={statusAktif} />
               </div>
 
               <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-[#475569]">
@@ -245,7 +363,7 @@ export default function AdminDetailPengajuan({ onLogout }) {
                 </span>
                 <span className="inline-flex items-center gap-2">
                   <Clock className="w-4 h-4 shrink-0 text-[#94A3B8]" />
-                  Diajukan {pengajuan.diajukan}
+                  Diajukan {formatRelativeTime(pengajuan.createdAt)}
                 </span>
               </div>
             </div>
@@ -254,7 +372,8 @@ export default function AdminDetailPengajuan({ onLogout }) {
               <button
                 type="button"
                 onClick={() => setModalPerbaikan(true)}
-                className="flex items-center gap-2 px-4 h-10 rounded-[10px] bg-white border border-[#E2E8F0] text-sm font-semibold text-[#475569] hover:bg-[#F8FAFC] transition-colors cursor-pointer"
+                disabled={isActing}
+                className="flex items-center gap-2 px-4 h-10 rounded-[10px] bg-white border border-[#E2E8F0] text-sm font-semibold text-[#475569] hover:bg-[#F8FAFC] transition-colors cursor-pointer disabled:opacity-60"
               >
                 <PencilLine className="w-4 h-4" />
                 <span>Minta perbaikan</span>
@@ -262,7 +381,8 @@ export default function AdminDetailPengajuan({ onLogout }) {
               <button
                 type="button"
                 onClick={() => setModalTolak(true)}
-                className="flex items-center gap-2 px-4 h-10 rounded-[10px] bg-[#FEF2F2] border border-[#FECACA] text-sm font-bold text-[#B91C1C] hover:bg-[#FEE2E2] transition-colors cursor-pointer"
+                disabled={isActing}
+                className="flex items-center gap-2 px-4 h-10 rounded-[10px] bg-[#FEF2F2] border border-[#FECACA] text-sm font-bold text-[#B91C1C] hover:bg-[#FEE2E2] transition-colors cursor-pointer disabled:opacity-60"
               >
                 <X className="w-4 h-4" />
                 <span>Tolak</span>
@@ -270,7 +390,8 @@ export default function AdminDetailPengajuan({ onLogout }) {
               <button
                 type="button"
                 onClick={handleSetujui}
-                className="flex items-center gap-2 px-4 h-10 rounded-[10px] bg-[#15803D] text-sm font-bold text-white hover:bg-[#166534] transition-colors cursor-pointer"
+                disabled={isActing}
+                className="flex items-center gap-2 px-4 h-10 rounded-[10px] bg-[#15803D] text-sm font-bold text-white hover:bg-[#166534] transition-colors cursor-pointer disabled:opacity-60"
               >
                 <Check className="w-4 h-4" />
                 <span>Setujui akun</span>
@@ -282,7 +403,7 @@ export default function AdminDetailPengajuan({ onLogout }) {
           <div className="w-full flex flex-col xl:flex-row gap-6 items-start">
             {/* Kolom data 5 step registrasi */}
             <div className="flex-1 w-full min-w-0 flex flex-col gap-5">
-              {LANGKAH_PENGAJUAN.map((step, index) => {
+              {langkah.map((step, index) => {
                 const terbuka = stepTerbuka[index]
 
                 return (
@@ -302,7 +423,7 @@ export default function AdminDetailPengajuan({ onLogout }) {
                       </div>
                       <span
                         className={`shrink-0 text-xs font-semibold ${
-                          step.tone === 'info' ? 'text-[#1D4ED8]' : 'text-[#15803D]'
+                          step.tone === 'peringatan' ? 'text-[#B45309]' : 'text-[#15803D]'
                         }`}
                       >
                         {step.badge}
@@ -326,7 +447,7 @@ export default function AdminDetailPengajuan({ onLogout }) {
                             {step.fields.map((field) => (
                               <div key={field.label} className="flex flex-col gap-1.5">
                                 <span className="text-sm text-[#64748B]">{field.label}</span>
-                                <span className="text-base font-medium text-[#0F172A]">
+                                <span className="text-base font-medium text-[#0F172A] break-words">
                                   {field.value}
                                 </span>
                               </div>
@@ -347,16 +468,23 @@ export default function AdminDetailPengajuan({ onLogout }) {
                           ) : null}
                         </div>
 
-                        {step.dokumen?.length ? (
+                        {step.documents?.length ? (
                           <div className="w-full flex flex-col sm:flex-row gap-3">
-                            {step.dokumen.map((doc) => (
-                              <button
+                            {step.documents.map((doc) => (
+                              <div
                                 key={doc.nama}
-                                type="button"
-                                className="flex-1 flex items-center gap-3 p-3 rounded-[10px] bg-[#F8FAFC] border border-[#E2E8F0] text-left hover:border-[#BFDBFE] transition-colors cursor-pointer"
+                                className="flex-1 flex items-center gap-3 p-3 rounded-[10px] bg-[#F8FAFC] border border-[#E2E8F0] text-left"
                               >
-                                <div className="w-9 h-9 shrink-0 rounded-[8px] bg-[#EFF6FF] flex items-center justify-center">
-                                  <ImageIcon className="w-4 h-4 text-[#2563EB]" />
+                                <div className="w-9 h-9 shrink-0 rounded-[8px] bg-[#EFF6FF] flex items-center justify-center overflow-hidden">
+                                  {doc.preview ? (
+                                    <img
+                                      src={doc.preview}
+                                      alt={doc.nama}
+                                      className="w-full h-full object-cover"
+                                    />
+                                  ) : (
+                                    <ImageIcon className="w-4 h-4 text-[#2563EB]" />
+                                  )}
                                 </div>
                                 <div className="flex-1 flex flex-col gap-0.5 min-w-0">
                                   <span className="text-sm font-semibold text-[#0F172A] truncate">
@@ -364,8 +492,8 @@ export default function AdminDetailPengajuan({ onLogout }) {
                                   </span>
                                   <span className="text-xs text-[#94A3B8] truncate">{doc.meta}</span>
                                 </div>
-                                <Maximize2 className="w-4 h-4 shrink-0 text-[#94A3B8]" />
-                              </button>
+                                {doc.preview ? <Maximize2 className="w-4 h-4 shrink-0 text-[#94A3B8]" /> : null}
+                              </div>
                             ))}
                           </div>
                         ) : null}
@@ -376,7 +504,7 @@ export default function AdminDetailPengajuan({ onLogout }) {
               })}
             </div>
 
-            {/* Panel samping: checklist, catatan internal, riwayat */}
+            {/* Panel samping: checklist, catatan admin, riwayat */}
             <aside className="w-full xl:w-[320px] shrink-0 flex flex-col gap-5">
               {/* Checklist verifikasi */}
               <section className="w-full flex flex-col gap-4 p-5 rounded-[14px] bg-white border border-[#E2E8F0]">
@@ -410,24 +538,39 @@ export default function AdminDetailPengajuan({ onLogout }) {
                 </div>
               </section>
 
-              {/* Catatan internal */}
+              {/* Catatan admin (dari database) */}
               <section className="w-full flex flex-col gap-3 p-5 rounded-[14px] bg-white border border-[#E2E8F0]">
-                <span className="text-sm font-bold text-[#0F172A]">Catatan internal</span>
-                <textarea
-                  value={catatan}
-                  onChange={(e) => setCatatan(e.target.value)}
-                  rows={4}
-                  className="w-full min-h-[96px] p-3 rounded-[10px] bg-[#F8FAFC] border border-[#E2E8F0] text-sm leading-6 text-[#475569] resize-none focus:outline-none focus:border-[#2563EB] transition-colors"
-                />
+                <span className="text-sm font-bold text-[#0F172A]">Catatan admin</span>
+                {pengajuan.adminNote ? (
+                  <div className="w-full p-3 rounded-[10px] bg-[#FFFBEB] border border-amber-200/70 text-sm leading-6 text-[#B45309] whitespace-pre-line">
+                    {pengajuan.adminNote}
+                  </div>
+                ) : (
+                  <p className="text-sm text-[#94A3B8]">
+                    Belum ada catatan. Catatan tersimpan otomatis saat admin meminta perbaikan atau
+                    menolak pengajuan.
+                  </p>
+                )}
+
+                {Array.isArray(pengajuan.revisionSteps) && pengajuan.revisionSteps.length > 0 ? (
+                  <div className="w-full flex flex-wrap items-center gap-1.5">
+                    <span className="text-xs text-[#94A3B8]">Step perlu diperbaiki:</span>
+                    {pengajuan.revisionSteps.map((step) => (
+                      <span
+                        key={step}
+                        className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800"
+                      >
+                        Step {step}
+                      </span>
+                    ))}
+                  </div>
+                ) : null}
+
                 <div className="w-full flex items-center justify-between gap-2">
-                  <span className="text-xs text-[#94A3B8]">Hanya terlihat admin</span>
-                  <button
-                    type="button"
-                    onClick={() => showToast('Catatan internal tersimpan.')}
-                    className="text-sm font-semibold text-[#2563EB] hover:underline cursor-pointer"
-                  >
-                    Simpan
-                  </button>
+                  <span className="text-xs text-[#94A3B8]">Dikirim ke pengaju</span>
+                  <span className="text-xs text-[#94A3B8]">
+                    Diperbarui {formatDateTime(pengajuan.updatedAt)}
+                  </span>
                 </div>
               </section>
 
@@ -435,8 +578,8 @@ export default function AdminDetailPengajuan({ onLogout }) {
               <section className="w-full flex flex-col gap-4 p-5 rounded-[14px] bg-white border border-[#E2E8F0]">
                 <span className="text-sm font-bold text-[#0F172A]">Riwayat pengajuan</span>
                 <div className="w-full flex flex-col gap-3">
-                  {RIWAYAT_PENGAJUAN.map((item) => (
-                    <div key={item.judul} className="w-full flex items-start gap-3">
+                  {riwayat.map((item, index) => (
+                    <div key={`${item.judul}-${index}`} className="w-full flex items-start gap-3">
                       <span
                         className={`w-2 h-2 mt-2 shrink-0 rounded-full ${
                           item.aktif ? 'bg-[#2563EB]' : 'bg-[#E2E8F0]'
@@ -460,9 +603,10 @@ export default function AdminDetailPengajuan({ onLogout }) {
         isOpen={modalPerbaikan}
         onClose={() => setModalPerbaikan(false)}
         onSubmit={handleMintaPerbaikan}
-        idPengajuan={pengajuan.id}
-        namaPengajuan={pengajuan.nama}
+        idPengajuan={pengajuan.submissionCode || pengajuan.id}
+        namaPengajuan={pengajuan.nama || pengajuan.fullName}
         tipePengajuan={pengajuan.tipe}
+        langkah={langkah}
       />
 
       {/* Alur 2 — tolak permanen (tanpa opsi perbaikan) */}
@@ -470,8 +614,8 @@ export default function AdminDetailPengajuan({ onLogout }) {
         isOpen={modalTolak}
         onClose={() => setModalTolak(false)}
         onSubmit={handleTolak}
-        idPengajuan={pengajuan.id}
-        namaPengajuan={pengajuan.nama}
+        idPengajuan={pengajuan.submissionCode || pengajuan.id}
+        namaPengajuan={pengajuan.nama || pengajuan.fullName}
         tipePengajuan={pengajuan.tipe}
       />
     </div>

@@ -1,3 +1,5 @@
+import { readDraft } from '../../lib/registration'
+
 export const SECTORS = [
   'Kuliner & Kopi',
   'Konveksi & Garmen',
@@ -67,12 +69,14 @@ export const INITIAL_FORM = {
   agreeTerms: false
 }
 
+/**
+ * Ambil checkpoint draft dari localStorage (`myrent_draft_penyewa`).
+ * @returns {object|null} formData terakhir yang tersimpan
+ */
 export function getStoredDraft() {
-  try {
-    const saved = localStorage.getItem('myrent_register_penyewa_draft')
-    if (saved) return JSON.parse(saved)
-  } catch {
-    // Abaikan jika localStorage tidak tersedia
-  }
-  return null
+  const draft = readDraft('PENYEWA')
+  if (!draft) return null
+
+  const form = draft.formData && typeof draft.formData === 'object' ? draft.formData : null
+  return form && Object.keys(form).length > 0 ? form : null
 }

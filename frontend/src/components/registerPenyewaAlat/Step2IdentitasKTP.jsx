@@ -1,10 +1,11 @@
-import { Check, UploadCloud, ShieldCheck } from 'lucide-react'
+import { Check, UploadCloud, ShieldCheck, X } from 'lucide-react'
 
 export default function Step2IdentitasKTP({
   formData,
   handleInputChange,
   errors,
-  handleMockUpload
+  handleFileUpload,
+  handleRemoveUpload
 }) {
   return (
     <div className="space-y-4 animate-in fade-in duration-200">
@@ -88,8 +89,7 @@ export default function Step2IdentitasKTP({
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {/* Box 1: Foto KTP */}
-          <div
-            onClick={() => handleMockUpload('ktpFile', 'KTP Penanggung Jawab')}
+          <label
             className={`h-[100px] rounded-[10px] border border-dashed flex flex-col items-center justify-center gap-1.5 p-3 cursor-pointer transition-all ${
               formData.ktpFile
                 ? 'bg-blue-50/70 border-blue-400 text-blue-700'
@@ -98,6 +98,16 @@ export default function Step2IdentitasKTP({
                 : 'bg-[#F8FAFC] border-[#CBD5E1] text-slate-600 hover:bg-blue-50/40 hover:border-blue-300'
             }`}
           >
+            <input
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={(e) => {
+                const file = e.target.files?.[0]
+                if (file) handleFileUpload?.('ktpFile', file)
+                e.target.value = ''
+              }}
+            />
             {formData.ktpFile ? (
               <>
                 <div className="w-6 h-6 rounded-full bg-blue-600 text-white flex items-center justify-center">
@@ -117,15 +127,14 @@ export default function Step2IdentitasKTP({
                   Foto KTP Asli
                 </span>
                 <span className="text-[9px] text-[#94A3B8]">
-                  JPG / PNG maks 5 MB
+                  Pilih file gambar apa pun
                 </span>
               </>
             )}
-          </div>
+          </label>
 
           {/* Box 2: Selfie + KTP */}
-          <div
-            onClick={() => handleMockUpload('selfieFile', 'Selfie Bersama KTP')}
+          <label
             className={`h-[100px] rounded-[10px] border border-dashed flex flex-col items-center justify-center gap-1.5 p-3 cursor-pointer transition-all ${
               formData.selfieFile
                 ? 'bg-blue-50/70 border-blue-400 text-blue-700'
@@ -134,6 +143,16 @@ export default function Step2IdentitasKTP({
                 : 'bg-[#F8FAFC] border-[#CBD5E1] text-slate-600 hover:bg-blue-50/40 hover:border-blue-300'
             }`}
           >
+            <input
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={(e) => {
+                const file = e.target.files?.[0]
+                if (file) handleFileUpload?.('selfieFile', file)
+                e.target.value = ''
+              }}
+            />
             {formData.selfieFile ? (
               <>
                 <div className="w-6 h-6 rounded-full bg-blue-600 text-white flex items-center justify-center">
@@ -157,8 +176,34 @@ export default function Step2IdentitasKTP({
                 </span>
               </>
             )}
-          </div>
+          </label>
         </div>
+
+        {/* Tombol hapus berkas yang sudah dipilih */}
+        {formData.ktpFile || formData.selfieFile ? (
+          <div className="flex flex-wrap items-center gap-2">
+            {formData.ktpFile ? (
+              <button
+                type="button"
+                onClick={() => handleRemoveUpload?.('ktpFile', 'Foto KTP')}
+                className="inline-flex items-center gap-1.5 text-[10px] font-semibold text-red-600 hover:text-red-700 border border-red-200 bg-red-50 hover:bg-red-100 rounded-full px-2.5 py-1 transition-colors cursor-pointer"
+              >
+                <X className="w-3 h-3" />
+                <span>Hapus Foto KTP</span>
+              </button>
+            ) : null}
+            {formData.selfieFile ? (
+              <button
+                type="button"
+                onClick={() => handleRemoveUpload?.('selfieFile', 'Foto Selfie')}
+                className="inline-flex items-center gap-1.5 text-[10px] font-semibold text-red-600 hover:text-red-700 border border-red-200 bg-red-50 hover:bg-red-100 rounded-full px-2.5 py-1 transition-colors cursor-pointer"
+              >
+                <X className="w-3 h-3" />
+                <span>Hapus Foto Selfie</span>
+              </button>
+            ) : null}
+          </div>
+        ) : null}
 
         {(errors.ktpFile || errors.selfieFile) && (
           <span className="text-[10px] text-red-500">

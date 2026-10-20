@@ -39,6 +39,14 @@ jadi cukup jalankan backend dan frontend berdampingan.
 | Method | Path | Deskripsi |
 | --- | --- | --- |
 | GET | `/api/health` | Status service |
+| POST | `/api/auth/register` | Registrasi + pengajuan KYC (Step 1-5) |
+| POST | `/api/auth/login` | Login (mengembalikan status verifikasi) |
+| GET | `/api/auth/submission-status/:emailOrId` | Status pengajuan verifikasi |
+| GET | `/api/admin/submissions` | Daftar pengajuan (JWT admin) |
+| GET | `/api/admin/submissions/:id` | Detail pengajuan (JWT admin) |
+| PATCH | `/api/admin/submissions/:id/approve` | Setujui pengajuan |
+| PATCH | `/api/admin/submissions/:id/revision` | Minta perbaikan |
+| PATCH | `/api/admin/submissions/:id/reject` | Tolak pengajuan |
 | GET | `/api/rentals` | Daftar unit (filter, search, sort, pagination) |
 | POST | `/api/rentals` | Tambah unit |
 | GET | `/api/rentals/:id` | Detail unit |
@@ -46,3 +54,22 @@ jadi cukup jalankan backend dan frontend berdampingan.
 | DELETE | `/api/rentals/:id` | Hapus unit |
 | GET | `/api/categories` | Kategori + jumlah unit |
 | GET | `/api/stats` | Ringkasan dashboard |
+
+## Alur Registrasi & Verifikasi Admin
+
+1. Penyewa/Pemilik mengisi formulir 5 langkah (`/register/penyewa`, `/register/pemilik`).
+   Draft tersimpan otomatis di `localStorage` (`myrent_draft_penyewa` /
+   `myrent_draft_pemilik`) sehingga data tidak hilang saat user bolak-balik
+   ke halaman login.
+2. Setelah dikirim, pengajuan masuk antrean admin dengan status `MENUNGGU`
+   dan dikunci (anti-spam) lewat `localStorage` (`myrent_pending_penyewa` /
+   `myrent_pending_pemilik`).
+3. Admin memverifikasi lewat portal `/portal-internal-hq/dashboard`:
+   setujui / minta perbaikan / tolak.
+4. Saat user login:
+   - `DISETUJUI` → langsung ke `/beranda-sewa`
+   - `MENUNGGU` / `PERLU_PERBAIKAN` → diarahkan ke layar status verifikasi
+   - `DITOLAK` → pesan penolakan permanen ditampilkan di form login
+
+Sesi admin memakai key `localStorage` terpisah (`admin_token` / `admin_user`)
+sehingga tidak menimpa sesi penyewa.

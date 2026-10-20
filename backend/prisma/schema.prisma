@@ -16,6 +16,21 @@ enum Role {
   ADMIN
 }
 
+/**
+ * Status verifikasi KYC yang dipakai Portal Verifikasi Admin.
+ *
+ * - MENUNGGU          : pengajuan baru dikirim, belum ditinjau admin
+ * - PERLU_PERBAIKAN  : admin meminta pengaju memperbaiki step tertentu
+ * - DISETUJUI        : akun aktif, penyewa boleh masuk ke /beranda-sewa
+ * - DITOLAK          : pengajuan ditolak permanen
+ */
+enum VerificationStatus {
+  MENUNGGU
+  PERLU_PERBAIKAN
+  DISETUJUI
+  DITOLAK
+}
+
 model User {
   id        String   @id @default(uuid())
   email     String   @unique
@@ -23,6 +38,18 @@ model User {
   role      Role
   fullName  String
   phone     String
+
+  // Kode pengajuan unik (mis. VR-2041) untuk tracking di portal admin.
+  submissionCode String? @unique
+  // Status alur verifikasi KYC yang ditangani admin.
+  verificationStatus VerificationStatus @default(MENUNGGU)
+  // Seluruh data form registrasi Step 1-5 (termasuk metadata file foto).
+  kycData Json?
+  // Array nomor step yang diminta diperbaiki admin (mis. [1, 3]).
+  revisionSteps Json?
+  // Catatan admin: alasan perbaikan atau penolakan.
+  adminNote String? @db.Text
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

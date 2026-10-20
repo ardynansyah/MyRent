@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { ArrowLeft, ArrowRight, RotateCw } from 'lucide-react'
 import { INITIAL_FORM, getStoredDraft } from './constants'
@@ -10,9 +10,22 @@ import Step2IdentitasKTP from './Step2IdentitasKTP'
 import Step3ProfilUMKM from './Step3ProfilUMKM'
 import Step4AlamatRekening from './Step4AlamatRekening'
 import Step5ReviewKirim from './Step5ReviewKirim'
+import {
+  clearDraft,
+  clearPending,
+  fetchSubmissionStatus,
+  fileToPreviewDataUrl,
+  getTokenForUser,
+  readDraft,
+  readPending,
+  writeDraft,
+  writePending
+} from '../../lib/registration'
 
 const STORAGE_KEY_STEP = 'myrent_register_penyewa_step'
 const STORAGE_KEY_FORM = 'myrent_register_penyewa_form'
+const ROLE = 'PENYEWA'
+const API_REGISTER = 'http://localhost:3000/api/auth/register'
 
 const STEP_HEADER_TITLES = {
   1: {
@@ -49,12 +62,27 @@ export default function RegisterPenyewaAlat({
   const handleBack = onBackToLogin || onNavigateLogin || (() => navigate('/login'))
   const handleFinish = onFinish || onRegisterSuccess
 
-  // 1. Lazy initialization currentStep dari URL (?step=X) atau sessionStorage (default: 1)
+  // 0. Lock anti-spam: bila masih ada pengajuan yang menunggu, form dikunci
+  //    dan pengguna langsung diarahkan ke layar status verifikasi.
+  const [pending, setPending] = useState(() => readPending(ROLE))
+  const [statusInfo, setStatusInfo] = useState(null)
+  const [isCheckingStatus, setIsCheckingStatus] = useState(false)
+  const [isApproved, setIsApproved] = useState(false)
+  const [isFormUnlocked, setIsFormUnlocked] = useState(false)
+
+  // 1. Lazy initialization currentStep dari URL (?step=X), draft localStorage, atau sessionStorage
   const [currentStep, setCurrentStep] = useState(() => {
     const stepQuery = parseInt(searchParams.get('step'), 10)
     if (stepQuery >= 1 && stepQuery <= 5) {
       return stepQuery
     }
+
+    // Checkpoint draft: user kembali dari halaman login → lanjut di step terakhir.
+    const draft = readDraft(ROLE)
+    if (draft?.currentStep >= 1 && draft?.currentStep <= 5) {
+      return draft.currentStep
+    }
+
     try {
       const savedStep = sessionStorage.getItem(STORAGE_KEY_STEP)
       if (savedStep) {
@@ -67,18 +95,21 @@ export default function RegisterPenyewaAlat({
     return 1
   })
 
-  // 2. Lazy initialization formData dari sessionStorage atau localStorage draft (default: INITIAL_FORM)
+  // 2. Lazy initialization formData dari sessionStorage atau localStorage draft
   const [formData, setFormData] = useState(() => {
+    const draft = getStoredDraft()
+    const draftForm = draft?.formData && typeof draft.formData === 'object' ? draft.formData : draft
+    const base = draftForm ? { ...INITIAL_FORM, ...draftForm } : INITIAL_FORM
+
     try {
       const savedForm = sessionStorage.getItem(STORAGE_KEY_FORM)
       if (savedForm) {
-        return { ...INITIAL_FORM, ...JSON.parse(savedForm) }
+        return { ...base, ...JSON.parse(savedForm) }
       }
     } catch (e) {
       console.warn('Gagal membaca formData dari sessionStorage:', e)
     }
-    const draft = getStoredDraft()
-    return draft ? { ...INITIAL_FORM, ...draft } : INITIAL_FORM
+    return base
   })
 
   const [showPassword, setShowPassword] = useState(false)
@@ -92,16 +123,31 @@ export default function RegisterPenyewaAlat({
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isSubmitted, setIsSubmitted] = useState(false)
 
-  // Membersihkan data sesi form saat submit berhasil atau pendaftaran dibatalkan
+  const showToast = (msg) => {
+    setNotification(msg)
+    setTimeout(() => setNotification(''), 3500)
+  }
+
+  // Membersihkan data sesi form (step + form) tanpa menghapus checkpoint draft
   const clearRegistrationSession = () => {
     try {
       sessionStorage.removeItem(STORAGE_KEY_STEP)
       sessionStorage.removeItem(STORAGE_KEY_FORM)
-      localStorage.removeItem('myrent_register_penyewa_draft')
     } catch (e) {
       console.warn('Gagal menghapus session form:', e)
     }
   }
+
+  // 3. Checkpoint draft otomatis: step terakhir + data form disimpan ke localStorage
+  useEffect(() => {
+    try {
+      writeDraft(ROLE, currentStep, formData)
+      const timeStr = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })
+      setDraftSavedAt(`Disimpan pukul ${timeStr}`)
+    } catch {
+      console.warn('Gagal menyimpan checkpoint draft.')
+    }
+  }, [currentStep, formData])
 
   // Sinkronisasi otomatis currentStep ke sessionStorage dan URL Search Params
   useEffect(() => {
@@ -120,7 +166,8 @@ export default function RegisterPenyewaAlat({
     }
   }, [currentStep, setSearchParams])
 
-  // Sinkronisasi otomatis formData ke sessionStorage setiap kali ada input berubah
+  // Sinkronisasi otomatis formData ke sessionStorage (termasuk password, agar
+  // user tidak perlu mengetik ulang setelah bolak-balik ke halaman login)
   useEffect(() => {
     try {
       sessionStorage.setItem(STORAGE_KEY_FORM, JSON.stringify(formData))
@@ -129,10 +176,52 @@ export default function RegisterPenyewaAlat({
     }
   }, [formData])
 
-  const showToast = (msg) => {
-    setNotification(msg)
-    setTimeout(() => setNotification(''), 3500)
-  }
+  // 4. Ambil status pengajuan terbaru dari backend
+  const loadStatus = useCallback(
+    async (identifier, ownerId) => {
+      if (!identifier) return
+
+      setIsCheckingStatus(true)
+      try {
+        // Token hanya dikirim bila memang milik pemilik pengajuan ini.
+        const token = getTokenForUser(ownerId)
+
+        const status = await fetchSubmissionStatus(identifier, token)
+        setStatusInfo(status)
+
+        setPending((prev) =>
+          prev
+            ? {
+                ...prev,
+                submissionCode: status.submissionCode ?? prev.submissionCode,
+                verificationStatus: status.verificationStatus ?? prev.verificationStatus
+              }
+            : prev
+        )
+
+        // Akun sudah disetujui → aktifkan indikator & bebaskan lock anti-spam.
+        if (status.verificationStatus === 'DISETUJUI') {
+          setIsApproved(true)
+          clearPending(ROLE)
+        }
+      } catch (err) {
+        showToast(err.message || 'Gagal memuat status pengajuan.')
+      } finally {
+        setIsCheckingStatus(false)
+      }
+    },
+    []
+  )
+
+  // Auto-load status begitu halaman dibuka (jika ada lock anti-spam)
+  useEffect(() => {
+    if (!pending) return
+    loadStatus(
+      pending.email || pending.submissionCode || pending.userId,
+      pending.userId
+    )
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const handleInputChange = (field, value) => {
     setFormData((prev) => {
@@ -157,17 +246,7 @@ export default function RegisterPenyewaAlat({
 
   const handleSaveDraft = () => {
     try {
-      // Simpan selain file objek dan password sensitif
-      const {
-        password: _password,
-        confirmPassword: _confirmPassword,
-        ktpFile: _ktpFile,
-        selfieFile: _selfieFile,
-        frontPhoto: _frontPhoto,
-        productionPhoto: _productionPhoto,
-        ...cleanData
-      } = formData
-      localStorage.setItem('myrent_register_penyewa_draft', JSON.stringify(cleanData))
+      writeDraft(ROLE, currentStep, formData)
       const timeStr = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })
       setDraftSavedAt(`Disimpan pukul ${timeStr}`)
       showToast('Draf pendaftaran Anda berhasil disimpan.')
@@ -176,17 +255,27 @@ export default function RegisterPenyewaAlat({
     }
   }
 
-  const handleMockUpload = (field, defaultName) => {
-    if (formData[field]) {
-      handleInputChange(field, null)
-      showToast(`Berkas ${defaultName} dihapus.`)
-    } else {
-      handleInputChange(field, {
-        name: `${defaultName.toLowerCase().replace(/\s+/g, '_')}_terverifikasi.jpg`,
-        size: '1.4 MB'
-      })
-      showToast(`Berkas ${defaultName} berhasil diunggah!`)
-    }
+  // 5. Unggahan berkas: user bebas memilih file gambar apa pun dari komputer.
+  //    Backend menerima nama file, metadata { name, size, type } maupun data URL.
+  const handleFileUpload = async (field, file) => {
+    if (!file) return
+
+    const preview = await fileToPreviewDataUrl(file)
+
+    handleInputChange(field, {
+      name: file.name,
+      size: file.size,
+      type: file.type || 'application/octet-stream',
+      preview: preview || null,
+      lastModified: file.lastModified
+    })
+
+    showToast(`Berkas ${file.name} berhasil dipilih.`)
+  }
+
+  const handleRemoveUpload = (field, label = 'Berkas') => {
+    handleInputChange(field, null)
+    showToast(`${label} dihapus.`)
   }
 
   const handleRefreshGps = () => {
@@ -306,10 +395,11 @@ export default function RegisterPenyewaAlat({
     return Object.keys(newErrors).length === 0
   }
 
+  // 6. Kirim seluruh data Step 1-5 ke backend
   const handleSubmitFinal = async () => {
     setIsSubmitting(true)
     try {
-      const response = await fetch('http://localhost:3000/api/auth/register', {
+      const response = await fetch(API_REGISTER, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -320,16 +410,13 @@ export default function RegisterPenyewaAlat({
           role: 'PENYEWA',
           fullName: formData.fullName || formData.ktpName || formData.businessName || 'Penyewa UMKM',
           phone: formData.phone,
-          businessName: formData.businessName,
-          ktpName: formData.ktpName,
-          nik: formData.nik,
-          birthPlace: formData.birthPlace,
-          birthDate: formData.birthDate,
-          // Mock upload files
-          ktpFile: formData.ktpFile?.name || 'ktp_penyewa.jpg',
-          selfieFile: formData.selfieFile?.name || 'selfie_penyewa.jpg',
-          frontPhoto: formData.frontPhoto?.name || 'toko_depan.jpg',
-          productionPhoto: formData.productionPhoto?.name || 'area_produksi.jpg'
+          // Seluruh data Step 1-5 (termasuk metadata file foto) dikirim apa adanya.
+          formData: {
+            ...formData,
+            confirmPassword: undefined,
+            agreeTruth: !!formData.agreeTruth,
+            agreeTerms: !!formData.agreeTerms
+          }
         })
       })
 
@@ -345,7 +432,30 @@ export default function RegisterPenyewaAlat({
         localStorage.setItem('user', JSON.stringify(data.user))
       }
 
-      showToast('Pendaftaran berhasil! Akun Anda siap diverifikasi.')
+      // Draft selesai dipakai → hapus, lalu pasang lock anti-spam.
+      clearDraft(ROLE)
+      clearRegistrationSession()
+
+      const lock = {
+        userId: data.user?.id ?? null,
+        email: data.user?.email ?? formData.email,
+        submissionCode: data.user?.submissionCode ?? null,
+        verificationStatus: data.user?.verificationStatus ?? 'MENUNGGU'
+      }
+      writePending(ROLE, lock)
+      setPending(lock)
+
+      setStatusInfo({
+        id: lock.userId,
+        email: lock.email,
+        submissionCode: lock.submissionCode,
+        verificationStatus: lock.verificationStatus,
+        revisionSteps: data.user?.revisionSteps ?? [],
+        adminNote: data.user?.adminNote ?? null,
+        kycData: {}
+      })
+
+      showToast('Pendaftaran berhasil! Pengajuan Anda masuk antrean verifikasi admin.')
       setIsSubmitting(false)
       setIsSubmitted(true)
       window.scrollTo({ top: 0, behavior: 'smooth' })
@@ -355,7 +465,6 @@ export default function RegisterPenyewaAlat({
       alert(`Pendaftaran Gagal: ${err.message}`)
     }
   }
-
 
   const handleNext = () => {
     if (validateStep(currentStep)) {
@@ -375,7 +484,8 @@ export default function RegisterPenyewaAlat({
       setCurrentStep((prev) => prev - 1)
       window.scrollTo({ top: 0, behavior: 'smooth' })
     } else {
-      // Bersihkan session storage pendaftaran saat user memilih batal & kembali
+      // Kembali ke login: checkpoint draft di localStorage tetap disimpan
+      // supaya data yang sudah diisi tidak hilang saat user kembali lagi.
       clearRegistrationSession()
       if (handleBack) {
         handleBack()
@@ -385,29 +495,99 @@ export default function RegisterPenyewaAlat({
     }
   }
 
-  // Tampilan Halaman Verifikasi Admin (Peninjauan Registrasi)
-  if (isSubmitted) {
+  // 7. Aksi utama pada layar status
+  const handleStatusPrimaryAction = () => {
+    const status = statusInfo?.verificationStatus || pending?.verificationStatus || 'MENUNGGU'
+
+    if (status === 'DISETUJUI') {
+      clearPending(ROLE)
+      if (handleFinish) {
+        handleFinish({
+          email: formData.email,
+          fullName: formData.fullName || formData.ktpName || 'Penyewa UMKM',
+          businessName: formData.businessName,
+          role: 'penyewa'
+        })
+      } else {
+        navigate('/beranda-sewa')
+      }
+      return
+    }
+
+    if (status === 'PERLU_PERBAIKAN') {
+      // Buka kembali formulir dengan data sebelumnya untuk diperbaiki.
+      const kycData = statusInfo?.kycData
+      if (kycData && typeof kycData === 'object') {
+        setFormData((prev) => ({ ...prev, ...kycData }))
+      }
+
+      const steps = Array.isArray(statusInfo?.revisionSteps) ? statusInfo.revisionSteps : []
+      const targetStep = steps.length > 0 ? Math.min(...steps) : 1
+
+      setIsFormUnlocked(true)
+      setCurrentStep(targetStep)
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+      return
+    }
+
+    navigate('/login')
+  }
+
+  // Mulai pendaftaran baru (dipakai ketika pengajuan ditolak permanen)
+  const handleStartNewRegistration = () => {
+    clearPending(ROLE)
+    clearDraft(ROLE)
+    clearRegistrationSession()
+    setPending(null)
+    setStatusInfo(null)
+    setIsApproved(false)
+    setIsSubmitted(false)
+    setIsFormUnlocked(true)
+    setFormData(INITIAL_FORM)
+    setCurrentStep(1)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
+  const statusViewAktif =
+    isSubmitted || isApproved || (pending && !isFormUnlocked) || statusInfo?.verificationStatus === 'DITOLAK'
+
+  // Tampilan Halaman Verifikasi Admin (Status View / layar tunggu)
+  if (statusViewAktif) {
+    const status =
+      statusInfo?.verificationStatus || pending?.verificationStatus || 'MENUNGGU'
+
     return (
       <VerifikasiPenyewa
-        formData={formData}
-        onFinish={() => {
-          clearRegistrationSession()
-          if (handleFinish) {
-            handleFinish({
-              email: formData.email,
-              fullName: formData.fullName || formData.ktpName || 'Penyewa UMKM',
-              businessName: formData.businessName,
-              role: 'penyewa'
-            })
-          } else {
-            navigate('/dashboard')
-          }
+        formData={{
+          ...formData,
+          fullName: formData.fullName || statusInfo?.fullName || '',
+          email: formData.email || statusInfo?.email || ''
         }}
-        onEditData={() => {
-          setIsSubmitted(false)
-          setCurrentStep(1)
-          window.scrollTo({ top: 0, behavior: 'smooth' })
-        }}
+        status={status}
+        submissionCode={statusInfo?.submissionCode || pending?.submissionCode || null}
+        revisionSteps={statusInfo?.revisionSteps || pending?.revisionSteps || []}
+        adminNote={statusInfo?.adminNote ?? pending?.adminNote ?? null}
+        isRefreshing={isCheckingStatus}
+        onRefreshStatus={() =>
+          loadStatus(
+            statusInfo?.email || pending?.email || statusInfo?.submissionCode || pending?.submissionCode,
+            statusInfo?.id || pending?.userId
+          )
+        }
+        onFinish={handleStatusPrimaryAction}
+        onEditData={
+          status === 'PERLU_PERBAIKAN'
+            ? () => {
+                setIsFormUnlocked(true)
+                setCurrentStep(
+                  Array.isArray(statusInfo?.revisionSteps) && statusInfo.revisionSteps.length > 0
+                    ? Math.min(...statusInfo.revisionSteps)
+                    : 1
+                )
+              }
+            : undefined
+        }
+        onStartNewRegistration={status === 'DITOLAK' ? handleStartNewRegistration : undefined}
         onBackToHome={() => navigate('/')}
         onBackToLogin={handleBack}
       />
@@ -499,7 +679,8 @@ export default function RegisterPenyewaAlat({
                   formData={formData}
                   handleInputChange={handleInputChange}
                   errors={errors}
-                  handleMockUpload={handleMockUpload}
+                  handleFileUpload={handleFileUpload}
+                  handleRemoveUpload={handleRemoveUpload}
                 />
               )}
 
@@ -508,7 +689,8 @@ export default function RegisterPenyewaAlat({
                   formData={formData}
                   handleInputChange={handleInputChange}
                   errors={errors}
-                  handleMockUpload={handleMockUpload}
+                  handleFileUpload={handleFileUpload}
+                  handleRemoveUpload={handleRemoveUpload}
                 />
               )}
 
