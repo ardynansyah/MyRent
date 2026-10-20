@@ -56,7 +56,7 @@ export default function DetailAlat({
   const formatRupiah = (val) => `Rp ${val.toLocaleString('id-ID')}`
 
   return (
-    <div className="box-border w-full min-h-screen flex flex-col justify-start items-start bg-[#F8FAFC]">
+    <div className="box-border w-full min-h-screen flex flex-col justify-start items-start bg-slate-50">
       {/* 1. Global Navigation Bar */}
       <NavbarPenyewa
         activeTab="jelajahi"
@@ -68,22 +68,22 @@ export default function DetailAlat({
       />
 
       {/* 2. Main Detail Page Layout: Two Columns */}
-      <main className="box-border w-full max-w-[1440px] mx-auto h-fit flex flex-col lg:flex-row gap-[24px] py-[28px] px-4 md:px-[32px] pb-[48px] justify-start items-start">
+      <main className="box-border w-full max-w-360 mx-auto h-fit flex flex-col lg:flex-row gap-6 py-7 px-4 md:px-8 pb-12 justify-start items-start">
         {/* Left Column: Media, Specs, Warning, Calendar, Description */}
-        <section className="box-border flex-1 min-w-0 w-full h-fit flex flex-col gap-[22px] justify-start items-start">
+        <section className="box-border flex-1 min-w-0 w-full h-fit flex flex-col gap-5.5 justify-start items-start">
           {/* Breadcrumb Navigation */}
-          <nav className="box-border w-fit h-fit shrink-0 flex flex-row gap-[8px] justify-start items-center text-[11px]">
+          <nav className="box-border w-fit h-fit shrink-0 flex flex-row gap-2 justify-start items-center text-[11px]">
             <button
               type="button"
               onClick={onBack || onNavigateHome}
-              className="text-[#475569] font-normal hover:text-[#2563EB] cursor-pointer bg-transparent border-0 p-0"
+              className="text-slate-600 font-normal hover:text-blue-600 cursor-pointer bg-transparent border-0 p-0"
             >
               Jelajahi Alat
             </button>
-            <span className="text-[#94A3B8]">/</span>
-            <span className="text-[#475569] font-normal">{equipment.category}</span>
-            <span className="text-[#94A3B8]">/</span>
-            <span className="text-[#0F172A] font-semibold truncate max-w-[200px] sm:max-w-none">
+            <span className="text-slate-400">/</span>
+            <span className="text-slate-600 font-normal">{equipment.category}</span>
+            <span className="text-slate-400">/</span>
+            <span className="text-slate-900 font-semibold truncate max-w-50 sm:max-w-none">
               {equipment.name}
             </span>
           </nav>
@@ -95,23 +95,23 @@ export default function DetailAlat({
           />
 
           {/* Title and Meta Header */}
-          <div className="box-border w-full h-fit shrink-0 flex flex-col gap-[10px] justify-start items-start bg-[#FFFFFF] ring-1 ring-[#E2E8F0] rounded-[16px] p-[20px]">
+          <div className="box-border w-full h-fit shrink-0 flex flex-col gap-2.5 justify-start items-start bg-white ring-1 ring-slate-200 rounded-2xl p-5">
             <div className="box-border w-full h-fit shrink-0 flex flex-col sm:flex-row gap-4 justify-between items-start">
               {/* Left Info */}
-              <div className="box-border flex-1 h-fit flex flex-col gap-[6px] justify-start items-start">
-                <span className="text-[11px] text-[#2563EB] font-bold tracking-[0.4px] uppercase whitespace-nowrap">
+              <div className="box-border flex-1 h-fit flex flex-col gap-1.5 justify-start items-start">
+                <span className="text-[11px] text-blue-600 font-bold tracking-[0.4px] uppercase whitespace-nowrap">
                   {equipment.category} · {equipment.subcategory}
                 </span>
 
-                <h1 className="text-[22px] sm:text-[28px] leading-tight text-[#0F172A] font-extrabold tracking-[-0.8px] text-left m-0">
+                <h1 className="text-[22px] sm:text-[28px] leading-tight text-slate-900 font-extrabold tracking-[-0.8px] text-left m-0">
                   {equipment.name}
                 </h1>
 
                 {/* Meta details: rating, distance, verification */}
-                <div className="box-border w-full h-fit shrink-0 flex flex-wrap gap-[14px] items-center pt-1 text-[12px]">
+                <div className="box-border w-full h-fit shrink-0 flex flex-wrap gap-3.5 items-center pt-1 text-xs">
                   {/* Rating */}
-                  <div className="flex items-center gap-1 text-[#0F172A] font-bold tabular-nums">
-                    <Star className="w-[14px] h-[14px] text-amber-500 fill-amber-500" />
+                  <div className="flex items-center gap-1 text-slate-900 font-bold tabular-nums">
+                    <Star className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
                     <span>{equipment.rating}</span>
                     <span className="text-slate-500 font-normal">({equipment.reviewCount} ulasan)</span>
                   </div>
@@ -119,28 +119,28 @@ export default function DetailAlat({
                   <span className="text-slate-300">•</span>
 
                   {/* Location */}
-                  <div className="flex items-center gap-1.5 text-[#475569] tabular-nums">
-                    <MapPin className="w-[13px] h-[13px] text-[#94A3B8]" />
+                  <div className="flex items-center gap-1.5 text-slate-600 tabular-nums">
+                    <MapPin className="w-3.25 h-3.25 text-slate-400" />
                     <span>{equipment.distance} · {equipment.district}</span>
                   </div>
 
                   <span className="text-slate-300">•</span>
 
                   {/* Verified Owner */}
-                  <div className="flex items-center gap-1.5 text-[#475569]">
-                    <ShieldCheck className="w-[13px] h-[13px] text-[#2563EB]" />
+                  <div className="flex items-center gap-1.5 text-slate-600">
+                    <ShieldCheck className="w-3.25 h-3.25 text-blue-600" />
                     <span>Pemilik terverifikasi</span>
                   </div>
                 </div>
               </div>
 
               {/* Price Box */}
-              <div className="box-border w-fit shrink-0 h-fit flex flex-col gap-[2px] justify-start sm:items-end">
-                <div className="box-border w-fit h-fit shrink-0 flex flex-row gap-[4px] justify-start items-end">
-                  <span className="text-[24px] sm:text-[26px] text-[#0F172A] font-extrabold tracking-tight tabular-nums whitespace-nowrap">
+              <div className="box-border w-fit shrink-0 h-fit flex flex-col gap-0.5 justify-start sm:items-end">
+                <div className="box-border w-fit h-fit shrink-0 flex flex-row gap-1 justify-start items-end">
+                  <span className="text-2xl sm:text-[26px] text-slate-900 font-extrabold tracking-tight tabular-nums whitespace-nowrap">
                     {formatRupiah(equipment.dailyPrice)}
                   </span>
-                  <span className="text-[12px] text-slate-500 font-normal pb-1 whitespace-nowrap">
+                  <span className="text-xs text-slate-500 font-normal pb-1 whitespace-nowrap">
                     /hari
                   </span>
                 </div>
@@ -178,22 +178,22 @@ export default function DetailAlat({
           />
 
           {/* About / Description Card */}
-          <div className="box-border w-full h-fit shrink-0 flex flex-col gap-[12px] p-[20px] justify-start items-start bg-[#FFFFFF] ring-1 ring-[#E2E8F0] rounded-[14px]">
-            <h2 className="text-[14px] text-[#0F172A] font-bold text-left whitespace-nowrap m-0">
+          <div className="box-border w-full h-fit shrink-0 flex flex-col gap-3 p-5 justify-start items-start bg-white ring-1 ring-slate-200 rounded-[14px]">
+            <h2 className="text-sm text-slate-900 font-bold text-left whitespace-nowrap m-0">
               Tentang alat ini
             </h2>
-            <p className="text-[12px] leading-[20px] w-full text-[#475569] font-normal text-left m-0">
+            <p className="text-xs leading-5 w-full text-slate-600 font-normal text-left m-0">
               {equipment.about}
             </p>
 
             {/* Badges */}
-            <div className="box-border w-full h-fit shrink-0 flex flex-wrap gap-[8px] justify-start items-start pt-1">
+            <div className="box-border w-full h-fit shrink-0 flex flex-wrap gap-2 justify-start items-start pt-1">
               {equipment.badges.map((badge, idx) => (
                 <div
                   key={idx}
-                  className="box-border w-fit shrink-0 h-fit flex flex-row py-[5px] px-[10px] justify-start items-center bg-[#F8FAFC] ring-1 ring-[#E2E8F0] rounded-full"
+                  className="box-border w-fit shrink-0 h-fit flex flex-row py-1.25 px-2.5 justify-start items-center bg-slate-50 ring-1 ring-slate-200 rounded-full"
                 >
-                  <span className="text-[11px] text-[#475569] font-semibold whitespace-nowrap">
+                  <span className="text-[11px] text-slate-600 font-semibold whitespace-nowrap">
                     {badge}
                   </span>
                 </div>
@@ -203,7 +203,7 @@ export default function DetailAlat({
         </section>
 
         {/* Right Column: Checkout Panel + Owner Card */}
-        <section className="box-border w-full lg:w-[420px] shrink-0 h-fit flex flex-col gap-[14px] justify-start items-start">
+        <section className="box-border w-full lg:w-105 shrink-0 h-fit flex flex-col gap-3.5 justify-start items-start">
           {/* Checkout & Rental Calculation Panel */}
           <CheckoutPanel
             dailyPrice={equipment.dailyPrice}
@@ -221,28 +221,28 @@ export default function DetailAlat({
           />
 
           {/* Owner Profile Card */}
-          <div className="box-border w-full h-fit shrink-0 flex flex-row gap-[12px] p-[16px] justify-start items-center bg-[#FFFFFF] ring-1 ring-[#E2E8F0] rounded-[14px]">
+          <div className="box-border w-full h-fit shrink-0 flex flex-row gap-3 p-4 justify-start items-center bg-white ring-1 ring-slate-200 rounded-[14px]">
             {/* Owner Initials Avatar */}
-            <div className="box-border w-[40px] shrink-0 h-[40px] flex flex-row justify-center items-center bg-[#EFF6FF] rounded-full">
-              <span className="text-[13px] text-[#1D4ED8] font-bold whitespace-nowrap">
+            <div className="box-border w-10 shrink-0 h-10 flex flex-row justify-center items-center bg-blue-50 rounded-full">
+              <span className="text-[13px] text-blue-700 font-bold whitespace-nowrap">
                 {equipment.owner.initials}
               </span>
             </div>
 
             {/* Owner Meta */}
-            <div className="box-border flex-1 h-fit flex flex-col gap-[2px] justify-start items-start">
-              <div className="text-[12px] text-[#0F172A] font-bold text-left whitespace-nowrap">
+            <div className="box-border flex-1 h-fit flex flex-col gap-0.5 justify-start items-start">
+              <div className="text-xs text-slate-900 font-bold text-left whitespace-nowrap">
                 {equipment.owner.name}
               </div>
-              <div className="text-[10px] text-[#94A3B8] font-normal text-left whitespace-nowrap">
+              <div className="text-[10px] text-slate-400 font-normal text-left whitespace-nowrap">
                 {equipment.owner.stats}
               </div>
             </div>
 
             {/* Verified Badge */}
             {equipment.owner.verified && (
-              <div className="box-border w-fit shrink-0 h-fit flex flex-row py-[5px] px-[10px] justify-start items-center bg-[#F0FDF4] rounded-full">
-                <span className="text-[11px] text-[#15803D] font-semibold whitespace-nowrap">
+              <div className="box-border w-fit shrink-0 h-fit flex flex-row py-1.25 px-2.5 justify-start items-center bg-green-50 rounded-full">
+                <span className="text-[11px] text-green-700 font-semibold whitespace-nowrap">
                   Terverifikasi
                 </span>
               </div>
@@ -273,7 +273,7 @@ export default function DetailAlat({
                   alert('Data kapasitas listrik telah diperbarui!')
                   setShowPowerModal(false)
                 }}
-                className="px-4 py-2 text-xs font-semibold bg-[#2563EB] text-white rounded-lg hover:bg-blue-700 cursor-pointer"
+                className="px-4 py-2 text-xs font-semibold bg-blue-600 text-white rounded-lg hover:bg-blue-700 cursor-pointer"
               >
                 Simpan Penyesuaian
               </button>

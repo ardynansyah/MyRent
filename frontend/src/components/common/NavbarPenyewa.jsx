@@ -22,25 +22,25 @@ export default function NavbarPenyewa({
   }
 
   return (
-    <header className="box-border w-full h-[68px] shrink-0 flex flex-row gap-4 lg:gap-[28px] px-4 md:px-8 justify-start items-center bg-[#FFFFFF] border-b border-[#E2E8F0] sticky top-0 z-40 transition-all">
+    <header className="box-border w-full h-[68px] shrink-0 flex flex-row gap-4 lg:gap-7 px-4 md:px-8 justify-start items-center bg-white border-b border-slate-200 sticky top-0 z-40 transition-all">
       {/* Wordmark Logo */}
       <button
         type="button"
         onClick={onNavigateHome}
-        className="text-[18px] text-[#2563EB] font-extrabold tracking-tight text-left whitespace-nowrap cursor-pointer hover:opacity-90 transition-opacity bg-transparent border-0 p-0"
+        className="text-lg text-blue-600 font-extrabold tracking-tight text-left whitespace-nowrap cursor-pointer hover:opacity-90 transition-opacity bg-transparent border-0 p-0"
       >
         SewaAlat
       </button>
 
       {/* NavLinks */}
-      <nav className="box-border w-fit shrink-0 h-fit hidden md:flex flex-row gap-2 lg:gap-[20px] justify-start items-center">
+      <nav className="box-border w-fit shrink-0 h-fit hidden md:flex flex-row gap-2 lg:gap-5 justify-start items-center">
         <button
           type="button"
           onClick={() => onNavigateTab && onNavigateTab('jelajahi')}
-          className={`box-border w-fit shrink-0 h-fit flex flex-col gap-[6px] py-[7px] px-[12px] justify-start items-center rounded-[8px] cursor-pointer transition-all border-0 ${
+          className={`box-border w-fit shrink-0 h-fit flex flex-col gap-1.5 py-[7px] px-3 justify-start items-center rounded-lg cursor-pointer transition-all border-0 ${
             activeTab === 'jelajahi'
-              ? 'bg-[#EFF6FF] text-[#1D4ED8] font-bold'
-              : 'bg-transparent text-[#475569] hover:bg-slate-50 font-medium'
+              ? 'bg-blue-50 text-blue-700 font-bold'
+              : 'bg-transparent text-slate-600 hover:bg-slate-50 font-medium'
           }`}
         >
           <span className="text-[13px] whitespace-nowrap">Jelajahi Alat</span>
@@ -49,10 +49,10 @@ export default function NavbarPenyewa({
         <button
           type="button"
           onClick={() => onNavigateTab && onNavigateTab('pesanan')}
-          className={`box-border w-fit shrink-0 h-fit flex flex-col gap-[6px] py-[7px] px-[12px] justify-start items-center rounded-[8px] cursor-pointer transition-all border-0 ${
+          className={`box-border w-fit shrink-0 h-fit flex flex-col gap-1.5 py-[7px] px-3 justify-start items-center rounded-lg cursor-pointer transition-all border-0 ${
             activeTab === 'pesanan'
-              ? 'bg-[#EFF6FF] text-[#1D4ED8] font-bold'
-              : 'bg-transparent text-[#475569] hover:bg-slate-50 font-medium'
+              ? 'bg-blue-50 text-blue-700 font-bold'
+              : 'bg-transparent text-slate-600 hover:bg-slate-50 font-medium'
           }`}
         >
           <span className="text-[13px] whitespace-nowrap">Pesanan Saya</span>
@@ -61,10 +61,10 @@ export default function NavbarPenyewa({
         <button
           type="button"
           onClick={() => onNavigateTab && onNavigateTab('dompet')}
-          className={`box-border w-fit shrink-0 h-fit flex flex-col gap-[6px] py-[7px] px-[12px] justify-start items-center rounded-[8px] cursor-pointer transition-all border-0 ${
+          className={`box-border w-fit shrink-0 h-fit flex flex-col gap-1.5 py-[7px] px-3 justify-start items-center rounded-lg cursor-pointer transition-all border-0 ${
             activeTab === 'dompet'
-              ? 'bg-[#EFF6FF] text-[#1D4ED8] font-bold'
-              : 'bg-transparent text-[#475569] hover:bg-slate-50 font-medium'
+              ? 'bg-blue-50 text-blue-700 font-bold'
+              : 'bg-transparent text-slate-600 hover:bg-slate-50 font-medium'
           }`}
         >
           <span className="text-[13px] whitespace-nowrap">Dompet</span>
@@ -72,31 +72,31 @@ export default function NavbarPenyewa({
       </nav>
 
       {/* Search Bar with Power Badge */}
-      <div className="box-border flex-1 h-[40px] flex flex-row gap-[10px] px-[12px] justify-start items-center bg-[#F8FAFC] ring-1 ring-[#E2E8F0] rounded-[10px] focus-within:ring-2 focus-within:ring-[#2563EB] transition-all">
-        <Search className="w-4 h-4 text-[#94A3B8] shrink-0" />
+      <div className="box-border flex-1 h-10 flex flex-row gap-2.5 px-3 justify-start items-center bg-slate-50 ring-1 ring-slate-200 rounded-[10px] focus-within:ring-2 focus-within:ring-blue-600 transition-all">
+        <Search className="w-4 h-4 text-slate-400 shrink-0" />
         <input
           type="text"
           value={onSearchChange ? searchQuery : localSearch}
           onChange={handleSearch}
           placeholder="Cari mesin kopi, oven, mesin kemasan…"
-          className="text-[13px] text-[#0F172A] placeholder:text-[#94A3B8] bg-transparent border-0 outline-none w-full font-normal"
+          className="text-[13px] text-slate-900 placeholder:text-slate-400 bg-transparent border-0 outline-none w-full font-normal"
         />
-        <div className="box-border w-fit shrink-0 h-fit flex flex-row gap-0 py-[5px] px-[10px] justify-start items-center bg-[#EFF6FF] rounded-full select-none">
-          <span className="text-[11px] text-[#1D4ED8] font-semibold tabular-nums whitespace-nowrap">
+        <div className="box-border w-fit shrink-0 h-fit flex flex-row gap-0 py-[5px] px-2.5 justify-start items-center bg-blue-50 rounded-full select-none">
+          <span className="text-[11px] text-blue-700 font-semibold tabular-nums whitespace-nowrap">
             {userPower}
           </span>
         </div>
       </div>
 
       {/* Right Controls */}
-      <div className="box-border w-fit shrink-0 h-fit flex flex-row gap-[8px] sm:gap-[12px] justify-start items-center">
+      <div className="box-border w-fit shrink-0 h-fit flex flex-row gap-2 sm:gap-3 justify-start items-center">
         {/* Date Selector Badge */}
         <div
           title="Rentang Tanggal Sewa Aktif"
-          className="box-border w-fit shrink-0 h-fit hidden sm:flex flex-row gap-[8px] py-[9px] px-[12px] justify-start items-center bg-[#FFFFFF] ring-1 ring-[#E2E8F0] rounded-[10px] cursor-pointer hover:bg-slate-50 transition-colors"
+          className="box-border w-fit shrink-0 h-fit hidden sm:flex flex-row gap-2 py-[9px] px-3 justify-start items-center bg-white ring-1 ring-slate-200 rounded-[10px] cursor-pointer hover:bg-slate-50 transition-colors"
         >
-          <CalendarDays className="w-[15px] h-[15px] text-[#475569]" />
-          <span className="text-[12px] text-[#0F172A] font-semibold tabular-nums whitespace-nowrap">
+          <CalendarDays className="w-[15px] h-[15px] text-slate-600" />
+          <span className="text-xs text-slate-900 font-semibold tabular-nums whitespace-nowrap">
             {dateRange}
           </span>
         </div>
@@ -104,10 +104,10 @@ export default function NavbarPenyewa({
         {/* Wallet Balance */}
         <div
           title="Saldo Dompet MyRent"
-          className="box-border w-fit shrink-0 h-fit flex flex-row gap-[8px] py-[9px] px-[12px] justify-start items-center bg-[#EFF6FF] rounded-[10px] cursor-pointer hover:bg-blue-100/70 transition-colors"
+          className="box-border w-fit shrink-0 h-fit flex flex-row gap-2 py-[9px] px-3 justify-start items-center bg-blue-50 rounded-[10px] cursor-pointer hover:bg-blue-100/70 transition-colors"
         >
-          <Wallet className="w-[15px] h-[15px] text-[#1D4ED8]" />
-          <span className="text-[12px] text-[#1D4ED8] font-bold tabular-nums whitespace-nowrap">
+          <Wallet className="w-[15px] h-[15px] text-blue-700" />
+          <span className="text-xs text-blue-700 font-bold tabular-nums whitespace-nowrap">
             {walletBalance}
           </span>
         </div>
@@ -115,9 +115,9 @@ export default function NavbarPenyewa({
         {/* User Avatar */}
         <div
           title="Profil Pengguna"
-          className="box-border w-[34px] shrink-0 h-[34px] flex flex-row justify-center items-center bg-[#2563EB] rounded-full cursor-pointer hover:scale-105 active:scale-95 transition-transform"
+          className="box-border w-[34px] shrink-0 h-[34px] flex flex-row justify-center items-center bg-blue-600 rounded-full cursor-pointer hover:scale-105 active:scale-95 transition-transform"
         >
-          <span className="text-[11px] text-[#FFFFFF] font-bold whitespace-nowrap">
+          <span className="text-[11px] text-white font-bold whitespace-nowrap">
             {userInitials}
           </span>
         </div>

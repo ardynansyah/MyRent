@@ -16,7 +16,7 @@ export default function Step3ProfilUMKM({
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {/* Nama UMKM */}
         <div className="flex flex-col gap-1.5">
-          <label className="text-[12px] font-semibold text-[#475569]">
+          <label className="text-xs font-semibold text-slate-600">
             Nama UMKM *
           </label>
           <input
@@ -24,8 +24,8 @@ export default function Step3ProfilUMKM({
             placeholder="Kopi Senja Roastery"
             value={formData.businessName}
             onChange={(e) => handleInputChange('businessName', e.target.value)}
-            className={`w-full bg-white text-[13px] rounded-[10px] px-3.5 py-2.5 text-slate-800 placeholder-[#94A3B8] border ${
-              errors.businessName ? 'border-red-400 focus:ring-red-200' : 'border-[#CBD5E1] focus:border-[#2563EB] focus:ring-blue-100'
+            className={`w-full bg-white text-[13px] rounded-[10px] px-3.5 py-2.5 text-slate-800 placeholder-slate-400 border ${
+              errors.businessName ? 'border-red-400 focus:ring-red-200' : 'border-slate-300 focus:border-blue-600 focus:ring-blue-100'
             } focus:outline-none focus:ring-2 transition-all`}
           />
           {errors.businessName && <span className="text-[10px] text-red-500">{errors.businessName}</span>}
@@ -33,13 +33,13 @@ export default function Step3ProfilUMKM({
 
         {/* Kategori Usaha */}
         <div className="flex flex-col gap-1.5">
-          <label className="text-[12px] font-semibold text-[#475569]">
+          <label className="text-xs font-semibold text-slate-600">
             Kategori Usaha *
           </label>
           <select
             value={formData.businessSector}
             onChange={(e) => handleInputChange('businessSector', e.target.value)}
-            className="w-full bg-white text-[13px] rounded-[10px] px-3.5 py-2.5 text-slate-800 border border-[#CBD5E1] focus:border-[#2563EB] focus:ring-2 focus:ring-blue-100 focus:outline-none transition-all cursor-pointer"
+            className="w-full bg-white text-[13px] rounded-[10px] px-3.5 py-2.5 text-slate-800 border border-slate-300 focus:border-blue-600 focus:ring-2 focus:ring-blue-100 focus:outline-none transition-all cursor-pointer"
           >
             {SECTORS.filter((sec) => sec !== 'Lainnya').map((sec) => (
               <option key={sec} value={sec}>
@@ -54,7 +54,7 @@ export default function Step3ProfilUMKM({
               placeholder="Masukkan jenis usaha Anda"
               value={formData.customSector || ''}
               onChange={(e) => handleInputChange('customSector', e.target.value)}
-              className="w-full bg-white text-[13px] rounded-[10px] px-3.5 py-2.5 text-slate-800 placeholder-[#94A3B8] border border-[#CBD5E1] focus:border-[#2563EB] focus:ring-2 focus:ring-blue-100 focus:outline-none transition-all mt-1"
+              className="w-full bg-white text-[13px] rounded-[10px] px-3.5 py-2.5 text-slate-800 placeholder-slate-400 border border-slate-300 focus:border-blue-600 focus:ring-2 focus:ring-blue-100 focus:outline-none transition-all mt-1"
             />
           )}
         </div>
@@ -63,7 +63,7 @@ export default function Step3ProfilUMKM({
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {/* Tahun Mulai Usaha */}
         <div className="flex flex-col gap-1.5">
-          <label className="text-[12px] font-semibold text-[#475569]">
+          <label className="text-xs font-semibold text-slate-600">
             Tahun Mulai Usaha
           </label>
           <input
@@ -71,13 +71,13 @@ export default function Step3ProfilUMKM({
             placeholder="2019"
             value={formData.startYear}
             onChange={(e) => handleInputChange('startYear', e.target.value)}
-            className="w-full bg-white text-[13px] rounded-[10px] px-3.5 py-2.5 text-slate-800 placeholder-[#94A3B8] border border-[#CBD5E1] focus:border-[#2563EB] focus:ring-2 focus:ring-blue-100 focus:outline-none transition-all"
+            className="w-full bg-white text-[13px] rounded-[10px] px-3.5 py-2.5 text-slate-800 placeholder-slate-400 border border-slate-300 focus:border-blue-600 focus:ring-2 focus:ring-blue-100 focus:outline-none transition-all"
           />
         </div>
 
         {/* NIB (opsional) */}
         <div className="flex flex-col gap-1.5">
-          <label className="text-[12px] font-semibold text-[#475569]">
+          <label className="text-xs font-semibold text-slate-600">
             NIB (Nomor Induk Berusaha - opsional)
           </label>
           <input
@@ -85,14 +85,14 @@ export default function Step3ProfilUMKM({
             placeholder="8120 4457 9921"
             value={formData.nib}
             onChange={(e) => handleInputChange('nib', e.target.value)}
-            className="w-full bg-white text-[13px] rounded-[10px] px-3.5 py-2.5 text-slate-800 placeholder-[#94A3B8] border border-[#CBD5E1] focus:border-[#2563EB] focus:ring-2 focus:ring-blue-100 focus:outline-none transition-all"
+            className="w-full bg-white text-[13px] rounded-[10px] px-3.5 py-2.5 text-slate-800 placeholder-slate-400 border border-slate-300 focus:border-blue-600 focus:ring-2 focus:ring-blue-100 focus:outline-none transition-all"
           />
         </div>
       </div>
 
       {/* Daya Listrik Tempat Usaha (Pill selector) */}
       <div className="flex flex-col gap-2">
-        <label className="text-[12px] font-semibold text-[#475569]">
+        <label className="text-xs font-semibold text-slate-600">
           Daya Listrik Tempat Usaha *
         </label>
         <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5">
@@ -106,10 +106,10 @@ export default function Step3ProfilUMKM({
                   handleInputChange('powerCapacity', cap)
                   handleInputChange('isManualPower', false)
                 }}
-                className={`py-2 px-3 rounded-[10px] text-[12px] font-semibold border transition-all cursor-pointer text-center ${
+                className={`py-2 px-3 rounded-[10px] text-xs font-semibold border transition-all cursor-pointer text-center ${
                   isSelected
                     ? 'bg-blue-600 text-white border-blue-600 shadow-xs'
-                    : 'bg-white text-slate-700 border-[#CBD5E1] hover:border-blue-400 hover:bg-slate-50'
+                    : 'bg-white text-slate-700 border-slate-300 hover:border-blue-400 hover:bg-slate-50'
                 }`}
               >
                 {cap}
@@ -127,10 +127,10 @@ export default function Step3ProfilUMKM({
                 )
               }
             }}
-            className={`py-2 px-3 rounded-[10px] text-[12px] font-semibold border transition-all cursor-pointer text-center ${
+            className={`py-2 px-3 rounded-[10px] text-xs font-semibold border transition-all cursor-pointer text-center ${
               isManualPowerActive
                 ? 'bg-blue-600 text-white border-blue-600 shadow-xs'
-                : 'bg-white text-slate-700 border-[#CBD5E1] hover:border-blue-400 hover:bg-slate-50'
+                : 'bg-white text-slate-700 border-slate-300 hover:border-blue-400 hover:bg-slate-50'
             }`}
           >
             Input Manual
@@ -153,7 +153,7 @@ export default function Step3ProfilUMKM({
                 handleInputChange('customPower', val)
                 handleInputChange('powerCapacity', val ? `${val} W` : '')
               }}
-              className="w-full bg-white text-[13px] rounded-[10px] pl-3.5 pr-10 py-2.5 text-slate-800 placeholder-[#94A3B8] border border-[#CBD5E1] focus:border-[#2563EB] focus:ring-2 focus:ring-blue-100 focus:outline-none transition-all"
+              className="w-full bg-white text-[13px] rounded-[10px] pl-3.5 pr-10 py-2.5 text-slate-800 placeholder-slate-400 border border-slate-300 focus:border-blue-600 focus:ring-2 focus:ring-blue-100 focus:outline-none transition-all"
             />
             <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[13px] font-bold text-slate-500 pointer-events-none select-none">
               W
@@ -161,7 +161,7 @@ export default function Step3ProfilUMKM({
           </div>
         )}
 
-        <span className="text-[10px] text-[#64748B]">
+        <span className="text-[10px] text-slate-500">
           Daya listrik dipakai memfilter alat mesin agar sesuai kapasitas listrik toko/bengkel Anda.
         </span>
         {errors.powerCapacity && (
@@ -171,7 +171,7 @@ export default function Step3ProfilUMKM({
 
       {/* Foto Lokasi Usaha (1–2 foto) */}
       <div className="flex flex-col gap-2">
-        <label className="text-[12px] font-semibold text-[#475569]">
+        <label className="text-xs font-semibold text-slate-600">
           Foto Lokasi Usaha (1–2 foto) *
         </label>
 
@@ -184,7 +184,7 @@ export default function Step3ProfilUMKM({
                 ? 'bg-blue-50/70 border-blue-400 text-blue-700'
                 : errors.frontPhoto
                 ? 'bg-red-50/50 border-red-300 text-slate-600'
-                : 'bg-[#F8FAFC] border-[#CBD5E1] text-slate-600 hover:bg-blue-50/40'
+                : 'bg-slate-50 border-slate-300 text-slate-600 hover:bg-blue-50/40'
             }`}
           >
             {formData.frontPhoto ? (
@@ -203,7 +203,7 @@ export default function Step3ProfilUMKM({
                 <span className="text-[11px] font-bold text-slate-800">
                   Tampak Depan Toko
                 </span>
-                <span className="text-[9px] text-[#94A3B8]">Plang / etalase usaha</span>
+                <span className="text-[9px] text-slate-400">Plang / etalase usaha</span>
               </>
             )}
           </div>
@@ -214,7 +214,7 @@ export default function Step3ProfilUMKM({
             className={`min-h-[90px] rounded-[10px] border border-dashed flex flex-col items-center justify-center gap-1 p-2.5 cursor-pointer transition-all ${
               formData.productionPhoto
                 ? 'bg-blue-50/70 border-blue-400 text-blue-700'
-                : 'bg-[#F8FAFC] border-[#CBD5E1] text-slate-600 hover:bg-blue-50/40'
+                : 'bg-slate-50 border-slate-300 text-slate-600 hover:bg-blue-50/40'
             }`}
           >
             {formData.productionPhoto ? (
@@ -233,7 +233,7 @@ export default function Step3ProfilUMKM({
                 <span className="text-[11px] font-bold text-slate-800">
                   Area Produksi (Opsional)
                 </span>
-                <span className="text-[9px] text-[#94A3B8]">Dapur / meja kerja</span>
+                <span className="text-[9px] text-slate-400">Dapur / meja kerja</span>
               </>
             )}
           </div>
@@ -243,7 +243,7 @@ export default function Step3ProfilUMKM({
 
       {/* Deskripsi Singkat Usaha */}
       <div className="flex flex-col gap-1.5">
-        <label className="text-[12px] font-semibold text-[#475569]">
+        <label className="text-xs font-semibold text-slate-600">
           Deskripsi Singkat Usaha
         </label>
         <textarea
@@ -251,7 +251,7 @@ export default function Step3ProfilUMKM({
           placeholder="Contoh: Roastery kopi kecil dengan 2 barista, produksi 40 kg green bean per minggu dan melayani 60 cangkir/hari."
           value={formData.businessDesc}
           onChange={(e) => handleInputChange('businessDesc', e.target.value)}
-          className="w-full bg-white text-[13px] rounded-[10px] p-3 text-slate-800 placeholder-[#94A3B8] border border-[#CBD5E1] focus:border-[#2563EB] focus:ring-2 focus:ring-blue-100 focus:outline-none transition-all resize-none"
+          className="w-full bg-white text-[13px] rounded-[10px] p-3 text-slate-800 placeholder-slate-400 border border-slate-300 focus:border-blue-600 focus:ring-2 focus:ring-blue-100 focus:outline-none transition-all resize-none"
         />
       </div>
     </div>

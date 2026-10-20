@@ -11,7 +11,7 @@ export default function Step5ReviewKirim({ formData, errors, handleInputChange, 
       </div>
 
       {/* Ringkasan 1: Akun */}
-      <div className="p-3.5 rounded-xl border border-[#E2E8F0] bg-[#F8FAFC] flex items-start justify-between">
+      <div className="p-3.5 rounded-xl border border-slate-200 bg-slate-50 flex items-start justify-between">
         <div className="space-y-1">
           <span className="text-[10px] font-bold text-blue-600 uppercase">1. Akun &amp; Kontak</span>
           <div className="text-[13px] font-bold text-slate-900">
@@ -32,7 +32,7 @@ export default function Step5ReviewKirim({ formData, errors, handleInputChange, 
       </div>
 
       {/* Ringkasan 2: Identitas KTP */}
-      <div className="p-3.5 rounded-xl border border-[#E2E8F0] bg-[#F8FAFC] flex items-start justify-between">
+      <div className="p-3.5 rounded-xl border border-slate-200 bg-slate-50 flex items-start justify-between">
         <div className="space-y-1">
           <span className="text-[11px] font-bold text-blue-600 uppercase tracking-wider">2. Identitas (KTP)</span>
           <div className="text-[13px] font-bold text-slate-900">
@@ -54,7 +54,7 @@ export default function Step5ReviewKirim({ formData, errors, handleInputChange, 
       </div>
 
       {/* Ringkasan 3: Profil UMKM */}
-      <div className="p-3.5 rounded-xl border border-[#E2E8F0] bg-[#F8FAFC] flex items-start justify-between">
+      <div className="p-3.5 rounded-xl border border-slate-200 bg-slate-50 flex items-start justify-between">
         <div className="space-y-1">
           <span className="text-[11px] font-bold text-blue-600 uppercase tracking-wider">3. Profil UMKM</span>
           <div className="text-[13px] font-bold text-slate-900">
@@ -75,7 +75,7 @@ export default function Step5ReviewKirim({ formData, errors, handleInputChange, 
       </div>
 
       {/* Ringkasan 4: Alamat & Rekening */}
-      <div className="p-3.5 rounded-xl border border-[#E2E8F0] bg-[#F8FAFC] flex items-start justify-between">
+      <div className="p-3.5 rounded-xl border border-slate-200 bg-slate-50 flex items-start justify-between">
         <div className="space-y-1">
           <span className="text-[11px] font-bold text-blue-600 uppercase tracking-wider">4. Alamat &amp; Rekening Refund</span>
           <div className="text-[13px] font-bold text-slate-900">
@@ -102,13 +102,13 @@ export default function Step5ReviewKirim({ formData, errors, handleInputChange, 
           className="flex items-start gap-2.5 cursor-pointer select-none"
         >
           <div
-            className={`w-4 h-4 rounded-[4px] mt-0.5 flex items-center justify-center shrink-0 transition-colors ${
-              formData.agreeTruth ? 'bg-[#2563EB]' : 'border border-[#CBD5E1] bg-white'
+            className={`w-4 h-4 rounded mt-0.5 flex items-center justify-center shrink-0 transition-colors ${
+              formData.agreeTruth ? 'bg-blue-600' : 'border border-slate-300 bg-white'
             }`}
           >
             {formData.agreeTruth && <Check className="w-2.5 h-2.5 text-white" strokeWidth={3} />}
           </div>
-          <span className="text-[11px] text-[#475569] leading-tight">
+          <span className="text-[11px] text-slate-600 leading-tight">
             Saya menyatakan seluruh data dan dokumen yang dilampirkan adalah benar dan sah milik usaha saya.
           </span>
         </label>
@@ -118,13 +118,13 @@ export default function Step5ReviewKirim({ formData, errors, handleInputChange, 
           className="flex items-start gap-2.5 cursor-pointer select-none"
         >
           <div
-            className={`w-4 h-4 rounded-[4px] mt-0.5 flex items-center justify-center shrink-0 transition-colors ${
-              formData.agreeTerms ? 'bg-[#2563EB]' : 'border border-[#CBD5E1] bg-white'
+            className={`w-4 h-4 rounded mt-0.5 flex items-center justify-center shrink-0 transition-colors ${
+              formData.agreeTerms ? 'bg-blue-600' : 'border border-slate-300 bg-white'
             }`}
           >
             {formData.agreeTerms && <Check className="w-2.5 h-2.5 text-white" strokeWidth={3} />}
           </div>
-          <span className="text-[11px] text-[#475569] leading-tight">
+          <span className="text-[11px] text-slate-600 leading-tight">
             Saya telah membaca serta menyetujui Ketentuan Layanan, Ketentuan Escrow Deposit, dan Kebijakan Privasi MyRent.
           </span>
         </label>

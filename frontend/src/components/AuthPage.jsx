@@ -140,7 +140,7 @@ export default function AuthPage({ onLoginSuccess, onNavigateRegister, onBackToL
 
 
   return (
-    <div className="min-h-screen w-full bg-[#F8FAFC] flex flex-col justify-between items-center text-slate-800 font-sans selection:bg-blue-100 selection:text-blue-700">
+    <div className="min-h-screen w-full bg-slate-50 flex flex-col justify-between items-center text-slate-800 font-sans selection:bg-blue-100 selection:text-blue-700">
       {/* Toast Notifikasi Global */}
       {notification && (
         <div className="fixed top-4 sm:top-6 right-4 sm:right-6 z-50 flex items-center gap-2.5 bg-slate-900 text-white px-4 py-3 rounded-xl shadow-xl text-xs sm:text-sm font-medium border border-slate-700/60 animate-in fade-in slide-in-from-top-4 duration-300 max-w-[90vw]">
@@ -163,14 +163,14 @@ export default function AuthPage({ onLoginSuccess, onNavigateRegister, onBackToL
               Responsif: DISEMBUNYIKAN di layar mobile (hidden), HANYA TAMPIL di layar besar (lg:flex) */}
           <div className="hidden lg:flex w-full lg:w-[480px] shrink-0 flex-col gap-5 text-left">
             {/* Headline Dinamis */}
-            <h1 className="text-3xl sm:text-[36px] sm:leading-[44px] text-slate-900 font-extrabold tracking-[-0.9px]">
+            <h1 className="text-3xl sm:text-4xl sm:leading-[44px] text-slate-900 font-extrabold tracking-[-0.9px]">
               {isPenyewa
                 ? 'Masuk dan lanjutkan sewa alat Anda.'
                 : 'Kelola dan sewakan alat produksi Anda.'}
             </h1>
 
             {/* Deskripsi Dinamis dengan kontras teruji WCAG */}
-            <p className="text-[14px] leading-[22px] text-slate-600 max-w-[480px]">
+            <p className="text-sm leading-[22px] text-slate-600 max-w-[480px]">
               {isPenyewa
                 ? 'Pantau pengajuan sewa, masa sewa berjalan, dan status refund deposit Anda dalam satu tempat.'
                 : 'Pantau status unit disewa, jadwal pengembalian, dan pencairan dana sewa langsung ke rekening Anda.'}
@@ -182,28 +182,28 @@ export default function AuthPage({ onLoginSuccess, onNavigateRegister, onBackToL
                 <>
                   <div className="flex flex-row items-start gap-2.5">
                     <CheckCircle2
-                      className="w-[18px] h-[18px] text-emerald-600 shrink-0 mt-0.5"
+                      className="w-4.5 h-4.5 text-emerald-600 shrink-0 mt-0.5"
                       strokeWidth={2.4}
                     />
-                    <span className="text-[13px] leading-[20px] text-slate-700 font-medium">
+                    <span className="text-[13px] leading-5 text-slate-700 font-medium">
                       Ajukan sewa &amp; bayar dengan QRIS atau Virtual Account
                     </span>
                   </div>
                   <div className="flex flex-row items-start gap-2.5">
                     <CheckCircle2
-                      className="w-[18px] h-[18px] text-emerald-600 shrink-0 mt-0.5"
+                      className="w-4.5 h-4.5 text-emerald-600 shrink-0 mt-0.5"
                       strokeWidth={2.4}
                     />
-                    <span className="text-[13px] leading-[20px] text-slate-700 font-medium">
+                    <span className="text-[13px] leading-5 text-slate-700 font-medium">
                       Deposit ditahan escrow, refund otomatis setelah inspeksi
                     </span>
                   </div>
                   <div className="flex flex-row items-start gap-2.5">
                     <CheckCircle2
-                      className="w-[18px] h-[18px] text-emerald-600 shrink-0 mt-0.5"
+                      className="w-4.5 h-4.5 text-emerald-600 shrink-0 mt-0.5"
                       strokeWidth={2.4}
                     />
-                    <span className="text-[13px] leading-[20px] text-slate-700 font-medium">
+                    <span className="text-[13px] leading-5 text-slate-700 font-medium">
                       Kontrak dan BAST tersimpan rapi di akun Anda
                     </span>
                   </div>
@@ -212,28 +212,28 @@ export default function AuthPage({ onLoginSuccess, onNavigateRegister, onBackToL
                 <>
                   <div className="flex flex-row items-start gap-2.5">
                     <CheckCircle2
-                      className="w-[18px] h-[18px] text-emerald-600 shrink-0 mt-0.5"
+                      className="w-4.5 h-4.5 text-emerald-600 shrink-0 mt-0.5"
                       strokeWidth={2.4}
                     />
-                    <span className="text-[13px] leading-[20px] text-slate-700 font-medium">
+                    <span className="text-[13px] leading-5 text-slate-700 font-medium">
                       Penyewa terverifikasi identitas KTP &amp; NIB resmi
                     </span>
                   </div>
                   <div className="flex flex-row items-start gap-2.5">
                     <CheckCircle2
-                      className="w-[18px] h-[18px] text-emerald-600 shrink-0 mt-0.5"
+                      className="w-4.5 h-4.5 text-emerald-600 shrink-0 mt-0.5"
                       strokeWidth={2.4}
                     />
-                    <span className="text-[13px] leading-[20px] text-slate-700 font-medium">
+                    <span className="text-[13px] leading-5 text-slate-700 font-medium">
                       Dana sewa dan deposit diamankan di escrow sebelum alat dikirim
                     </span>
                   </div>
                   <div className="flex flex-row items-start gap-2.5">
                     <CheckCircle2
-                      className="w-[18px] h-[18px] text-emerald-600 shrink-0 mt-0.5"
+                      className="w-4.5 h-4.5 text-emerald-600 shrink-0 mt-0.5"
                       strokeWidth={2.4}
                     />
-                    <span className="text-[13px] leading-[20px] text-slate-700 font-medium">
+                    <span className="text-[13px] leading-5 text-slate-700 font-medium">
                       BAST serah terima digital lengkap dengan bukti dokumentasi foto
                     </span>
                   </div>
@@ -248,10 +248,10 @@ export default function AuthPage({ onLoginSuccess, onNavigateRegister, onBackToL
           <div className="w-full max-w-[440px] shrink-0 bg-white border border-slate-200/90 rounded-2xl p-6 sm:p-8 flex flex-col gap-5 shadow-md shadow-slate-200/50">
             {/* Header Kartu: Judul & Subjudul Berkontras Tinggi (Tanpa Logo MyRent Redundan) */}
             <div>
-              <h2 className="text-[20px] sm:text-[22px] font-bold text-slate-900 tracking-tight">
+              <h2 className="text-xl sm:text-[22px] font-bold text-slate-900 tracking-tight">
                 Masuk ke akun Anda
               </h2>
-              <p className="text-[13px] leading-[20px] text-slate-600 mt-1">
+              <p className="text-[13px] leading-5 text-slate-600 mt-1">
                 Pilih preferensi akun, lalu masuk dengan email dan kata sandi Anda.
               </p>
             </div>
@@ -275,7 +275,7 @@ export default function AuthPage({ onLoginSuccess, onNavigateRegister, onBackToL
 
             {/* Error Message Box (Bila Validasi Gagal) */}
             {error && (
-              <div className="w-full flex items-center gap-2 p-3 bg-red-50 border border-red-200 text-red-700 text-[12px] font-medium rounded-xl animate-in fade-in duration-200">
+              <div className="w-full flex items-center gap-2 p-3 bg-red-50 border border-red-200 text-red-700 text-xs font-medium rounded-xl animate-in fade-in duration-200">
                 <AlertCircle className="w-4 h-4 shrink-0 text-red-600" />
                 <span className="leading-tight">{error}</span>
               </div>
@@ -298,7 +298,7 @@ export default function AuthPage({ onLoginSuccess, onNavigateRegister, onBackToL
                       if (error) setError('')
                     }}
                     placeholder={isPenyewa ? 'nama@umkm.com' : 'nama@pemilikalat.com'}
-                    className="w-full h-[46px] bg-white border border-slate-300 rounded-xl pl-10 pr-3.5 text-[14px] text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-blue-100 transition-all font-normal"
+                    className="w-full h-[46px] bg-white border border-slate-300 rounded-xl pl-10 pr-3.5 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100 transition-all font-normal"
                   />
                 </div>
               </div>
@@ -318,7 +318,7 @@ export default function AuthPage({ onLoginSuccess, onNavigateRegister, onBackToL
                       if (error) setError('')
                     }}
                     placeholder="••••••••"
-                    className="w-full h-[46px] bg-white border border-slate-300 rounded-xl pl-10 pr-10 text-[14px] text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-blue-100 transition-all font-normal"
+                    className="w-full h-[46px] bg-white border border-slate-300 rounded-xl pl-10 pr-10 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100 transition-all font-normal"
                   />
                   <button
                     type="button"
@@ -342,21 +342,21 @@ export default function AuthPage({ onLoginSuccess, onNavigateRegister, onBackToL
                   className="flex flex-row items-center gap-2 cursor-pointer select-none"
                 >
                   <div
-                    className={`w-4 h-4 rounded-[4px] flex items-center justify-center transition-colors ${
+                    className={`w-4 h-4 rounded flex items-center justify-center transition-colors ${
                       rememberMe
-                        ? 'bg-[#2563EB] border border-[#2563EB]'
+                        ? 'bg-blue-600 border border-blue-600'
                         : 'border border-slate-300 bg-white'
                     }`}
                   >
                     {rememberMe && <Check className="w-2.5 h-2.5 text-white" strokeWidth={3} />}
                   </div>
-                  <span className="text-[12px] text-slate-700 font-medium">Ingat saya</span>
+                  <span className="text-xs text-slate-700 font-medium">Ingat saya</span>
                 </label>
 
                 <button
                   type="button"
                   onClick={() => handleNotify('Tautan pemulihan kata sandi telah dikirim ke email Anda.')}
-                  className="text-[12px] text-[#2563EB] font-bold hover:text-blue-800 hover:underline cursor-pointer transition-colors"
+                  className="text-xs text-blue-600 font-bold hover:text-blue-800 hover:underline cursor-pointer transition-colors"
                 >
                   Lupa sandi?
                 </button>
@@ -366,7 +366,7 @@ export default function AuthPage({ onLoginSuccess, onNavigateRegister, onBackToL
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full h-[46px] bg-[#2563EB] hover:bg-blue-700 active:scale-[0.99] text-white font-bold text-[14px] rounded-xl flex items-center justify-center gap-2 transition-all cursor-pointer shadow-xs mt-1 disabled:opacity-75 disabled:cursor-not-allowed"
+                className="w-full h-[46px] bg-blue-600 hover:bg-blue-700 active:scale-[0.99] text-white font-bold text-sm rounded-xl flex items-center justify-center gap-2 transition-all cursor-pointer shadow-xs mt-1 disabled:opacity-75 disabled:cursor-not-allowed"
               >
                 {isLoading ? (
                   <>
@@ -379,13 +379,13 @@ export default function AuthPage({ onLoginSuccess, onNavigateRegister, onBackToL
               </button>
 
               {/* Opsi Registrasi Baru: Tautan Teks Bersih Menggantikan Tombol Outline Sekunder */}
-              <div className="pt-2 text-center text-[12px] sm:text-[13px] text-slate-600 leading-relaxed">
+              <div className="pt-2 text-center text-xs sm:text-[13px] text-slate-600 leading-relaxed">
                 <span>Belum punya akun? </span>
                 <div className="inline-flex flex-wrap justify-center gap-1.5 mt-1 sm:mt-0">
                   <button
                     type="button"
                     onClick={() => handleRegisterRedirect('penyewa')}
-                    className="font-bold text-[#2563EB] hover:text-slate-900 underline underline-offset-2 transition-colors cursor-pointer"
+                    className="font-bold text-blue-600 hover:text-slate-900 underline underline-offset-2 transition-colors cursor-pointer"
                   >
                     Daftar sebagai Penyewa
                   </button>
@@ -393,7 +393,7 @@ export default function AuthPage({ onLoginSuccess, onNavigateRegister, onBackToL
                   <button
                     type="button"
                     onClick={() => handleRegisterRedirect('pemilik')}
-                    className="font-bold text-[#2563EB] hover:text-slate-900 underline underline-offset-2 transition-colors cursor-pointer"
+                    className="font-bold text-blue-600 hover:text-slate-900 underline underline-offset-2 transition-colors cursor-pointer"
                   >
                     Daftar sebagai Pemilik
                   </button>
@@ -406,7 +406,7 @@ export default function AuthPage({ onLoginSuccess, onNavigateRegister, onBackToL
       </main>
 
       {/* Global Footer */}
-      <footer className="w-full py-5 text-center text-[12px] text-slate-600 font-medium">
+      <footer className="w-full py-5 text-center text-xs text-slate-600 font-medium">
         © 2026 MyRent. Platform Sewa Alat Terverifikasi untuk UMKM Indonesia.
       </footer>
     </div>
@@ -441,7 +441,7 @@ function RoleTabSwitcher({ activeRole, onRoleChange }) {
         aria-selected={isPenyewa}
         onClick={() => onRoleChange('penyewa')}
         className={`relative z-10 w-full py-2.5 px-3 rounded-lg text-[13px] font-bold text-center transition-colors duration-200 cursor-pointer ${
-          isPenyewa ? 'text-[#2563EB]' : 'text-slate-600 hover:text-slate-900'
+          isPenyewa ? 'text-blue-600' : 'text-slate-600 hover:text-slate-900'
         }`}
       >
         Penyewa UMKM
@@ -454,7 +454,7 @@ function RoleTabSwitcher({ activeRole, onRoleChange }) {
         aria-selected={!isPenyewa}
         onClick={() => onRoleChange('pemilik')}
         className={`relative z-10 w-full py-2.5 px-3 rounded-lg text-[13px] font-bold text-center transition-colors duration-200 cursor-pointer ${
-          !isPenyewa ? 'text-[#2563EB]' : 'text-slate-600 hover:text-slate-900'
+          !isPenyewa ? 'text-blue-600' : 'text-slate-600 hover:text-slate-900'
         }`}
       >
         Pemilik Alat

@@ -11,7 +11,7 @@ export default function Step2IdentitasKTP({
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {/* NIK */}
         <div className="flex flex-col gap-1.5">
-          <label className="text-[12px] font-semibold text-[#475569]">
+          <label className="text-xs font-semibold text-slate-600">
             NIK *
           </label>
           <input
@@ -21,7 +21,7 @@ export default function Step2IdentitasKTP({
             value={formData.nik}
             onChange={(e) => handleInputChange('nik', e.target.value.replace(/\D/g, ''))}
             className={`w-full bg-white text-[13px] rounded-[10px] px-3.5 py-2.5 text-slate-800 placeholder:text-slate-400 border ${
-              errors.nik ? 'border-red-400 focus:ring-red-200' : 'border-[#CBD5E1] focus:border-[#2563EB] focus:ring-blue-100'
+              errors.nik ? 'border-red-400 focus:ring-red-200' : 'border-slate-300 focus:border-blue-600 focus:ring-blue-100'
             } focus:outline-none focus:ring-2 transition-all font-mono tabular-nums tracking-wide`}
           />
           {errors.nik && <span className="text-xs font-medium text-red-600">{errors.nik}</span>}
@@ -29,7 +29,7 @@ export default function Step2IdentitasKTP({
 
         {/* Nama sesuai KTP */}
         <div className="flex flex-col gap-1.5">
-          <label className="text-[12px] font-semibold text-[#475569]">
+          <label className="text-xs font-semibold text-slate-600">
             Nama sesuai KTP *
           </label>
           <input
@@ -38,7 +38,7 @@ export default function Step2IdentitasKTP({
             value={formData.ktpName}
             onChange={(e) => handleInputChange('ktpName', e.target.value)}
             className={`w-full bg-white text-[13px] rounded-[10px] px-3.5 py-2.5 text-slate-800 placeholder:text-slate-400 border ${
-              errors.ktpName ? 'border-red-400 focus:ring-red-200' : 'border-[#CBD5E1] focus:border-[#2563EB] focus:ring-blue-100'
+              errors.ktpName ? 'border-red-400 focus:ring-red-200' : 'border-slate-300 focus:border-blue-600 focus:ring-blue-100'
             } focus:outline-none focus:ring-2 transition-all`}
           />
           {errors.ktpName && <span className="text-xs font-medium text-red-600">{errors.ktpName}</span>}
@@ -48,7 +48,7 @@ export default function Step2IdentitasKTP({
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {/* Tempat Lahir */}
         <div className="flex flex-col gap-1.5">
-          <label className="text-[12px] font-semibold text-[#475569]">
+          <label className="text-xs font-semibold text-slate-600">
             Tempat Lahir *
           </label>
           <input
@@ -56,8 +56,8 @@ export default function Step2IdentitasKTP({
             placeholder="Jakarta"
             value={formData.birthPlace}
             onChange={(e) => handleInputChange('birthPlace', e.target.value)}
-            className={`w-full bg-white text-[13px] rounded-[10px] px-3.5 py-2.5 text-slate-800 placeholder-[#94A3B8] border ${
-              errors.birthPlace ? 'border-red-400 focus:ring-red-200' : 'border-[#CBD5E1] focus:border-[#2563EB] focus:ring-blue-100'
+            className={`w-full bg-white text-[13px] rounded-[10px] px-3.5 py-2.5 text-slate-800 placeholder-slate-400 border ${
+              errors.birthPlace ? 'border-red-400 focus:ring-red-200' : 'border-slate-300 focus:border-blue-600 focus:ring-blue-100'
             } focus:outline-none focus:ring-2 transition-all`}
           />
           {errors.birthPlace && <span className="text-[10px] text-red-500">{errors.birthPlace}</span>}
@@ -65,15 +65,15 @@ export default function Step2IdentitasKTP({
 
         {/* Tanggal Lahir */}
         <div className="flex flex-col gap-1.5">
-          <label className="text-[12px] font-semibold text-[#475569]">
+          <label className="text-xs font-semibold text-slate-600">
             Tanggal Lahir *
           </label>
           <input
             type="date"
             value={formData.birthDate}
             onChange={(e) => handleInputChange('birthDate', e.target.value)}
-            className={`w-full bg-white text-[13px] rounded-[10px] px-3.5 py-2.5 text-slate-800 placeholder-[#94A3B8] border ${
-              errors.birthDate ? 'border-red-400 focus:ring-red-200' : 'border-[#CBD5E1] focus:border-[#2563EB] focus:ring-blue-100'
+            className={`w-full bg-white text-[13px] rounded-[10px] px-3.5 py-2.5 text-slate-800 placeholder-slate-400 border ${
+              errors.birthDate ? 'border-red-400 focus:ring-red-200' : 'border-slate-300 focus:border-blue-600 focus:ring-blue-100'
             } focus:outline-none focus:ring-2 transition-all`}
           />
           {errors.birthDate && <span className="text-[10px] text-red-500">{errors.birthDate}</span>}
@@ -82,7 +82,7 @@ export default function Step2IdentitasKTP({
 
       {/* Foto KTP & Selfie */}
       <div className="flex flex-col gap-2">
-        <label className="text-[12px] font-semibold text-[#475569]">
+        <label className="text-xs font-semibold text-slate-600">
           Foto KTP &amp; Verifikasi Selfie *
         </label>
 
@@ -95,7 +95,7 @@ export default function Step2IdentitasKTP({
                 ? 'bg-blue-50/70 border-blue-400 text-blue-700'
                 : errors.ktpFile
                 ? 'bg-red-50/50 border-red-300 text-slate-600 hover:bg-slate-50'
-                : 'bg-[#F8FAFC] border-[#CBD5E1] text-slate-600 hover:bg-blue-50/40 hover:border-blue-300'
+                : 'bg-slate-50 border-slate-300 text-slate-600 hover:bg-blue-50/40 hover:border-blue-300'
             }`}
           >
             {formData.ktpFile ? (
@@ -116,7 +116,7 @@ export default function Step2IdentitasKTP({
                 <span className="text-[11px] font-bold text-slate-800">
                   Foto KTP Asli
                 </span>
-                <span className="text-[9px] text-[#94A3B8]">
+                <span className="text-[9px] text-slate-400">
                   JPG / PNG maks 5 MB
                 </span>
               </>
@@ -131,7 +131,7 @@ export default function Step2IdentitasKTP({
                 ? 'bg-blue-50/70 border-blue-400 text-blue-700'
                 : errors.selfieFile
                 ? 'bg-red-50/50 border-red-300 text-slate-600 hover:bg-slate-50'
-                : 'bg-[#F8FAFC] border-[#CBD5E1] text-slate-600 hover:bg-blue-50/40 hover:border-blue-300'
+                : 'bg-slate-50 border-slate-300 text-slate-600 hover:bg-blue-50/40 hover:border-blue-300'
             }`}
           >
             {formData.selfieFile ? (
@@ -152,7 +152,7 @@ export default function Step2IdentitasKTP({
                 <span className="text-[11px] font-bold text-slate-800">
                   Selfie + KTP
                 </span>
-                <span className="text-[9px] text-[#94A3B8]">
+                <span className="text-[9px] text-slate-400">
                   Wajah &amp; KTP terlihat jelas
                 </span>
               </>
@@ -168,7 +168,7 @@ export default function Step2IdentitasKTP({
       </div>
 
       {/* Catatan Privasi (Sesuai HTML mentah) */}
-      <div className="p-3 bg-blue-50/60 border border-blue-100 rounded-[10px] flex items-center gap-2 text-[11px] text-[#475569]">
+      <div className="p-3 bg-blue-50/60 border border-blue-100 rounded-[10px] flex items-center gap-2 text-[11px] text-slate-600">
         <ShieldCheck className="w-4 h-4 text-blue-600 shrink-0" />
         <span>Data identitas akan dienkripsi dan tidak ditampilkan ke publik.</span>
       </div>

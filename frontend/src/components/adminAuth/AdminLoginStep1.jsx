@@ -58,7 +58,7 @@ export default function AdminLoginStep1({
   }
 
   return (
-    <div className="box-border w-full min-h-screen flex flex-col justify-between items-center bg-[#F8FAFC] py-6 px-4">
+    <div className="box-border w-full min-h-screen flex flex-col justify-between items-center bg-slate-50 py-6 px-4">
       {/* TopBar */}
       <div className="box-border w-full max-w-[1440px] px-4 sm:px-12 py-3 flex flex-row justify-between items-center">
         <div className="text-[10px] text-slate-500 font-bold tracking-[1.5px] uppercase">
@@ -68,7 +68,7 @@ export default function AdminLoginStep1({
           <button
             type="button"
             onClick={onBackToHome}
-            className="text-[11px] text-[#64748B] hover:text-[#0F172A] font-medium transition-colors cursor-pointer"
+            className="text-[11px] text-slate-500 hover:text-slate-900 font-medium transition-colors cursor-pointer"
           >
             ← Kembali ke Beranda Publik
           </button>
@@ -79,14 +79,14 @@ export default function AdminLoginStep1({
       <div className="w-full flex-1 flex flex-col justify-center items-center py-6">
         <form
           onSubmit={handleSubmit}
-          className="box-border w-full max-w-[456px] flex flex-col gap-[16px] p-[28px] justify-start items-start bg-[#FFFFFF] outline outline-1 outline-[#E2E8F0] -outline-offset-1 rounded-[20px] shadow-sm shadow-slate-200/50"
+          className="box-border w-full max-w-[456px] flex flex-col gap-4 p-7 justify-start items-start bg-white outline outline-1 outline-slate-200 -outline-offset-1 rounded-[20px] shadow-sm shadow-slate-200/50"
         >
           {/* Header */}
           <div className="w-full flex flex-col gap-1">
-            <h1 className="text-[26px] sm:text-[28px] leading-tight text-[#0F172A] font-extrabold tracking-tight text-left">
+            <h1 className="text-[26px] sm:text-[28px] leading-tight text-slate-900 font-extrabold tracking-tight text-left">
               Masuk sebagai admin
             </h1>
-            <p className="text-[13px] leading-[20px] text-[#475569] font-normal text-left">
+            <p className="text-[13px] leading-5 text-slate-600 font-normal text-left">
               Gunakan email Gmail resmi yang terdaftar pada undangan admin SewaAlat.
             </p>
           </div>
@@ -100,25 +100,25 @@ export default function AdminLoginStep1({
           )}
 
           {/* Form Fields */}
-          <div className="box-border w-full flex flex-col gap-[14px]">
+          <div className="box-border w-full flex flex-col gap-3.5">
             {/* Field Email */}
-            <div className="box-border w-full flex flex-col gap-[6px]">
+            <div className="box-border w-full flex flex-col gap-1.5">
               <div className="box-border w-full flex flex-row justify-between items-center">
-                <label className="text-[12px] text-[#475569] font-semibold text-left">
+                <label className="text-xs text-slate-600 font-semibold text-left">
                   Email Gmail
                 </label>
                 {isGmailOrDomain && (
-                  <div className="flex flex-row items-center gap-[4px]">
-                    <CheckCircle2 className="w-[12px] h-[12px] text-[#15803D]" />
-                    <span className="text-[11px] text-[#15803D] font-semibold">
+                  <div className="flex flex-row items-center gap-1">
+                    <CheckCircle2 className="w-3 h-3 text-green-700" />
+                    <span className="text-[11px] text-green-700 font-semibold">
                       terdaftar
                     </span>
                   </div>
                 )}
               </div>
 
-              <div className="box-border w-full h-[46px] flex flex-row gap-[10px] px-[12px] items-center bg-[#FFFFFF] outline outline-1 outline-[#E2E8F0] -outline-offset-1 focus-within:outline-2 focus-within:outline-[#2563EB] rounded-[10px] transition-all">
-                <Mail className="w-[15px] h-[15px] text-[#94A3B8] shrink-0" />
+              <div className="box-border w-full h-[46px] flex flex-row gap-2.5 px-3 items-center bg-white outline outline-1 outline-slate-200 -outline-offset-1 focus-within:outline-2 focus-within:outline-blue-600 rounded-[10px] transition-all">
+                <Mail className="w-[15px] h-[15px] text-slate-400 shrink-0" />
                 <input
                   ref={emailRef}
                   type="email"
@@ -129,10 +129,10 @@ export default function AdminLoginStep1({
                   placeholder="admin@myrent.com atau rani.admin@gmail.com"
                   autoComplete="off"
                   required
-                  className="w-full bg-transparent border-none outline-none text-[13px] text-[#0F172A] font-normal placeholder:text-slate-400"
+                  className="w-full bg-transparent border-none outline-none text-[13px] text-slate-900 font-normal placeholder:text-slate-400"
                 />
                 {isEmailEntered && (
-                  <CheckCircle2 className="w-[14px] h-[14px] text-[#2563EB] shrink-0" />
+                  <CheckCircle2 className="w-3.5 h-3.5 text-blue-600 shrink-0" />
                 )}
               </div>
 
@@ -142,9 +142,9 @@ export default function AdminLoginStep1({
             </div>
 
             {/* Field Kata Sandi */}
-            <div className="box-border w-full flex flex-col gap-[6px]">
+            <div className="box-border w-full flex flex-col gap-1.5">
               <div className="box-border w-full flex flex-row justify-between items-center">
-                <label className="text-[12px] text-[#475569] font-semibold text-left">
+                <label className="text-xs text-slate-600 font-semibold text-left">
                   Kata sandi
                 </label>
                 <button
@@ -154,14 +154,14 @@ export default function AdminLoginStep1({
                       'Untuk mereset kata sandi admin, silakan hubungi tim DevOps internal HQ di it-support@myrent.id.'
                     )
                   }
-                  className="text-[11px] text-[#2563EB] hover:text-blue-700 font-bold text-left cursor-pointer"
+                  className="text-[11px] text-blue-600 hover:text-blue-700 font-bold text-left cursor-pointer"
                 >
                   Lupa kata sandi?
                 </button>
               </div>
 
-              <div className="box-border w-full h-[46px] flex flex-row gap-[10px] px-[12px] items-center bg-[#FFFFFF] outline outline-1 outline-[#E2E8F0] -outline-offset-1 focus-within:outline-2 focus-within:outline-[#2563EB] rounded-[10px] transition-all">
-                <Lock className="w-[15px] h-[15px] text-[#94A3B8] shrink-0" />
+              <div className="box-border w-full h-[46px] flex flex-row gap-2.5 px-3 items-center bg-white outline outline-1 outline-slate-200 -outline-offset-1 focus-within:outline-2 focus-within:outline-blue-600 rounded-[10px] transition-all">
+                <Lock className="w-[15px] h-[15px] text-slate-400 shrink-0" />
                 <input
                   ref={passwordRef}
                   type={showPassword ? 'text' : 'password'}
@@ -172,12 +172,12 @@ export default function AdminLoginStep1({
                   placeholder="••••••••••"
                   autoComplete="new-password"
                   required
-                  className="w-full bg-transparent border-none outline-none text-[13px] text-[#0F172A] font-normal placeholder:text-slate-400"
+                  className="w-full bg-transparent border-none outline-none text-[13px] text-slate-900 font-normal placeholder:text-slate-400"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="text-[#94A3B8] hover:text-[#475569] p-0.5 transition-colors cursor-pointer"
+                  className="text-slate-400 hover:text-slate-600 p-0.5 transition-colors cursor-pointer"
                 >
                   {showPassword ? (
                     <EyeOff className="w-[15px] h-[15px]" />
@@ -193,13 +193,13 @@ export default function AdminLoginStep1({
             </div>
 
             {/* Info Sandi Sementara */}
-            <div className="box-border w-full flex flex-row gap-[9px] p-[11px] justify-start items-start bg-[#FFFBEB] outline outline-1 outline-[#FDE68A] -outline-offset-1 rounded-[10px]">
-              <KeyRound className="w-[14px] h-[14px] text-[#B45309] shrink-0 mt-0.5" />
+            <div className="box-border w-full flex flex-row gap-[9px] p-[11px] justify-start items-start bg-amber-50 outline outline-1 outline-amber-200 -outline-offset-1 rounded-[10px]">
+              <KeyRound className="w-3.5 h-3.5 text-amber-700 shrink-0 mt-0.5" />
               <div className="flex-1 flex flex-col gap-[3px] text-left">
-                <div className="text-[11px] text-[#B45309] font-bold">
+                <div className="text-[11px] text-amber-700 font-bold">
                   Kata sandi sementara aktif
                 </div>
-                <div className="text-xs leading-[17px] text-[#92400E] font-normal flex flex-wrap items-center justify-between gap-1">
+                <div className="text-xs leading-[17px] text-amber-800 font-normal flex flex-wrap items-center justify-between gap-1">
                   <span>
                     <strong className="font-mono font-bold tracking-wide">Admin#Sewa2026</strong> — wajib diganti setelah login pertama.
                   </span>
@@ -219,18 +219,18 @@ export default function AdminLoginStep1({
               <button
                 type="button"
                 onClick={() => setRememberDevice(!rememberDevice)}
-                className="flex flex-row items-center gap-[8px] cursor-pointer group text-left"
+                className="flex flex-row items-center gap-2 cursor-pointer group text-left"
               >
                 <div
-                  className={`box-border w-[30px] h-[18px] flex flex-row p-[2px] items-center rounded-full transition-colors ${
+                  className={`box-border w-[30px] h-4.5 flex flex-row p-0.5 items-center rounded-full transition-colors ${
                     rememberDevice
-                      ? 'bg-[#2563EB] justify-end'
+                      ? 'bg-blue-600 justify-end'
                       : 'bg-slate-300 justify-start'
                   }`}
                 >
-                  <div className="w-[14px] h-[14px] bg-[#FFFFFF] rounded-full shadow-xs"></div>
+                  <div className="w-3.5 h-3.5 bg-white rounded-full shadow-xs"></div>
                 </div>
-                <span className="text-[11px] text-[#475569] group-hover:text-slate-800 font-normal">
+                <span className="text-[11px] text-slate-600 group-hover:text-slate-800 font-normal">
                   Ingat perangkat ini
                 </span>
               </button>
@@ -240,18 +240,18 @@ export default function AdminLoginStep1({
             <button
               type="submit"
               disabled={isLoading}
-              className="box-border w-full h-[46px] flex flex-row gap-[8px] justify-center items-center bg-[#0F172A] hover:bg-[#1E293B] active:scale-[0.99] disabled:opacity-60 text-white rounded-[10px] transition-all cursor-pointer shadow-xs mt-1"
+              className="box-border w-full h-[46px] flex flex-row gap-2 justify-center items-center bg-slate-900 hover:bg-slate-800 active:scale-[0.99] disabled:opacity-60 text-white rounded-[10px] transition-all cursor-pointer shadow-xs mt-1"
             >
               <span className="text-[13px] font-bold">
                 {isLoading ? 'Memverifikasi...' : 'Lanjut verifikasi'}
               </span>
-              <ArrowRight className="w-[15px] h-[15px] text-[#FFFFFF]" />
+              <ArrowRight className="w-[15px] h-[15px] text-white" />
             </button>
           </div>
 
           {/* Footer Security Notice */}
-          <div className="box-border w-full flex flex-row gap-[7px] pt-[4px] justify-center items-center text-center">
-            <ShieldCheck className="w-[12px] h-[12px] text-slate-400 shrink-0" />
+          <div className="box-border w-full flex flex-row gap-[7px] pt-1 justify-center items-center text-center">
+            <ShieldCheck className="w-3 h-3 text-slate-400 shrink-0" />
             <div className="text-xs text-slate-500 font-normal">
               Akses terbatas. 5 percobaan gagal mengunci akun 30 menit.
             </div>

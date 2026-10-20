@@ -68,11 +68,11 @@ export default function RegisterStepper({ currentStep }) {
 
   return (
     <aside className="hidden lg:flex w-[300px] shrink-0 flex-col gap-4 pt-1">
-      <div className="text-[10px] font-bold tracking-[1.1px] text-[#2563EB] whitespace-nowrap">
+      <div className="text-[10px] font-bold tracking-[1.1px] text-blue-600 whitespace-nowrap">
         PENDAFTARAN PEMILIK ALAT
       </div>
 
-      <div className="text-[24px] leading-[30px] font-extrabold tracking-[-0.6px] text-[#0F172A]">
+      <div className="text-2xl leading-[30px] font-extrabold tracking-[-0.6px] text-slate-900">
         {meta.title.map((line, index) => (
           <span key={line}>
             {line}
@@ -81,7 +81,7 @@ export default function RegisterStepper({ currentStep }) {
         ))}
       </div>
 
-      <p className="text-[12px] leading-[19px] text-[#475569]">{meta.desc}</p>
+      <p className="text-xs leading-[19px] text-slate-600">{meta.desc}</p>
 
       {/* Daftar langkah dengan status dinamis */}
       <div className="w-full flex flex-col pt-2">
@@ -94,18 +94,18 @@ export default function RegisterStepper({ currentStep }) {
               {/* Marker: dot + garis penghubung */}
               <div className="w-6 shrink-0 flex flex-col items-center gap-1">
                 {status === 'done' ? (
-                  <div className="w-6 h-6 shrink-0 rounded-full bg-[#F0FDF4] flex items-center justify-center">
-                    <Check className="w-3 h-3 text-[#15803D]" strokeWidth={2.6} />
+                  <div className="w-6 h-6 shrink-0 rounded-full bg-green-50 flex items-center justify-center">
+                    <Check className="w-3 h-3 text-green-700" strokeWidth={2.6} />
                   </div>
                 ) : (
                   <div
                     className={`w-6 h-6 shrink-0 rounded-full flex items-center justify-center ${
-                      status === 'active' ? 'bg-[#2563EB]' : 'bg-white border border-[#E2E8F0]'
+                      status === 'active' ? 'bg-blue-600' : 'bg-white border border-slate-200'
                     }`}
                   >
                     <span
                       className={`text-[10px] font-bold ${
-                        status === 'active' ? 'text-white' : 'text-[#94A3B8]'
+                        status === 'active' ? 'text-white' : 'text-slate-400'
                       }`}
                     >
                       {step.id}
@@ -116,7 +116,7 @@ export default function RegisterStepper({ currentStep }) {
                 {index < STEPS.length - 1 && (
                   <div
                     className={`w-px h-7 shrink-0 ${
-                      status === 'done' ? 'bg-[#15803D]' : 'bg-[#E2E8F0]'
+                      status === 'done' ? 'bg-green-700' : 'bg-slate-200'
                     }`}
                   />
                 )}
@@ -125,17 +125,17 @@ export default function RegisterStepper({ currentStep }) {
               {/* Nama langkah + status */}
               <div className="flex flex-col gap-px pt-0.5 pb-4">
                 <span
-                  className={`text-[12px] whitespace-nowrap ${
+                  className={`text-xs whitespace-nowrap ${
                     status === 'todo'
-                      ? 'font-medium text-[#475569]'
-                      : 'font-bold text-[#0F172A]'
+                      ? 'font-medium text-slate-600'
+                      : 'font-bold text-slate-900'
                   }`}
                 >
                   {step.name}
                 </span>
                 <span
                   className={`text-[10px] whitespace-nowrap ${
-                    status === 'active' ? 'text-[#2563EB]' : 'text-[#94A3B8]'
+                    status === 'active' ? 'text-blue-600' : 'text-slate-400'
                   }`}
                 >
                   {STATUS_LABELS[status]}
@@ -147,12 +147,12 @@ export default function RegisterStepper({ currentStep }) {
       </div>
 
       {/* Kotak tips kontekstual per langkah */}
-      <div className="w-full flex flex-col gap-[7px] p-3.5 bg-[#EFF6FF] rounded-xl">
+      <div className="w-full flex flex-col gap-[7px] p-3.5 bg-blue-50 rounded-xl">
         <div className="flex flex-row items-center gap-[7px]">
-          <TipIcon className="w-[13px] h-[13px] text-[#1D4ED8] shrink-0" strokeWidth={2.2} />
-          <span className="text-[11px] font-bold text-[#1D4ED8] whitespace-nowrap">{tip.title}</span>
+          <TipIcon className="w-[13px] h-[13px] text-blue-700 shrink-0" strokeWidth={2.2} />
+          <span className="text-[11px] font-bold text-blue-700 whitespace-nowrap">{tip.title}</span>
         </div>
-        <p className="text-[10px] leading-4 text-[#1D4ED8]">{tip.body}</p>
+        <p className="text-[10px] leading-4 text-blue-700">{tip.body}</p>
       </div>
     </aside>
   )

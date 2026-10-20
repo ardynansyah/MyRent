@@ -139,7 +139,7 @@ export default function AdminLoginStep2({
   })
 
   return (
-    <div className="box-border w-full min-h-screen flex flex-col justify-between items-center bg-[#F8FAFC] py-6 px-4">
+    <div className="box-border w-full min-h-screen flex flex-col justify-between items-center bg-slate-50 py-6 px-4">
       {/* TopBar */}
       <div className="box-border w-full max-w-[1440px] px-4 sm:px-12 py-3 flex flex-row justify-between items-center">
         <div className="text-[10px] text-slate-500 font-bold tracking-[1.5px] uppercase">
@@ -148,7 +148,7 @@ export default function AdminLoginStep2({
         <button
           type="button"
           onClick={onBackToStep1}
-          className="flex items-center gap-1.5 text-[11px] text-[#64748B] hover:text-[#0F172A] font-semibold transition-colors cursor-pointer"
+          className="flex items-center gap-1.5 text-[11px] text-slate-500 hover:text-slate-900 font-semibold transition-colors cursor-pointer"
         >
           <ArrowLeft className="w-3.5 h-3.5" />
           <span>Kembali ke Form Login</span>
@@ -159,27 +159,27 @@ export default function AdminLoginStep2({
       <div className="w-full flex-1 flex flex-col justify-center items-center py-6">
         <form
           onSubmit={handleManualSubmit}
-          className="box-border w-full max-w-[456px] flex flex-col gap-[16px] p-[28px] justify-start items-start bg-[#FFFFFF] outline outline-1 outline-[#E2E8F0] -outline-offset-1 rounded-[20px] shadow-sm shadow-slate-200/50"
+          className="box-border w-full max-w-[456px] flex flex-col gap-4 p-7 justify-start items-start bg-white outline outline-1 outline-slate-200 -outline-offset-1 rounded-[20px] shadow-sm shadow-slate-200/50"
         >
           {/* Header */}
           <div className="w-full flex flex-col gap-1">
-            <h1 className="text-[24px] leading-tight text-[#0F172A] font-extrabold tracking-tight text-left">
+            <h1 className="text-2xl leading-tight text-slate-900 font-extrabold tracking-tight text-left">
               Verifikasi kode admin
             </h1>
-            <p className="text-[13px] leading-[20px] text-[#475569] font-normal text-left">
+            <p className="text-[13px] leading-5 text-slate-600 font-normal text-left">
               Masukkan 6 digit kode verifikasi yang Anda buat sendiri di Pengaturan › Keamanan untuk
               menyelesaikan login.
             </p>
           </div>
 
           {/* Konteks Sesi */}
-          <div className="box-border w-full p-[10px_12px] flex flex-row justify-between items-center bg-[#F8FAFC] rounded-[10px] border border-slate-100">
-            <div className="flex flex-row items-center gap-[10px]">
+          <div className="box-border w-full p-[10px_12px] flex flex-row justify-between items-center bg-slate-50 rounded-[10px] border border-slate-100">
+            <div className="flex flex-row items-center gap-2.5">
               <div className="w-8 h-8 rounded-full bg-slate-200/80 flex items-center justify-center text-slate-700">
-                <UserCheck className="w-[14px] h-[14px]" />
+                <UserCheck className="w-3.5 h-3.5" />
               </div>
               <div className="flex flex-col text-left">
-                <span className="text-[12px] text-[#0F172A] font-bold">
+                <span className="text-xs text-slate-900 font-bold">
                   {email || 'admin@myrent.com'}
                 </span>
                 <span className="text-xs text-slate-500 font-normal">
@@ -191,7 +191,7 @@ export default function AdminLoginStep2({
             <button
               type="button"
               onClick={onBackToStep1}
-              className="text-[11px] font-semibold text-[#2563EB] hover:text-blue-700 cursor-pointer"
+              className="text-[11px] font-semibold text-blue-600 hover:text-blue-700 cursor-pointer"
             >
               Ganti akun
             </button>
@@ -206,8 +206,8 @@ export default function AdminLoginStep2({
           )}
 
           {/* 6-Digit OTP Box Area */}
-          <div className="box-border w-full flex flex-col gap-[10px]">
-            <div className="box-border w-full flex flex-row gap-[8px] justify-start items-center">
+          <div className="box-border w-full flex flex-col gap-2.5">
+            <div className="box-border w-full flex flex-row gap-2 justify-start items-center">
               {digits.map((digit, idx) => {
                 const isCurrent = focusedIndex === idx
                 const hasValue = digit !== ''
@@ -219,12 +219,12 @@ export default function AdminLoginStep2({
                       setFocusedIndex(idx)
                       inputRefs.current[idx]?.focus()
                     }}
-                    className={`box-border flex-1 h-[56px] flex flex-row justify-center items-center rounded-[11px] transition-all cursor-text relative ${
+                    className={`box-border flex-1 h-14 flex flex-row justify-center items-center rounded-[11px] transition-all cursor-text relative ${
                       isCurrent
-                        ? 'bg-[#FFFFFF] outline outline-2 outline-[#2563EB] -outline-offset-1'
+                        ? 'bg-white outline outline-2 outline-blue-600 -outline-offset-1'
                         : hasValue
-                        ? 'bg-[#EFF6FF] outline outline-1 outline-[#BFDBFE] -outline-offset-1'
-                        : 'bg-[#FFFFFF] outline outline-1 outline-[#E2E8F0] -outline-offset-1'
+                        ? 'bg-blue-50 outline outline-1 outline-blue-200 -outline-offset-1'
+                        : 'bg-white outline outline-1 outline-slate-200 -outline-offset-1'
                     }`}
                   >
                     <input
@@ -241,13 +241,13 @@ export default function AdminLoginStep2({
                     />
 
                     {digit ? (
-                      <span className="text-[24px] text-[#0F172A] font-mono font-bold tabular-nums">
+                      <span className="text-2xl text-slate-900 font-mono font-bold tabular-nums">
                         {digit}
                       </span>
                     ) : isCurrent ? (
-                      <div className="w-[2px] h-[22px] bg-[#2563EB] animate-pulse"></div>
+                      <div className="w-0.5 h-[22px] bg-blue-600 animate-pulse"></div>
                     ) : (
-                      <span className="text-[18px] text-[#CBD5E1] font-mono font-normal">
+                      <span className="text-lg text-slate-300 font-mono font-normal">
                         –
                       </span>
                     )}
@@ -267,7 +267,7 @@ export default function AdminLoginStep2({
                 </span>
               </div>
 
-              <div className="text-[#B45309] font-medium tabular-nums">
+              <div className="text-amber-700 font-medium tabular-nums">
                 {attemptsUsed} dari 5 percobaan
               </div>
             </div>
@@ -292,22 +292,22 @@ export default function AdminLoginStep2({
           <button
             type="submit"
             disabled={isLoading || digits.join('').length !== 6}
-            className="box-border w-full h-[46px] flex flex-row gap-[8px] justify-center items-center bg-[#0F172A] hover:bg-[#1E293B] active:scale-[0.99] disabled:opacity-50 text-white rounded-[10px] transition-all cursor-pointer shadow-xs"
+            className="box-border w-full h-[46px] flex flex-row gap-2 justify-center items-center bg-slate-900 hover:bg-slate-800 active:scale-[0.99] disabled:opacity-50 text-white rounded-[10px] transition-all cursor-pointer shadow-xs"
           >
             <span className="text-[13px] font-bold">
               {isLoading ? 'Memverifikasi kode...' : 'Verifikasi & masuk'}
             </span>
-            <ArrowRight className="w-[15px] h-[15px] text-[#FFFFFF]" />
+            <ArrowRight className="w-[15px] h-[15px] text-white" />
           </button>
 
           {/* Catatan Keamanan */}
-          <div className="box-border w-full flex flex-row gap-[9px] p-[11px] justify-start items-start bg-[#FFFBEB] outline outline-1 outline-[#FDE68A] -outline-offset-1 rounded-[10px]">
-            <TriangleAlert className="w-[14px] h-[14px] text-[#B45309] shrink-0 mt-0.5" />
+          <div className="box-border w-full flex flex-row gap-[9px] p-[11px] justify-start items-start bg-amber-50 outline outline-1 outline-amber-200 -outline-offset-1 rounded-[10px]">
+            <TriangleAlert className="w-3.5 h-3.5 text-amber-700 shrink-0 mt-0.5" />
             <div className="flex-1 flex flex-col gap-[3px] text-left">
-              <div className="text-[11px] text-[#B45309] font-bold">
+              <div className="text-[11px] text-amber-700 font-bold">
                 Jangan bagikan kode ini
               </div>
-              <div className="text-xs leading-[17px] text-[#92400E] font-normal">
+              <div className="text-xs leading-[17px] text-amber-800 font-normal">
                 Tim SewaAlat tidak pernah meminta kode verifikasi Anda. Jika Anda tidak merasa login,
                 hentikan dan segera ubah kredensial akun.
               </div>

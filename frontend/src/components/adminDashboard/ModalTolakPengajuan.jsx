@@ -84,14 +84,14 @@ export default function ModalTolakPengajuan({
       <div className="w-full max-w-[560px] flex flex-col gap-5 p-6 rounded-2xl bg-white shadow-[0px_18px_50px_#0F172A55]">
         {/* Header */}
         <div className="flex items-start gap-3">
-          <div className="w-10 h-10 shrink-0 rounded-[10px] bg-[#FEF2F2] flex items-center justify-center">
-            <FileX className="w-5 h-5 text-[#B91C1C]" />
+          <div className="w-10 h-10 shrink-0 rounded-[10px] bg-red-50 flex items-center justify-center">
+            <FileX className="w-5 h-5 text-red-700" />
           </div>
           <div className="flex-1 flex flex-col gap-1">
-            <h2 className="text-xl font-extrabold tracking-[-0.3px] text-[#0F172A]">
+            <h2 className="text-xl font-extrabold tracking-[-0.3px] text-slate-900">
               Tolak pengajuan · #{idPengajuan}
             </h2>
-            <p className="text-sm leading-6 text-[#475569]">
+            <p className="text-sm leading-6 text-slate-600">
               {namaPengajuan} · {tipePengajuan}
             </p>
           </div>
@@ -99,16 +99,16 @@ export default function ModalTolakPengajuan({
             type="button"
             onClick={onClose}
             aria-label="Tutup modal"
-            className="w-5 h-5 shrink-0 text-[#94A3B8] hover:text-[#475569] transition-colors cursor-pointer"
+            className="w-5 h-5 shrink-0 text-slate-400 hover:text-slate-600 transition-colors cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Peringatan keras */}
-        <div className="w-full flex items-start gap-3 px-4 py-4 rounded-[12px] bg-[#FEF2F2] border border-[#FECACA]">
-          <ShieldAlert className="w-5 h-5 shrink-0 mt-0.5 text-[#B91C1C]" />
-          <p className="text-sm leading-6 text-[#7F1D1D]">
+        <div className="w-full flex items-start gap-3 px-4 py-4 rounded-xl bg-red-50 border border-red-200">
+          <ShieldAlert className="w-5 h-5 shrink-0 mt-0.5 text-red-700" />
+          <p className="text-sm leading-6 text-red-900">
             Tindakan ini akan menolak pengajuan akun secara permanen dan pengguna tidak dapat
             memperbaiki pengajuan ini.
           </p>
@@ -116,7 +116,7 @@ export default function ModalTolakPengajuan({
 
         {/* Alasan penolakan permanen */}
         <div className="w-full flex flex-col gap-3">
-          <span className="text-sm font-bold text-[#0F172A]">Alasan penolakan</span>
+          <span className="text-sm font-bold text-slate-900">Alasan penolakan</span>
           <div className="w-full flex flex-col gap-2">
             {ALASAN_TOLAK_PERMANEN.map((item) => {
               const isSelected = item === alasan
@@ -126,8 +126,8 @@ export default function ModalTolakPengajuan({
                   key={item}
                   className={`w-full flex items-center gap-3 px-4 py-3 rounded-[10px] border transition-colors cursor-pointer ${
                     isSelected
-                      ? 'bg-[#FEF2F2] border-[#FECACA]'
-                      : 'bg-white border-[#E2E8F0] hover:border-[#FECACA]'
+                      ? 'bg-red-50 border-red-200'
+                      : 'bg-white border-slate-200 hover:border-red-200'
                   }`}
                 >
                   <span className="relative w-5 h-5 shrink-0">
@@ -137,12 +137,12 @@ export default function ModalTolakPengajuan({
                       value={item}
                       checked={isSelected}
                       onChange={() => setAlasan(item)}
-                      className="peer absolute inset-0 w-full h-full m-0 appearance-none rounded-full border-[1.5px] border-[#CBD5E1] bg-white checked:border-[6px] checked:border-[#B91C1C] cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B91C1C]/40"
+                      className="peer absolute inset-0 w-full h-full m-0 appearance-none rounded-full border-[1.5px] border-slate-300 bg-white checked:border-[6px] checked:border-red-700 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-700/40"
                     />
                   </span>
                   <span
                     className={`flex-1 text-sm font-semibold ${
-                      isSelected ? 'text-[#B91C1C]' : 'text-[#0F172A]'
+                      isSelected ? 'text-red-700' : 'text-slate-900'
                     }`}
                   >
                     {item}
@@ -156,51 +156,51 @@ export default function ModalTolakPengajuan({
         {/* Catatan penolakan (wajib) */}
         <div className="w-full flex flex-col gap-2">
           <div className="w-full flex items-center justify-between gap-3">
-            <span className="text-sm font-bold text-[#0F172A]">Catatan penolakan</span>
-            <span className="text-xs font-semibold text-[#B91C1C]">Wajib diisi</span>
+            <span className="text-sm font-bold text-slate-900">Catatan penolakan</span>
+            <span className="text-xs font-semibold text-red-700">Wajib diisi</span>
           </div>
           <div
             className={`w-full h-[104px] p-3 rounded-[10px] bg-white border transition-colors ${
               sudahCobaKirim && pesanKosong
-                ? 'border-[#B91C1C] focus-within:border-[#B91C1C]'
-                : 'border-[#E2E8F0] focus-within:border-[#B91C1C]'
+                ? 'border-red-700 focus-within:border-red-700'
+                : 'border-slate-200 focus-within:border-red-700'
             }`}
           >
             <textarea
               value={pesan}
               onChange={(e) => setPesan(e.target.value.slice(0, BATAS_PESAN))}
               placeholder="Tuliskan alasan penolakan yang mudah dipahami pengaju..."
-              className="w-full h-full resize-none bg-transparent border-none outline-none text-sm leading-6 text-[#0F172A] placeholder:text-[#94A3B8]"
+              className="w-full h-full resize-none bg-transparent border-none outline-none text-sm leading-6 text-slate-900 placeholder:text-slate-400"
             />
           </div>
           <div className="w-full flex items-center justify-between gap-3">
-            <span className="text-xs text-[#94A3B8]">Terkirim ke email pengaju</span>
-            <span className="text-xs text-[#94A3B8]">
+            <span className="text-xs text-slate-400">Terkirim ke email pengaju</span>
+            <span className="text-xs text-slate-400">
               {pesan.length} / {BATAS_PESAN}
             </span>
           </div>
           {sudahCobaKirim && pesanKosong ? (
-            <p className="text-xs font-semibold text-[#B91C1C]">
+            <p className="text-xs font-semibold text-red-700">
               Catatan penolakan wajib diisi sebelum pengajuan ditolak.
             </p>
           ) : null}
         </div>
 
         {/* Footer */}
-        <div className="w-full flex items-center justify-between gap-3 pt-5 border-t border-[#E2E8F0]">
-          <span className="text-xs text-[#94A3B8]">Tindakan tercatat di audit log</span>
+        <div className="w-full flex items-center justify-between gap-3 pt-5 border-t border-slate-200">
+          <span className="text-xs text-slate-400">Tindakan tercatat di audit log</span>
           <div className="flex items-center gap-2">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 h-10 rounded-[10px] border border-[#E2E8F0] text-sm font-semibold text-[#475569] hover:bg-[#F8FAFC] transition-colors cursor-pointer"
+              className="px-4 h-10 rounded-[10px] border border-slate-200 text-sm font-semibold text-slate-600 hover:bg-slate-50 transition-colors cursor-pointer"
             >
               Batal
             </button>
             <button
               type="button"
               onClick={handleKirim}
-              className="flex items-center gap-2 px-4 h-10 rounded-[10px] bg-[#B91C1C] text-sm font-bold text-white hover:bg-[#991B1B] transition-colors cursor-pointer"
+              className="flex items-center gap-2 px-4 h-10 rounded-[10px] bg-red-700 text-sm font-bold text-white hover:bg-red-800 transition-colors cursor-pointer"
             >
               <Send className="w-4 h-4" />
               <span>Tolak Secara Permanen</span>

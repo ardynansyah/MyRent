@@ -11,19 +11,19 @@ import { ArrowLeft } from 'lucide-react'
  */
 export default function AuthNavbar({ onBackToHome, onNavigateRegister }) {
   return (
-    <header className="w-full h-16 shrink-0 flex flex-row items-center justify-between px-4 sm:px-8 bg-white border-b border-[#E2E8F0] sticky top-0 z-30">
+    <header className="w-full h-16 shrink-0 flex flex-row items-center justify-between px-4 sm:px-8 bg-white border-b border-slate-200 sticky top-0 z-30">
       {/* Sisi Kiri: Logo Brand & Identitas Halaman */}
       <div className="flex items-center gap-3">
         <button
           type="button"
           onClick={onBackToHome}
-          className="text-[18px] text-[#2563EB] font-extrabold tracking-[-0.3px] select-none hover:opacity-90 cursor-pointer transition-opacity"
+          className="text-lg text-blue-600 font-extrabold tracking-[-0.3px] select-none hover:opacity-90 cursor-pointer transition-opacity"
           title="Ke Beranda MyRent"
         >
           MyRent
         </button>
-        <div className="w-[1px] h-[16px] bg-[#E2E8F0] hidden sm:block" />
-        <span className="text-[12px] text-[#475569] font-semibold hidden sm:inline-block">
+        <div className="w-px h-4 bg-slate-200 hidden sm:block" />
+        <span className="text-xs text-slate-600 font-semibold hidden sm:inline-block">
           Masuk ke Akun
         </span>
       </div>
@@ -31,12 +31,12 @@ export default function AuthNavbar({ onBackToHome, onNavigateRegister }) {
       {/* Sisi Kanan: Tautan Registrasi Cepat & Tombol Kembali */}
       <div className="flex items-center gap-2.5 sm:gap-4">
         {onNavigateRegister && (
-          <div className="hidden md:flex items-center gap-1.5 text-[12px]">
-            <span className="text-[#475569]">Belum punya akun?</span>
+          <div className="hidden md:flex items-center gap-1.5 text-xs">
+            <span className="text-slate-600">Belum punya akun?</span>
             <button
               type="button"
               onClick={() => onNavigateRegister('penyewa')}
-              className="text-[#2563EB] font-bold hover:underline cursor-pointer transition-colors"
+              className="text-blue-600 font-bold hover:underline cursor-pointer transition-colors"
             >
               Daftar
             </button>

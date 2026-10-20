@@ -341,7 +341,7 @@ function DashboardView({
   onNavigateDetailAlat
 }) {
   return (
-    <div className="min-h-screen bg-[#F8FAFC] text-slate-800 flex flex-col font-sans">
+    <div className="min-h-screen bg-slate-50 text-slate-800 flex flex-col font-sans">
       {/* Toast Notification */}
       <Toast message={toastMessage} />
 
@@ -352,7 +352,7 @@ function DashboardView({
             <button
               type="button"
               onClick={onNavigateHome}
-              className="text-[18px] text-[#2563EB] font-extrabold tracking-[-0.3px] select-none hover:opacity-90 transition-opacity cursor-pointer"
+              className="text-lg text-blue-600 font-extrabold tracking-[-0.3px] select-none hover:opacity-90 transition-opacity cursor-pointer"
               title="Kembali ke Beranda MyRent"
             >
               MyRent
@@ -389,7 +389,7 @@ function DashboardView({
 
             <button
               onClick={() => showToast('Form Tambah Alat siap dikembangkan!')}
-              className="flex items-center gap-2 bg-[#2563EB] hover:bg-blue-700 text-white text-xs sm:text-sm font-semibold px-3.5 py-2 rounded-xl shadow-xs transition-all cursor-pointer active:scale-95"
+              className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm font-semibold px-3.5 py-2 rounded-xl shadow-xs transition-all cursor-pointer active:scale-95"
             >
               <Plus className="w-4 h-4" />
               <span className="hidden xs:inline">Pasang Sewa Alat</span>
@@ -527,7 +527,7 @@ function DashboardView({
                   key={cat}
                   onClick={() => setSelectedCategory(cat)}
                   className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${selectedCategory === cat
-                      ? 'bg-[#2563EB] text-white shadow-2xs'
+                      ? 'bg-blue-600 text-white shadow-2xs'
                       : 'text-slate-600 hover:text-slate-900'
                     }`}
                 >
@@ -591,7 +591,7 @@ function DashboardView({
 
                     <button
                       onClick={() => showToast(`Mengajukan sewa untuk: ${item.title}`)}
-                      className="p-2 rounded-xl bg-blue-50 hover:bg-[#2563EB] text-[#2563EB] hover:text-white transition-all cursor-pointer shadow-2xs"
+                      className="p-2 rounded-xl bg-blue-50 hover:bg-blue-600 text-blue-600 hover:text-white transition-all cursor-pointer shadow-2xs"
                       title="Sewa Alat"
                     >
                       <ArrowUpRight className="w-4 h-4" />
@@ -642,13 +642,13 @@ function ArrowRight(props) {
 function DashboardPemilikPlaceholder() {
   const navigate = useNavigate()
   return (
-    <div className="min-h-screen bg-[#F8FAFC] flex flex-col justify-between text-slate-800 font-sans">
+    <div className="min-h-screen bg-slate-50 flex flex-col justify-between text-slate-800 font-sans">
       <header className="sticky top-0 z-40 backdrop-blur-md bg-white/90 border-b border-slate-200 px-4 sm:px-8 py-3.5 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <button
             type="button"
             onClick={() => navigate('/')}
-            className="text-[18px] text-[#2563EB] font-extrabold tracking-[-0.3px] cursor-pointer"
+            className="text-lg text-blue-600 font-extrabold tracking-[-0.3px] cursor-pointer"
           >
             MyRent
           </button>
@@ -697,7 +697,7 @@ function DashboardPemilikPlaceholder() {
             <button
               type="button"
               onClick={() => navigate('/')}
-              className="w-full h-10 bg-[#2563EB] hover:bg-blue-700 active:scale-[0.99] text-white font-semibold text-xs rounded-xl transition-all cursor-pointer shadow-xs"
+              className="w-full h-10 bg-blue-600 hover:bg-blue-700 active:scale-[0.99] text-white font-semibold text-xs rounded-xl transition-all cursor-pointer shadow-xs"
             >
               Kembali ke Beranda Utama
             </button>

@@ -42,19 +42,19 @@ export default function AdminSidebar({ activeKey = 'verifikasi', onNavigate, cou
     .toUpperCase()
 
   return (
-    <aside className="hidden lg:flex w-[248px] shrink-0 flex-col gap-[4px] p-[22px_16px] bg-white border-r border-[#E2E8F0]">
+    <aside className="hidden lg:flex w-[248px] shrink-0 flex-col gap-1 p-[22px_16px] bg-white border-r border-slate-200">
       {/* Brand */}
-      <div className="flex items-center gap-[10px] pb-[18px] px-2">
-        <span className="text-[17px] font-extrabold tracking-[-0.3px] text-[#2563EB] whitespace-nowrap">
+      <div className="flex items-center gap-2.5 pb-4.5 px-2">
+        <span className="text-[17px] font-extrabold tracking-[-0.3px] text-blue-600 whitespace-nowrap">
           SewaAlat
         </span>
-        <span className="rounded-[6px] bg-[#0F172A] px-[7px] py-[3px] text-[8px] font-extrabold tracking-[0.6px] text-white">
+        <span className="rounded-md bg-slate-900 px-[7px] py-[3px] text-[8px] font-extrabold tracking-[0.6px] text-white">
           ADMIN
         </span>
       </div>
 
       {/* Menu */}
-      <nav className="flex flex-col gap-[4px]">
+      <nav className="flex flex-col gap-1">
         {MENU.map((item) => {
           const Icon = item.icon
           const isActive = item.key === activeKey
@@ -65,25 +65,25 @@ export default function AdminSidebar({ activeKey = 'verifikasi', onNavigate, cou
               key={item.key}
               type="button"
               onClick={() => onNavigate && onNavigate(item.key)}
-              className={`group flex w-full items-center gap-[10px] rounded-[8px] px-[10px] py-[9px] text-left transition-colors cursor-pointer ${
-                isActive ? 'bg-[#EFF6FF]' : 'hover:bg-[#F8FAFC]'
+              className={`group flex w-full items-center gap-2.5 rounded-lg px-2.5 py-[9px] text-left transition-colors cursor-pointer ${
+                isActive ? 'bg-blue-50' : 'hover:bg-slate-50'
               }`}
             >
               <Icon
-                className={`w-[16px] h-[16px] shrink-0 ${
-                  isActive ? 'text-[#1D4ED8]' : 'text-[#94A3B8] group-hover:text-[#64748B]'
+                className={`w-4 h-4 shrink-0 ${
+                  isActive ? 'text-blue-700' : 'text-slate-400 group-hover:text-slate-500'
                 }`}
               />
               <span
                 className={`text-[13px] whitespace-nowrap ${
-                  isActive ? 'text-[#1D4ED8] font-bold' : 'text-[#475569] font-medium'
+                  isActive ? 'text-blue-700 font-bold' : 'text-slate-600 font-medium'
                 }`}
               >
                 {item.label}
               </span>
-              <span className="flex-1 h-[1px]" />
+              <span className="flex-1 h-px" />
               {badge ? (
-                <span className="rounded-[999px] bg-[#FEF2F2] px-[10px] py-[5px] text-[11px] font-semibold text-[#B91C1C] whitespace-nowrap">
+                <span className="rounded-full bg-red-50 px-2.5 py-[5px] text-[11px] font-semibold text-red-700 whitespace-nowrap">
                   {badge}
                 </span>
               ) : null}
@@ -95,21 +95,21 @@ export default function AdminSidebar({ activeKey = 'verifikasi', onNavigate, cou
       <span className="flex-1" />
 
       {/* Blok user + logout */}
-      <div className="flex flex-col gap-[10px] border-t border-[#E2E8F0] px-[6px] pt-[12px]">
-        <div className="flex items-center gap-[10px]">
-          <div className="w-[30px] h-[30px] shrink-0 rounded-full bg-[#0F172A] flex items-center justify-center">
+      <div className="flex flex-col gap-2.5 border-t border-slate-200 px-1.5 pt-3">
+        <div className="flex items-center gap-2.5">
+          <div className="w-[30px] h-[30px] shrink-0 rounded-full bg-slate-900 flex items-center justify-center">
             <span className="text-[10px] font-bold text-white">{inisial}</span>
           </div>
-          <div className="flex-1 flex flex-col gap-[1px] min-w-0">
-            <span className="text-[12px] font-bold text-[#0F172A] truncate">{namaAdmin}</span>
-            <span className="text-[10px] text-[#94A3B8] truncate">{emailAdmin}</span>
+          <div className="flex-1 flex flex-col gap-px min-w-0">
+            <span className="text-xs font-bold text-slate-900 truncate">{namaAdmin}</span>
+            <span className="text-[10px] text-slate-400 truncate">{emailAdmin}</span>
           </div>
         </div>
 
         <button
           type="button"
           onClick={onLogout}
-          className="flex items-center justify-center gap-[6px] w-full rounded-[8px] border border-[#FECACA] bg-[#FEF2F2] px-[10px] py-[8px] text-[11px] font-bold text-[#B91C1C] transition-colors hover:bg-[#FEE2E2] cursor-pointer"
+          className="flex items-center justify-center gap-1.5 w-full rounded-lg border border-red-200 bg-red-50 px-2.5 py-2 text-[11px] font-bold text-red-700 transition-colors hover:bg-red-100 cursor-pointer"
         >
           <LogOut className="w-[13px] h-[13px]" />
           <span>Keluar Sesi</span>

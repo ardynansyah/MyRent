@@ -189,7 +189,7 @@ export default function BerandaSewa({
   })
 
   return (
-    <div className="box-border w-full min-h-screen flex flex-col justify-start items-start bg-[#F8FAFC]">
+    <div className="box-border w-full min-h-screen flex flex-col justify-start items-start bg-slate-50">
       {/* 1. Global Navigation Bar */}
       <NavbarPenyewa
         activeTab="jelajahi"
@@ -209,7 +209,7 @@ export default function BerandaSewa({
       />
 
       {/* 3. Main Content: Sidebar + Product Grid */}
-      <main className="box-border w-full max-w-[1440px] mx-auto h-fit flex flex-col lg:flex-row gap-[24px] py-[28px] px-4 md:px-[32px] pb-[40px] justify-start items-start">
+      <main className="box-border w-full max-w-[1440px] mx-auto h-fit flex flex-col lg:flex-row gap-6 py-7 px-4 md:px-8 pb-10 justify-start items-start">
         {/* Left: Filter Sidebar */}
         <SidebarFilter
           startDate="12 Jun 2025"
@@ -231,25 +231,25 @@ export default function BerandaSewa({
         />
 
         {/* Right: Catalog Grid Area */}
-        <section className="box-border flex-1 w-full h-fit flex flex-col gap-[20px] justify-start items-start">
+        <section className="box-border flex-1 w-full h-fit flex flex-col gap-5 justify-start items-start">
           {/* Grid Header */}
           <div className="box-border w-full h-fit shrink-0 flex flex-row gap-2 justify-between items-center">
             <div className="box-border w-fit shrink-0 h-fit flex flex-col gap-[3px] justify-start items-start">
-              <h1 className="text-[17px] text-[#0F172A] font-bold text-left whitespace-nowrap m-0">
+              <h1 className="text-[17px] text-slate-900 font-bold text-left whitespace-nowrap m-0">
                 Alat tersedia untuk <span className="tabular-nums">12–15 Jun</span>
               </h1>
-              <div className="text-[12px] text-[#475569] font-normal text-left whitespace-nowrap tabular-nums">
+              <div className="text-xs text-slate-600 font-normal text-left whitespace-nowrap tabular-nums">
                 {filteredProducts.length} alat ·{' '}
                 {powerMatch ? 'semua sesuai daya 1300 W' : 'semua kapasitas daya'}
               </div>
             </div>
 
             {/* Sort Dropdown */}
-            <div className="box-border w-fit shrink-0 h-fit flex flex-row gap-[8px] py-[8px] px-[12px] justify-start items-center bg-[#FFFFFF] ring-1 ring-[#E2E8F0] rounded-[8px] cursor-pointer hover:bg-slate-50 transition-colors">
-              <span className="text-[12px] text-[#0F172A] font-semibold whitespace-nowrap">
+            <div className="box-border w-fit shrink-0 h-fit flex flex-row gap-2 py-2 px-3 justify-start items-center bg-white ring-1 ring-slate-200 rounded-lg cursor-pointer hover:bg-slate-50 transition-colors">
+              <span className="text-xs text-slate-900 font-semibold whitespace-nowrap">
                 Urutkan: Terdekat
               </span>
-              <ChevronDown className="w-[14px] h-[14px] text-[#94A3B8]" />
+              <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
             </div>
           </div>
 
@@ -264,13 +264,13 @@ export default function BerandaSewa({
                   setPowerMatch(false)
                   setMaxPrice(500000)
                 }}
-                className="mt-3 text-xs text-[#2563EB] font-semibold hover:underline"
+                className="mt-3 text-xs text-blue-600 font-semibold hover:underline"
               >
                 Reset Semua Filter
               </button>
             </div>
           ) : (
-            <div className="box-border w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-[20px]">
+            <div className="box-border w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
               {filteredProducts.map((product) => (
                 <ProductCard
                   key={product.id}

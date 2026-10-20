@@ -114,7 +114,7 @@ export default function Step4RekeningPencairan({
 
         {/* Konfirmasi */}
         <div className="w-full flex flex-col gap-1.5 pt-1">
-          <div className="text-[12px] font-semibold text-[#475569]">Konfirmasi</div>
+          <div className="text-xs font-semibold text-slate-600">Konfirmasi</div>
           <div className="w-full flex flex-col gap-2">
             <CheckItem
               checked={konfirmasiKepemilikan}

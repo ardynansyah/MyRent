@@ -102,14 +102,14 @@ export default function ModalMintaPerbaikan({
       <div className="w-full max-w-[600px] flex flex-col gap-5 p-6 rounded-2xl bg-white shadow-[0px_18px_50px_#0F172A55]">
         {/* Header */}
         <div className="flex items-start gap-3">
-          <div className="w-10 h-10 shrink-0 rounded-[10px] bg-[#FFFBEB] flex items-center justify-center">
-            <PencilLine className="w-5 h-5 text-[#B45309]" />
+          <div className="w-10 h-10 shrink-0 rounded-[10px] bg-amber-50 flex items-center justify-center">
+            <PencilLine className="w-5 h-5 text-amber-700" />
           </div>
           <div className="flex-1 flex flex-col gap-1">
-            <h2 className="text-xl font-extrabold tracking-[-0.3px] text-[#0F172A]">
+            <h2 className="text-xl font-extrabold tracking-[-0.3px] text-slate-900">
               Minta perbaikan · #{idPengajuan}
             </h2>
-            <p className="text-sm leading-6 text-[#475569]">
+            <p className="text-sm leading-6 text-slate-600">
               {namaPengajuan} · {tipePengajuan}. Pengaju menerima email berisi step yang perlu
               diperbaiki, dan pengajuan tetap bisa dilanjutkan.
             </p>
@@ -118,7 +118,7 @@ export default function ModalMintaPerbaikan({
             type="button"
             onClick={onClose}
             aria-label="Tutup modal"
-            className="w-5 h-5 shrink-0 text-[#94A3B8] hover:text-[#475569] transition-colors cursor-pointer"
+            className="w-5 h-5 shrink-0 text-slate-400 hover:text-slate-600 transition-colors cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
@@ -127,11 +127,11 @@ export default function ModalMintaPerbaikan({
         {/* Step yang perlu diperbaiki (multi-select) */}
         <div className="w-full flex flex-col gap-3">
           <div className="w-full flex items-center justify-between gap-3">
-            <span className="text-sm font-bold text-[#0F172A]">Step yang perlu diperbaiki</span>
+            <span className="text-sm font-bold text-slate-900">Step yang perlu diperbaiki</span>
             <button
               type="button"
               onClick={pilihSemua}
-              className="text-xs font-semibold text-[#B45309] hover:underline cursor-pointer"
+              className="text-xs font-semibold text-amber-700 hover:underline cursor-pointer"
             >
               {selectedSteps.length === langkah.length ? 'Hapus semua' : 'Pilih semua'}
             </button>
@@ -146,8 +146,8 @@ export default function ModalMintaPerbaikan({
                   key={item.nomor}
                   className={`w-full flex items-start gap-3 px-4 py-3 rounded-[10px] border transition-colors cursor-pointer ${
                     isSelected
-                      ? 'bg-[#FFFBEB] border-[#FCD34D]'
-                      : 'bg-white border-[#E2E8F0] hover:border-[#FCD34D]'
+                      ? 'bg-amber-50 border-amber-300'
+                      : 'bg-white border-slate-200 hover:border-amber-300'
                   }`}
                 >
                   <span className="relative w-5 h-5 shrink-0 mt-0.5">
@@ -155,7 +155,7 @@ export default function ModalMintaPerbaikan({
                       type="checkbox"
                       checked={isSelected}
                       onChange={() => toggleStep(item.nomor)}
-                      className="peer absolute inset-0 w-full h-full m-0 appearance-none rounded-[6px] border-[1.5px] border-[#CBD5E1] bg-white checked:bg-[#B45309] checked:border-[#B45309] cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B45309]/40"
+                      className="peer absolute inset-0 w-full h-full m-0 appearance-none rounded-md border-[1.5px] border-slate-300 bg-white checked:bg-amber-700 checked:border-amber-700 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-700/40"
                     />
                     <Check className="pointer-events-none absolute inset-0 m-auto w-3 h-3 text-white opacity-0 peer-checked:opacity-100" />
                   </span>
@@ -163,12 +163,12 @@ export default function ModalMintaPerbaikan({
                   <span className="flex-1 flex flex-col gap-1 min-w-0">
                     <span
                       className={`text-sm font-bold ${
-                        isSelected ? 'text-[#92400E]' : 'text-[#0F172A]'
+                        isSelected ? 'text-amber-800' : 'text-slate-900'
                       }`}
                     >
                       Step {item.nomor} · {item.judul}
                     </span>
-                    <span className="text-xs text-[#94A3B8]">{item.sub}</span>
+                    <span className="text-xs text-slate-400">{item.sub}</span>
                   </span>
                 </label>
               )
@@ -176,13 +176,13 @@ export default function ModalMintaPerbaikan({
           </div>
 
           {selectedSteps.length === 0 ? (
-            <p className="text-xs text-[#B45309]">Pilih minimal satu step yang perlu diperbaiki.</p>
+            <p className="text-xs text-amber-700">Pilih minimal satu step yang perlu diperbaiki.</p>
           ) : null}
         </div>
 
         {/* Catatan untuk pengaju */}
         <div className="w-full flex flex-col gap-3">
-          <span className="text-sm font-bold text-[#0F172A]">Catatan untuk pengaju</span>
+          <span className="text-sm font-bold text-slate-900">Catatan untuk pengaju</span>
 
           <div className="w-full flex flex-wrap gap-2">
             {ALASAN_PERBAIKAN.map((alasan) => {
@@ -198,8 +198,8 @@ export default function ModalMintaPerbaikan({
                   }}
                   className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-colors cursor-pointer ${
                     isSelected
-                      ? 'bg-[#B45309] text-white'
-                      : 'bg-white text-[#475569] border border-[#E2E8F0] hover:border-[#FCD34D] hover:text-[#92400E]'
+                      ? 'bg-amber-700 text-white'
+                      : 'bg-white text-slate-600 border border-slate-200 hover:border-amber-300 hover:text-amber-800'
                   }`}
                 >
                   {alasan}
@@ -209,17 +209,17 @@ export default function ModalMintaPerbaikan({
           </div>
 
           <div className="w-full flex flex-col gap-2">
-            <div className="w-full h-[104px] p-3 rounded-[10px] bg-[#FFFBEB]/50 border border-[#FDE68A] focus-within:border-[#B45309] transition-colors">
+            <div className="w-full h-[104px] p-3 rounded-[10px] bg-amber-50/50 border border-amber-200 focus-within:border-amber-700 transition-colors">
               <textarea
                 value={pesan}
                 onChange={(e) => setPesan(e.target.value.slice(0, BATAS_PESAN))}
                 placeholder="Jelaskan apa yang perlu diperbaiki agar pengaju tahu harus mengunggah atau mengisi ulang apa..."
-                className="w-full h-full resize-none bg-transparent border-none outline-none text-sm leading-6 text-[#0F172A] placeholder:text-[#94A3B8]"
+                className="w-full h-full resize-none bg-transparent border-none outline-none text-sm leading-6 text-slate-900 placeholder:text-slate-400"
               />
             </div>
             <div className="w-full flex items-center justify-between gap-3">
-              <span className="text-xs text-[#94A3B8]">Terkirim ke email pengaju</span>
-              <span className="text-xs text-[#94A3B8]">
+              <span className="text-xs text-slate-400">Terkirim ke email pengaju</span>
+              <span className="text-xs text-slate-400">
                 {pesan.length} / {BATAS_PESAN}
               </span>
             </div>
@@ -227,22 +227,22 @@ export default function ModalMintaPerbaikan({
         </div>
 
         {/* Catatan alur */}
-        <div className="w-full flex items-start gap-2.5 px-4 py-3 rounded-[10px] bg-[#F8FAFC]">
-          <Info className="w-4 h-4 shrink-0 mt-0.5 text-[#64748B]" />
-          <p className="text-xs leading-5 text-[#475569]">
+        <div className="w-full flex items-start gap-2.5 px-4 py-3 rounded-[10px] bg-slate-50">
+          <Info className="w-4 h-4 shrink-0 mt-0.5 text-slate-500" />
+          <p className="text-xs leading-5 text-slate-600">
             Status pengajuan berubah menjadi <strong className="font-semibold">Perlu perbaikan</strong>.
             Pengaju bisa mengoreksi data lalu mengirim ulang, pengajuan tidak ditolak permanen.
           </p>
         </div>
 
         {/* Footer */}
-        <div className="w-full flex items-center justify-between gap-3 pt-5 border-t border-[#E2E8F0]">
-          <span className="text-xs text-[#94A3B8]">Tindakan tercatat di audit log</span>
+        <div className="w-full flex items-center justify-between gap-3 pt-5 border-t border-slate-200">
+          <span className="text-xs text-slate-400">Tindakan tercatat di audit log</span>
           <div className="flex items-center gap-2">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 h-10 rounded-[10px] border border-[#E2E8F0] text-sm font-semibold text-[#475569] hover:bg-[#F8FAFC] transition-colors cursor-pointer"
+              className="px-4 h-10 rounded-[10px] border border-slate-200 text-sm font-semibold text-slate-600 hover:bg-slate-50 transition-colors cursor-pointer"
             >
               Batal
             </button>
@@ -250,7 +250,7 @@ export default function ModalMintaPerbaikan({
               type="button"
               onClick={handleKirim}
               disabled={!bisaKirim}
-              className="flex items-center gap-2 px-4 h-10 rounded-[10px] bg-[#B45309] text-sm font-bold text-white hover:bg-[#92400E] disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
+              className="flex items-center gap-2 px-4 h-10 rounded-[10px] bg-amber-700 text-sm font-bold text-white hover:bg-amber-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
             >
               <Send className="w-4 h-4" />
               <span>Kirim Permintaan Perbaikan</span>

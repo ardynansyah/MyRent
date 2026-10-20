@@ -129,7 +129,7 @@ export default function AdminDetailPengajuan({ onLogout }) {
   const checklistSelesai = checklist.filter(Boolean).length
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] text-[#0F172A] flex flex-row items-stretch">
+    <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-row items-stretch">
       <AdminSidebar
         activeKey="verifikasi"
         counts={{
@@ -142,18 +142,18 @@ export default function AdminDetailPengajuan({ onLogout }) {
       <div className="flex-1 min-w-0 flex flex-col">
         {/* Toast */}
         {toast ? (
-          <div className="fixed top-4 right-4 z-50 flex items-center gap-2 bg-[#0F172A] text-white px-4 py-3 rounded-xl shadow-xl border border-slate-700/60 text-sm font-medium animate-in fade-in slide-in-from-top-4 duration-300 max-w-[90vw]">
+          <div className="fixed top-4 right-4 z-50 flex items-center gap-2 bg-slate-900 text-white px-4 py-3 rounded-xl shadow-xl border border-slate-700/60 text-sm font-medium animate-in fade-in slide-in-from-top-4 duration-300 max-w-[90vw]">
             <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-300" />
             <span>{toast}</span>
           </div>
         ) : null}
 
         {/* Header mobile */}
-        <header className="lg:hidden flex items-center justify-between gap-3 px-4 py-3 bg-white border-b border-[#E2E8F0]">
+        <header className="lg:hidden flex items-center justify-between gap-3 px-4 py-3 bg-white border-b border-slate-200">
           <button
             type="button"
             onClick={() => navigate('/portal-internal-hq/dashboard')}
-            className="flex items-center gap-2 text-[13px] font-extrabold text-[#2563EB] cursor-pointer"
+            className="flex items-center gap-2 text-[13px] font-extrabold text-blue-600 cursor-pointer"
           >
             <ArrowLeft className="w-4 h-4" />
             Verifikasi akun
@@ -161,7 +161,7 @@ export default function AdminDetailPengajuan({ onLogout }) {
           <button
             type="button"
             onClick={handleLogout}
-            className="rounded-[8px] border border-[#FECACA] bg-[#FEF2F2] px-3 py-1.5 text-[11px] font-bold text-[#B91C1C] cursor-pointer"
+            className="rounded-lg border border-red-200 bg-red-50 px-3 py-1.5 text-[11px] font-bold text-red-700 cursor-pointer"
           >
             Keluar Sesi
           </button>
@@ -175,19 +175,19 @@ export default function AdminDetailPengajuan({ onLogout }) {
                 type="button"
                 onClick={() => navigate('/portal-internal-hq/dashboard')}
                 aria-label="Kembali ke daftar pengajuan"
-                className="w-9 h-9 shrink-0 rounded-[9px] bg-white border border-[#E2E8F0] flex items-center justify-center text-[#64748B] hover:text-[#0F172A] transition-colors cursor-pointer"
+                className="w-9 h-9 shrink-0 rounded-[9px] bg-white border border-slate-200 flex items-center justify-center text-slate-500 hover:text-slate-900 transition-colors cursor-pointer"
               >
                 <ArrowLeft className="w-4 h-4" />
               </button>
-              <span className="text-xs text-[#94A3B8]">Verifikasi akun</span>
-              <span className="text-xs text-[#94A3B8]">/</span>
-              <span className="text-xs font-semibold text-[#0F172A]">
+              <span className="text-xs text-slate-400">Verifikasi akun</span>
+              <span className="text-xs text-slate-400">/</span>
+              <span className="text-xs font-semibold text-slate-900">
                 Pengajuan #{pengajuan.id}
               </span>
             </div>
 
             <div className="flex items-center gap-2">
-              <span className="text-xs text-[#94A3B8]">
+              <span className="text-xs text-slate-400">
                 Pengajuan {posisi + 1} dari {DAFTAR_PENGAJUAN.length}
               </span>
               <button
@@ -197,7 +197,7 @@ export default function AdminDetailPengajuan({ onLogout }) {
                   navigate(`/portal-internal-hq/dashboard/pengajuan/${navigasiSebelumnya.id}`)
                 }
                 aria-label="Pengajuan sebelumnya"
-                className="w-9 h-9 rounded-[9px] bg-white border border-[#E2E8F0] flex items-center justify-center text-[#64748B] hover:text-[#0F172A] disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
+                className="w-9 h-9 rounded-[9px] bg-white border border-slate-200 flex items-center justify-center text-slate-500 hover:text-slate-900 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
               >
                 <ChevronLeft className="w-4 h-4" />
               </button>
@@ -208,7 +208,7 @@ export default function AdminDetailPengajuan({ onLogout }) {
                   navigate(`/portal-internal-hq/dashboard/pengajuan/${navigasiBerikutnya.id}`)
                 }
                 aria-label="Pengajuan berikutnya"
-                className="w-9 h-9 rounded-[9px] bg-white border border-[#E2E8F0] flex items-center justify-center text-[#64748B] hover:text-[#0F172A] disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
+                className="w-9 h-9 rounded-[9px] bg-white border border-slate-200 flex items-center justify-center text-slate-500 hover:text-slate-900 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
               >
                 <ChevronRight className="w-4 h-4" />
               </button>
@@ -216,10 +216,10 @@ export default function AdminDetailPengajuan({ onLogout }) {
           </div>
 
           {/* Header pemohon — tanpa avatar inisial, hanya satu badge status */}
-          <div className="w-full flex flex-col lg:flex-row lg:items-center justify-between gap-4 p-6 rounded-[14px] bg-white border border-[#E2E8F0]">
+          <div className="w-full flex flex-col lg:flex-row lg:items-center justify-between gap-4 p-6 rounded-[14px] bg-white border border-slate-200">
             <div className="flex flex-col gap-3 min-w-0">
               <div className="flex flex-wrap items-center gap-3">
-                <h1 className="text-2xl font-extrabold tracking-[-0.5px] text-[#0F172A]">
+                <h1 className="text-2xl font-extrabold tracking-[-0.5px] text-slate-900">
                   {pengajuan.nama}
                 </h1>
                 <span
@@ -230,21 +230,21 @@ export default function AdminDetailPengajuan({ onLogout }) {
                 </span>
               </div>
 
-              <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-[#475569]">
+              <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-slate-600">
                 <span className="inline-flex items-center gap-2">
-                  <Store className="w-4 h-4 shrink-0 text-[#94A3B8]" />
+                  <Store className="w-4 h-4 shrink-0 text-slate-400" />
                   {pengajuan.tipe}
                 </span>
                 <span className="inline-flex items-center gap-2">
-                  <Mail className="w-4 h-4 shrink-0 text-[#94A3B8]" />
+                  <Mail className="w-4 h-4 shrink-0 text-slate-400" />
                   {pengajuan.email}
                 </span>
                 <span className="inline-flex items-center gap-2">
-                  <MapPin className="w-4 h-4 shrink-0 text-[#94A3B8]" />
+                  <MapPin className="w-4 h-4 shrink-0 text-slate-400" />
                   {pengajuan.lokasi}
                 </span>
                 <span className="inline-flex items-center gap-2">
-                  <Clock className="w-4 h-4 shrink-0 text-[#94A3B8]" />
+                  <Clock className="w-4 h-4 shrink-0 text-slate-400" />
                   Diajukan {pengajuan.diajukan}
                 </span>
               </div>
@@ -254,7 +254,7 @@ export default function AdminDetailPengajuan({ onLogout }) {
               <button
                 type="button"
                 onClick={() => setModalPerbaikan(true)}
-                className="flex items-center gap-2 px-4 h-10 rounded-[10px] bg-white border border-[#E2E8F0] text-sm font-semibold text-[#475569] hover:bg-[#F8FAFC] transition-colors cursor-pointer"
+                className="flex items-center gap-2 px-4 h-10 rounded-[10px] bg-white border border-slate-200 text-sm font-semibold text-slate-600 hover:bg-slate-50 transition-colors cursor-pointer"
               >
                 <PencilLine className="w-4 h-4" />
                 <span>Minta perbaikan</span>
@@ -262,7 +262,7 @@ export default function AdminDetailPengajuan({ onLogout }) {
               <button
                 type="button"
                 onClick={() => setModalTolak(true)}
-                className="flex items-center gap-2 px-4 h-10 rounded-[10px] bg-[#FEF2F2] border border-[#FECACA] text-sm font-bold text-[#B91C1C] hover:bg-[#FEE2E2] transition-colors cursor-pointer"
+                className="flex items-center gap-2 px-4 h-10 rounded-[10px] bg-red-50 border border-red-200 text-sm font-bold text-red-700 hover:bg-red-100 transition-colors cursor-pointer"
               >
                 <X className="w-4 h-4" />
                 <span>Tolak</span>
@@ -270,7 +270,7 @@ export default function AdminDetailPengajuan({ onLogout }) {
               <button
                 type="button"
                 onClick={handleSetujui}
-                className="flex items-center gap-2 px-4 h-10 rounded-[10px] bg-[#15803D] text-sm font-bold text-white hover:bg-[#166534] transition-colors cursor-pointer"
+                className="flex items-center gap-2 px-4 h-10 rounded-[10px] bg-green-700 text-sm font-bold text-white hover:bg-green-800 transition-colors cursor-pointer"
               >
                 <Check className="w-4 h-4" />
                 <span>Setujui akun</span>
@@ -288,21 +288,21 @@ export default function AdminDetailPengajuan({ onLogout }) {
                 return (
                   <section
                     key={step.nomor}
-                    className="w-full flex flex-col gap-6 p-6 rounded-[14px] bg-white border border-[#E2E8F0]"
+                    className="w-full flex flex-col gap-6 p-6 rounded-[14px] bg-white border border-slate-200"
                   >
                     <div className="w-full flex items-center gap-3">
-                      <div className="w-8 h-8 shrink-0 rounded-full bg-[#F0FDF4] flex items-center justify-center">
-                        <Check className="w-4 h-4 text-[#15803D]" strokeWidth={2.6} />
+                      <div className="w-8 h-8 shrink-0 rounded-full bg-green-50 flex items-center justify-center">
+                        <Check className="w-4 h-4 text-green-700" strokeWidth={2.6} />
                       </div>
                       <div className="flex-1 flex flex-col gap-1 min-w-0">
-                        <span className="text-base font-bold text-[#0F172A]">
+                        <span className="text-base font-bold text-slate-900">
                           Step {step.nomor} · {step.judul}
                         </span>
-                        <span className="text-xs text-[#94A3B8]">{step.sub}</span>
+                        <span className="text-xs text-slate-400">{step.sub}</span>
                       </div>
                       <span
                         className={`shrink-0 text-xs font-semibold ${
-                          step.tone === 'info' ? 'text-[#1D4ED8]' : 'text-[#15803D]'
+                          step.tone === 'info' ? 'text-blue-700' : 'text-green-700'
                         }`}
                       >
                         {step.badge}
@@ -311,7 +311,7 @@ export default function AdminDetailPengajuan({ onLogout }) {
                         type="button"
                         onClick={() => toggleStep(index)}
                         aria-label={terbuka ? 'Sembunyikan langkah' : 'Tampilkan langkah'}
-                        className="w-4 h-4 shrink-0 text-[#94A3B8] hover:text-[#475569] transition-colors cursor-pointer"
+                        className="w-4 h-4 shrink-0 text-slate-400 hover:text-slate-600 transition-colors cursor-pointer"
                       >
                         <ChevronUp
                           className={`w-4 h-4 transition-transform ${terbuka ? '' : 'rotate-180'}`}
@@ -330,9 +330,9 @@ export default function AdminDetailPengajuan({ onLogout }) {
 
                               return (
                                 <div key={field.label} className="flex flex-col gap-1.5">
-                                  <span className="text-sm text-[#64748B]">{field.label}</span>
+                                  <span className="text-sm text-slate-500">{field.label}</span>
                                   <span
-                                    className={`text-base font-medium text-[#0F172A] ${
+                                    className={`text-base font-medium text-slate-900 ${
                                       isNumericField ? 'font-mono tabular-nums' : ''
                                     }`}
                                   >
@@ -344,13 +344,13 @@ export default function AdminDetailPengajuan({ onLogout }) {
                           </div>
 
                           {step.daya ? (
-                            <div className="w-full flex items-center gap-3 px-4 py-3 rounded-[10px] bg-[#F8FAFC]">
-                              <Zap className="w-4 h-4 shrink-0 text-[#B45309]" />
-                              <span className="text-sm text-[#64748B]">
+                            <div className="w-full flex items-center gap-3 px-4 py-3 rounded-[10px] bg-slate-50">
+                              <Zap className="w-4 h-4 shrink-0 text-amber-700" />
+                              <span className="text-sm text-slate-500">
                                 Daya listrik tempat usaha
                               </span>
-                              <span className="flex-1 h-px bg-[#E2E8F0]" />
-                              <span className="text-sm font-semibold tabular-nums text-[#0F172A]">
+                              <span className="flex-1 h-px bg-slate-200" />
+                              <span className="text-sm font-semibold tabular-nums text-slate-900">
                                 {step.daya}
                               </span>
                             </div>
@@ -363,18 +363,18 @@ export default function AdminDetailPengajuan({ onLogout }) {
                               <button
                                 key={doc.nama}
                                 type="button"
-                                className="flex-1 flex items-center gap-3 p-3 rounded-[10px] bg-[#F8FAFC] border border-[#E2E8F0] text-left hover:border-[#BFDBFE] transition-colors cursor-pointer"
+                                className="flex-1 flex items-center gap-3 p-3 rounded-[10px] bg-slate-50 border border-slate-200 text-left hover:border-blue-200 transition-colors cursor-pointer"
                               >
-                                <div className="w-9 h-9 shrink-0 rounded-[8px] bg-[#EFF6FF] flex items-center justify-center">
-                                  <ImageIcon className="w-4 h-4 text-[#2563EB]" />
+                                <div className="w-9 h-9 shrink-0 rounded-lg bg-blue-50 flex items-center justify-center">
+                                  <ImageIcon className="w-4 h-4 text-blue-600" />
                                 </div>
                                 <div className="flex-1 flex flex-col gap-0.5 min-w-0">
-                                  <span className="text-sm font-semibold text-[#0F172A] truncate">
+                                  <span className="text-sm font-semibold text-slate-900 truncate">
                                     {doc.nama}
                                   </span>
-                                  <span className="text-xs text-[#94A3B8] truncate">{doc.meta}</span>
+                                  <span className="text-xs text-slate-400 truncate">{doc.meta}</span>
                                 </div>
-                                <Maximize2 className="w-4 h-4 shrink-0 text-[#94A3B8]" />
+                                <Maximize2 className="w-4 h-4 shrink-0 text-slate-400" />
                               </button>
                             ))}
                           </div>
@@ -389,10 +389,10 @@ export default function AdminDetailPengajuan({ onLogout }) {
             {/* Panel samping: checklist, catatan internal, riwayat */}
             <aside className="w-full xl:w-[320px] shrink-0 flex flex-col gap-5">
               {/* Checklist verifikasi */}
-              <section className="w-full flex flex-col gap-4 p-5 rounded-[14px] bg-white border border-[#E2E8F0]">
+              <section className="w-full flex flex-col gap-4 p-5 rounded-[14px] bg-white border border-slate-200">
                 <div className="w-full flex items-center justify-between gap-2">
-                  <span className="text-sm font-bold text-[#0F172A]">Checklist verifikasi</span>
-                  <span className="text-sm font-semibold text-[#2563EB]">
+                  <span className="text-sm font-bold text-slate-900">Checklist verifikasi</span>
+                  <span className="text-sm font-semibold text-blue-600">
                     {checklistSelesai} / {CHECKLIST_VERIFIKASI.length}
                   </span>
                 </div>
@@ -404,13 +404,13 @@ export default function AdminDetailPengajuan({ onLogout }) {
                           type="checkbox"
                           checked={checklist[index]}
                           onChange={() => toggleChecklist(index)}
-                          className="peer absolute inset-0 w-full h-full m-0 appearance-none rounded-[6px] border-[1.5px] border-[#CBD5E1] bg-white checked:bg-[#2563EB] checked:border-[#2563EB] cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB]/40"
+                          className="peer absolute inset-0 w-full h-full m-0 appearance-none rounded-md border-[1.5px] border-slate-300 bg-white checked:bg-blue-600 checked:border-blue-600 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600/40"
                         />
                         <Check className="pointer-events-none absolute inset-0 m-auto w-3 h-3 text-white opacity-0 peer-checked:opacity-100" />
                       </span>
                       <span
                         className={`flex-1 text-sm leading-6 ${
-                          checklist[index] ? 'text-[#64748B]' : 'text-[#0F172A]'
+                          checklist[index] ? 'text-slate-500' : 'text-slate-900'
                         }`}
                       >
                         {item.label}
@@ -421,20 +421,20 @@ export default function AdminDetailPengajuan({ onLogout }) {
               </section>
 
               {/* Catatan internal */}
-              <section className="w-full flex flex-col gap-3 p-5 rounded-[14px] bg-white border border-[#E2E8F0]">
-                <span className="text-sm font-bold text-[#0F172A]">Catatan internal</span>
+              <section className="w-full flex flex-col gap-3 p-5 rounded-[14px] bg-white border border-slate-200">
+                <span className="text-sm font-bold text-slate-900">Catatan internal</span>
                 <textarea
                   value={catatan}
                   onChange={(e) => setCatatan(e.target.value)}
                   rows={4}
-                  className="w-full min-h-[96px] p-3 rounded-[10px] bg-[#F8FAFC] border border-[#E2E8F0] text-sm leading-6 text-[#475569] resize-none focus:outline-none focus:border-[#2563EB] transition-colors"
+                  className="w-full min-h-24 p-3 rounded-[10px] bg-slate-50 border border-slate-200 text-sm leading-6 text-slate-600 resize-none focus:outline-none focus:border-blue-600 transition-colors"
                 />
                 <div className="w-full flex items-center justify-between gap-2">
-                  <span className="text-xs text-[#94A3B8]">Hanya terlihat admin</span>
+                  <span className="text-xs text-slate-400">Hanya terlihat admin</span>
                   <button
                     type="button"
                     onClick={() => showToast('Catatan internal tersimpan.')}
-                    className="text-sm font-semibold text-[#2563EB] hover:underline cursor-pointer"
+                    className="text-sm font-semibold text-blue-600 hover:underline cursor-pointer"
                   >
                     Simpan
                   </button>
@@ -442,19 +442,19 @@ export default function AdminDetailPengajuan({ onLogout }) {
               </section>
 
               {/* Riwayat pengajuan */}
-              <section className="w-full flex flex-col gap-4 p-5 rounded-[14px] bg-white border border-[#E2E8F0]">
-                <span className="text-sm font-bold text-[#0F172A]">Riwayat pengajuan</span>
+              <section className="w-full flex flex-col gap-4 p-5 rounded-[14px] bg-white border border-slate-200">
+                <span className="text-sm font-bold text-slate-900">Riwayat pengajuan</span>
                 <div className="w-full flex flex-col gap-3">
                   {RIWAYAT_PENGAJUAN.map((item) => (
                     <div key={item.judul} className="w-full flex items-start gap-3">
                       <span
                         className={`w-2 h-2 mt-2 shrink-0 rounded-full ${
-                          item.aktif ? 'bg-[#2563EB]' : 'bg-[#E2E8F0]'
+                          item.aktif ? 'bg-blue-600' : 'bg-slate-200'
                         }`}
                       />
                       <div className="flex-1 flex flex-col gap-0.5">
-                        <span className="text-sm text-[#0F172A]">{item.judul}</span>
-                        <span className="text-xs text-[#94A3B8]">{item.waktu}</span>
+                        <span className="text-sm text-slate-900">{item.judul}</span>
+                        <span className="text-xs text-slate-400">{item.waktu}</span>
                       </div>
                     </div>
                   ))}

@@ -12,7 +12,7 @@ export default function Step4AlamatRekening({
     <div className="space-y-4 animate-in fade-in duration-200">
       {/* Alamat Lengkap */}
       <div className="flex flex-col gap-1.5">
-        <label className="text-[12px] font-semibold text-[#475569]">
+        <label className="text-xs font-semibold text-slate-600">
           Alamat Lengkap Usaha *
         </label>
         <textarea
@@ -20,8 +20,8 @@ export default function Step4AlamatRekening({
           placeholder="Jl. Kemang Selatan VIII No. 12, RT 03/RW 05, Bangka, Mampang Prapatan"
           value={formData.address}
           onChange={(e) => handleInputChange('address', e.target.value)}
-          className={`w-full bg-white text-[13px] rounded-[10px] p-3 text-slate-800 placeholder-[#94A3B8] border ${
-            errors.address ? 'border-red-400 focus:ring-red-200' : 'border-[#CBD5E1] focus:border-[#2563EB] focus:ring-blue-100'
+          className={`w-full bg-white text-[13px] rounded-[10px] p-3 text-slate-800 placeholder-slate-400 border ${
+            errors.address ? 'border-red-400 focus:ring-red-200' : 'border-slate-300 focus:border-blue-600 focus:ring-blue-100'
           } focus:outline-none focus:ring-2 transition-all resize-none`}
         />
         {errors.address && <span className="text-[10px] text-red-500">{errors.address}</span>}
@@ -30,7 +30,7 @@ export default function Step4AlamatRekening({
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {/* Kota / Kabupaten */}
         <div className="flex flex-col gap-1.5">
-          <label className="text-[12px] font-semibold text-[#475569]">
+          <label className="text-xs font-semibold text-slate-600">
             Kota / Kabupaten *
           </label>
           <input
@@ -38,8 +38,8 @@ export default function Step4AlamatRekening({
             placeholder="Jakarta Selatan"
             value={formData.city}
             onChange={(e) => handleInputChange('city', e.target.value)}
-            className={`w-full bg-white text-[13px] rounded-[10px] px-3.5 py-2.5 text-slate-800 placeholder-[#94A3B8] border ${
-              errors.city ? 'border-red-400 focus:ring-red-200' : 'border-[#CBD5E1] focus:border-[#2563EB] focus:ring-blue-100'
+            className={`w-full bg-white text-[13px] rounded-[10px] px-3.5 py-2.5 text-slate-800 placeholder-slate-400 border ${
+              errors.city ? 'border-red-400 focus:ring-red-200' : 'border-slate-300 focus:border-blue-600 focus:ring-blue-100'
             } focus:outline-none focus:ring-2 transition-all`}
           />
           {errors.city && <span className="text-[10px] text-red-500">{errors.city}</span>}
@@ -47,7 +47,7 @@ export default function Step4AlamatRekening({
 
         {/* Kecamatan */}
         <div className="flex flex-col gap-1.5">
-          <label className="text-[12px] font-semibold text-[#475569]">
+          <label className="text-xs font-semibold text-slate-600">
             Kecamatan *
           </label>
           <input
@@ -55,8 +55,8 @@ export default function Step4AlamatRekening({
             placeholder="Mampang Prapatan"
             value={formData.district}
             onChange={(e) => handleInputChange('district', e.target.value)}
-            className={`w-full bg-white text-[13px] rounded-[10px] px-3.5 py-2.5 text-slate-800 placeholder-[#94A3B8] border ${
-              errors.district ? 'border-red-400 focus:ring-red-200' : 'border-[#CBD5E1] focus:border-[#2563EB] focus:ring-blue-100'
+            className={`w-full bg-white text-[13px] rounded-[10px] px-3.5 py-2.5 text-slate-800 placeholder-slate-400 border ${
+              errors.district ? 'border-red-400 focus:ring-red-200' : 'border-slate-300 focus:border-blue-600 focus:ring-blue-100'
             } focus:outline-none focus:ring-2 transition-all`}
           />
           {errors.district && <span className="text-[10px] text-red-500">{errors.district}</span>}
@@ -66,7 +66,7 @@ export default function Step4AlamatRekening({
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {/* Kode Pos */}
         <div className="flex flex-col gap-1.5">
-          <label className="text-[12px] font-semibold text-[#475569]">
+          <label className="text-xs font-semibold text-slate-600">
             Kode Pos *
           </label>
           <input
@@ -74,8 +74,8 @@ export default function Step4AlamatRekening({
             placeholder="12730"
             value={formData.postalCode}
             onChange={(e) => handleInputChange('postalCode', e.target.value)}
-            className={`w-full bg-white text-[13px] rounded-[10px] px-3.5 py-2.5 text-slate-800 placeholder-[#94A3B8] border ${
-              errors.postalCode ? 'border-red-400 focus:ring-red-200' : 'border-[#CBD5E1] focus:border-[#2563EB] focus:ring-blue-100'
+            className={`w-full bg-white text-[13px] rounded-[10px] px-3.5 py-2.5 text-slate-800 placeholder-slate-400 border ${
+              errors.postalCode ? 'border-red-400 focus:ring-red-200' : 'border-slate-300 focus:border-blue-600 focus:ring-blue-100'
             } focus:outline-none focus:ring-2 transition-all`}
           />
           {errors.postalCode && <span className="text-[10px] text-red-500">{errors.postalCode}</span>}
@@ -83,7 +83,7 @@ export default function Step4AlamatRekening({
 
         {/* Patokan Lokasi */}
         <div className="flex flex-col gap-1.5">
-          <label className="text-[12px] font-semibold text-[#475569]">
+          <label className="text-xs font-semibold text-slate-600">
             Patokan Lokasi
           </label>
           <input
@@ -91,24 +91,24 @@ export default function Step4AlamatRekening({
             placeholder="Sebelah minimarket 24 jam"
             value={formData.landmark}
             onChange={(e) => handleInputChange('landmark', e.target.value)}
-            className="w-full bg-white text-[13px] rounded-[10px] px-3.5 py-2.5 text-slate-800 placeholder-[#94A3B8] border border-[#CBD5E1] focus:border-[#2563EB] focus:ring-2 focus:ring-blue-100 focus:outline-none transition-all"
+            className="w-full bg-white text-[13px] rounded-[10px] px-3.5 py-2.5 text-slate-800 placeholder-slate-400 border border-slate-300 focus:border-blue-600 focus:ring-2 focus:ring-blue-100 focus:outline-none transition-all"
           />
         </div>
       </div>
 
       {/* Titik Lokasi GPS */}
       <div className="flex flex-col gap-1.5">
-        <label className="text-[12px] font-semibold text-[#475569]">
+        <label className="text-xs font-semibold text-slate-600">
           Titik Lokasi Usaha (GPS) *
         </label>
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-3 bg-[#F8FAFC] border border-[#CBD5E1] rounded-[10px]">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-3 bg-slate-50 border border-slate-300 rounded-[10px]">
           <div className="flex items-center gap-2">
             <MapPin className="w-4 h-4 text-blue-600 shrink-0" />
             <div>
-              <div className="text-[12px] font-bold text-slate-900">
+              <div className="text-xs font-bold text-slate-900">
                 Titik terambil ({formData.gpsCoords})
               </div>
-              <div className="text-[10px] text-[#64748B]">
+              <div className="text-[10px] text-slate-500">
                 Dipakai untuk estimasi jarak &amp; tarif kurir pengiriman alat
               </div>
             </div>
@@ -118,7 +118,7 @@ export default function Step4AlamatRekening({
             type="button"
             onClick={handleRefreshGps}
             disabled={isGpsLoading}
-            className="flex items-center justify-center gap-1.5 px-3 py-1.5 bg-white hover:bg-slate-50 border border-[#CBD5E1] text-[11px] font-semibold text-slate-700 rounded-lg cursor-pointer transition-all shrink-0"
+            className="flex items-center justify-center gap-1.5 px-3 py-1.5 bg-white hover:bg-slate-50 border border-slate-300 text-[11px] font-semibold text-slate-700 rounded-lg cursor-pointer transition-all shrink-0"
           >
             <RotateCw className={`w-3.5 h-3.5 ${isGpsLoading ? 'animate-spin' : ''}`} />
             <span>{isGpsLoading ? 'Memindai...' : 'Perbarui GPS'}</span>
@@ -130,13 +130,13 @@ export default function Step4AlamatRekening({
 
       {/* Bank Refund Deposit */}
       <div className="flex flex-col gap-1.5">
-        <label className="text-[12px] font-semibold text-[#475569]">
+        <label className="text-xs font-semibold text-slate-600">
           Bank untuk Refund Deposit *
         </label>
         <select
           value={formData.bankName}
           onChange={(e) => handleInputChange('bankName', e.target.value)}
-          className="w-full bg-white text-[13px] rounded-[10px] px-3.5 py-2.5 text-slate-800 border border-[#CBD5E1] focus:border-[#2563EB] focus:ring-2 focus:ring-blue-100 focus:outline-none transition-all cursor-pointer"
+          className="w-full bg-white text-[13px] rounded-[10px] px-3.5 py-2.5 text-slate-800 border border-slate-300 focus:border-blue-600 focus:ring-2 focus:ring-blue-100 focus:outline-none transition-all cursor-pointer"
         >
           {BANKS.map((b) => (
             <option key={b} value={b}>
@@ -149,7 +149,7 @@ export default function Step4AlamatRekening({
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {/* Nomor Rekening */}
         <div className="flex flex-col gap-1.5">
-          <label className="text-[12px] font-semibold text-[#475569]">
+          <label className="text-xs font-semibold text-slate-600">
             Nomor Rekening *
           </label>
           <input
@@ -158,7 +158,7 @@ export default function Step4AlamatRekening({
             value={formData.bankAccount}
             onChange={(e) => handleInputChange('bankAccount', e.target.value)}
             className={`w-full bg-white text-[13px] rounded-[10px] px-3.5 py-2.5 text-slate-800 placeholder:text-slate-400 border ${
-              errors.bankAccount ? 'border-red-400 focus:ring-red-200' : 'border-[#CBD5E1] focus:border-[#2563EB] focus:ring-blue-100'
+              errors.bankAccount ? 'border-red-400 focus:ring-red-200' : 'border-slate-300 focus:border-blue-600 focus:ring-blue-100'
             } focus:outline-none focus:ring-2 transition-all font-mono tabular-nums tracking-wide`}
           />
           {errors.bankAccount && <span className="text-xs font-medium text-red-600">{errors.bankAccount}</span>}
@@ -166,7 +166,7 @@ export default function Step4AlamatRekening({
 
         {/* Nama Pemilik Rekening */}
         <div className="flex flex-col gap-1.5">
-          <label className="text-[12px] font-semibold text-[#475569]">
+          <label className="text-xs font-semibold text-slate-600">
             Nama Pemilik Rekening *
           </label>
           <input
@@ -175,7 +175,7 @@ export default function Step4AlamatRekening({
             value={formData.bankAccountHolder}
             onChange={(e) => handleInputChange('bankAccountHolder', e.target.value)}
             className={`w-full bg-white text-[13px] rounded-[10px] px-3.5 py-2.5 text-slate-800 placeholder:text-slate-400 border ${
-              errors.bankAccountHolder ? 'border-red-400 focus:ring-red-200' : 'border-[#CBD5E1] focus:border-[#2563EB] focus:ring-blue-100'
+              errors.bankAccountHolder ? 'border-red-400 focus:ring-red-200' : 'border-slate-300 focus:border-blue-600 focus:ring-blue-100'
             } focus:outline-none focus:ring-2 transition-all`}
           />
           <p className="text-xs text-slate-500 mt-1">* Nama pemilik rekening harus sama persis dengan nama di KTP.</p>
@@ -192,13 +192,13 @@ export default function Step4AlamatRekening({
           className="flex items-start gap-2.5 cursor-pointer select-none"
         >
           <div
-            className={`w-4 h-4 rounded-[4px] mt-0.5 flex items-center justify-center shrink-0 transition-colors ${
-              formData.confirmAccountOwner ? 'bg-[#2563EB]' : 'border border-[#CBD5E1] bg-white'
+            className={`w-4 h-4 rounded mt-0.5 flex items-center justify-center shrink-0 transition-colors ${
+              formData.confirmAccountOwner ? 'bg-blue-600' : 'border border-slate-300 bg-white'
             }`}
           >
             {formData.confirmAccountOwner && <Check className="w-2.5 h-2.5 text-white" strokeWidth={3} />}
           </div>
-          <span className="text-[11px] text-[#475569] leading-tight">
+          <span className="text-[11px] text-slate-600 leading-tight">
             Saya menyatakan rekening di atas milik saya sendiri dan aktif.
           </span>
         </label>
@@ -208,13 +208,13 @@ export default function Step4AlamatRekening({
           className="flex items-start gap-2.5 cursor-pointer select-none"
         >
           <div
-            className={`w-4 h-4 rounded-[4px] mt-0.5 flex items-center justify-center shrink-0 transition-colors ${
-              formData.confirmDeduction ? 'bg-[#2563EB]' : 'border border-[#CBD5E1] bg-white'
+            className={`w-4 h-4 rounded mt-0.5 flex items-center justify-center shrink-0 transition-colors ${
+              formData.confirmDeduction ? 'bg-blue-600' : 'border border-slate-300 bg-white'
             }`}
           >
             {formData.confirmDeduction && <Check className="w-2.5 h-2.5 text-white" strokeWidth={3} />}
           </div>
-          <span className="text-[11px] text-[#475569] leading-tight">
+          <span className="text-[11px] text-slate-600 leading-tight">
             Saya bersedia menerima potongan denda/klaim yang disepakati dari deposit bila terjadi kerusakan unit.
           </span>
         </label>

@@ -147,21 +147,21 @@ export default function Step3GudangOperasional({
 
         {/* Titik lokasi GPS */}
         <div className="w-full flex flex-col gap-1.5">
-          <div className="text-[12px] font-semibold text-[#475569]">Titik koordinat lokasi *</div>
-          <div className="w-full flex flex-row items-center gap-2.5 p-3 bg-[#EFF6FF] rounded-[10px]">
-            <MapPin className="w-[15px] h-[15px] text-[#1D4ED8] shrink-0" strokeWidth={2.2} />
+          <div className="text-xs font-semibold text-slate-600">Titik koordinat lokasi *</div>
+          <div className="w-full flex flex-row items-center gap-2.5 p-3 bg-blue-50 rounded-[10px]">
+            <MapPin className="w-[15px] h-[15px] text-blue-700 shrink-0" strokeWidth={2.2} />
             <div className="flex-1 min-w-0 flex flex-col gap-px">
-              <span className="text-[11px] font-bold text-[#1D4ED8]">
+              <span className="text-[11px] font-bold text-blue-700">
                 Titik terambil {gps}
               </span>
-              <span className="text-[9px] text-[#94A3B8]">
+              <span className="text-[9px] text-slate-400">
                 Dipakai penyewa untuk estimasi jarak &amp; tarif kurir
               </span>
             </div>
             <button
               type="button"
               onClick={handlePerbaruiGps}
-              className="shrink-0 px-[18px] py-[11px] bg-white border border-[#E2E8F0] rounded-[10px] text-[12px] font-semibold text-[#0F172A] hover:bg-slate-50 cursor-pointer transition-colors"
+              className="shrink-0 px-4.5 py-[11px] bg-white border border-slate-200 rounded-[10px] text-xs font-semibold text-slate-900 hover:bg-slate-50 cursor-pointer transition-colors"
             >
               Perbarui GPS
             </button>
@@ -199,7 +199,7 @@ export default function Step3GudangOperasional({
 
         {/* Foto lokasi */}
         <div className="w-full flex flex-col gap-1.5">
-          <div className="text-[12px] font-semibold text-[#475569]">
+          <div className="text-xs font-semibold text-slate-600">
             Foto lokasi / tempat penyimpanan alat *
           </div>
           <div className="w-full flex flex-row gap-2.5">
@@ -216,7 +216,7 @@ export default function Step3GudangOperasional({
 
         {/* Fasilitas lokasi */}
         <div className="w-full flex flex-col gap-1.5">
-          <div className="text-[12px] font-semibold text-[#475569]">Fasilitas di lokasi</div>
+          <div className="text-xs font-semibold text-slate-600">Fasilitas di lokasi</div>
           <div className="w-full flex flex-col gap-2">
             <CheckItem
               checked={fasilitasJaga}

@@ -122,7 +122,7 @@ export default function Step2IdentitasKTP({
 
         {/* Foto KTP & selfie */}
         <div className="w-full flex flex-col gap-1.5">
-          <div className="text-[12px] font-semibold text-[#475569]">Foto KTP &amp; Selfie *</div>
+          <div className="text-xs font-semibold text-slate-600">Foto KTP &amp; Selfie *</div>
           <div className="w-full flex flex-row gap-2.5">
             <UploadBox
               icon={CircleCheck}
@@ -143,7 +143,7 @@ export default function Step2IdentitasKTP({
 
         {/* Status badan usaha */}
         <div className="w-full flex flex-col gap-1.5">
-          <div className="text-[12px] font-semibold text-[#475569]">Status badan usaha</div>
+          <div className="text-xs font-semibold text-slate-600">Status badan usaha</div>
           <PillGroup
             options={['Perorangan', 'CV', 'PT']}
             value={badanUsaha}

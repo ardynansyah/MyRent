@@ -224,7 +224,7 @@ export default function RegisterPemilikAlat({ onBackToLogin, onFinish }) {
   }
 
   return (
-    <div className="min-h-screen w-full bg-[#F8FAFC] flex flex-col items-center text-slate-800 font-sans selection:bg-blue-100 selection:text-blue-700">
+    <div className="min-h-screen w-full bg-slate-50 flex flex-col items-center text-slate-800 font-sans selection:bg-blue-100 selection:text-blue-700">
       {/* Toast Notifikasi */}
       {notification && (
         <div className="fixed top-4 sm:top-6 right-4 sm:right-6 z-50 flex items-center gap-2.5 bg-slate-900 text-white px-4 py-3 rounded-xl shadow-xl text-xs sm:text-sm font-medium border border-slate-700/60 animate-in fade-in slide-in-from-top-4 duration-300 max-w-[90vw]">

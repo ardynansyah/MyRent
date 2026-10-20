@@ -5,7 +5,7 @@ import RegisterFormCard from './RegisterFormCard'
 function ReviewSection({ label, children }) {
   return (
     <div className="w-full flex flex-col gap-1.5">
-      <div className="text-[12px] font-semibold text-[#475569]">{label}</div>
+      <div className="text-xs font-semibold text-slate-600">{label}</div>
       <div className="w-full flex flex-col gap-2">{children}</div>
     </div>
   )
@@ -14,10 +14,10 @@ function ReviewSection({ label, children }) {
 function ReviewRow({ children }) {
   return (
     <div className="w-full flex flex-row gap-2 items-start">
-      <div className="w-4 h-4 shrink-0 rounded-[4px] bg-[#2563EB] flex items-center justify-center">
+      <div className="w-4 h-4 shrink-0 rounded bg-blue-600 flex items-center justify-center">
         <Check className="w-[11px] h-[11px] text-white" strokeWidth={3} />
       </div>
-      <span className="flex-1 text-left text-[11px] leading-[17px] text-[#475569]">{children}</span>
+      <span className="flex-1 text-left text-[11px] leading-[17px] text-slate-600">{children}</span>
     </div>
   )
 }
@@ -113,13 +113,13 @@ export default function Step5ReviewKirim({
             className="w-full flex flex-row gap-2 items-start text-left cursor-pointer"
           >
             <div
-              className={`w-4 h-4 shrink-0 rounded-[4px] flex items-center justify-center transition-colors ${
-                agreeTruth ? 'bg-[#2563EB]' : 'border border-[#CBD5E1] bg-white'
+              className={`w-4 h-4 shrink-0 rounded flex items-center justify-center transition-colors ${
+                agreeTruth ? 'bg-blue-600' : 'border border-slate-300 bg-white'
               }`}
             >
               {agreeTruth && <Check className="w-[11px] h-[11px] text-white" strokeWidth={3} />}
             </div>
-            <span className="flex-1 text-left text-xs leading-[18px] text-[#475569]">
+            <span className="flex-1 text-left text-xs leading-[18px] text-slate-600">
               Saya menyatakan seluruh data benar dan bersedia diverifikasi Admin.
             </span>
           </button>

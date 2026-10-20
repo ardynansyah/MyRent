@@ -56,42 +56,42 @@ export default function SidebarFilter({
   }
 
   return (
-    <aside className="box-border w-full lg:w-[264px] shrink-0 h-fit flex flex-col gap-[18px] p-[20px] justify-start items-start bg-[#FFFFFF] ring-1 ring-[#E2E8F0] rounded-[14px]">
+    <aside className="box-border w-full lg:w-[264px] shrink-0 h-fit flex flex-col gap-4.5 p-5 justify-start items-start bg-white ring-1 ring-slate-200 rounded-[14px]">
       {/* Head */}
       <div className="box-border w-full h-fit shrink-0 flex flex-row gap-0 justify-between items-center">
-        <h2 className="text-[14px] text-[#0F172A] font-bold text-left whitespace-nowrap m-0">
+        <h2 className="text-sm text-slate-900 font-bold text-left whitespace-nowrap m-0">
           Filter
         </h2>
         <button
           type="button"
           onClick={handleReset}
-          className="text-[12px] text-[#2563EB] font-semibold text-left whitespace-nowrap bg-transparent border-0 cursor-pointer hover:underline p-0"
+          className="text-xs text-blue-600 font-semibold text-left whitespace-nowrap bg-transparent border-0 cursor-pointer hover:underline p-0"
         >
           Reset
         </button>
       </div>
 
-      <div className="box-border w-full h-[1px] shrink-0 bg-[#E2E8F0]"></div>
+      <div className="box-border w-full h-px shrink-0 bg-slate-200"></div>
 
       {/* Rentang Tanggal */}
-      <div className="box-border w-full h-fit shrink-0 flex flex-col gap-[10px] justify-start items-start">
-        <div className="text-[12px] text-[#475569] font-semibold text-left whitespace-nowrap">
+      <div className="box-border w-full h-fit shrink-0 flex flex-col gap-2.5 justify-start items-start">
+        <div className="text-xs text-slate-600 font-semibold text-left whitespace-nowrap">
           Rentang Tanggal
         </div>
-        <div className="box-border w-full h-fit shrink-0 flex flex-row gap-[8px] justify-start items-start">
-          <div className="box-border flex-1 h-fit flex flex-col gap-[3px] py-[8px] px-[10px] justify-start items-start bg-[#F8FAFC] ring-1 ring-[#E2E8F0] rounded-[8px]">
+        <div className="box-border w-full h-fit shrink-0 flex flex-row gap-2 justify-start items-start">
+          <div className="box-border flex-1 h-fit flex flex-col gap-[3px] py-2 px-2.5 justify-start items-start bg-slate-50 ring-1 ring-slate-200 rounded-lg">
             <span className="text-[11px] text-slate-500 font-medium whitespace-nowrap">
               Mulai
             </span>
-            <span className="text-[12px] text-[#0F172A] font-semibold tabular-nums whitespace-nowrap">
+            <span className="text-xs text-slate-900 font-semibold tabular-nums whitespace-nowrap">
               {startDate}
             </span>
           </div>
-          <div className="box-border flex-1 h-fit flex flex-col gap-[3px] py-[8px] px-[10px] justify-start items-start bg-[#F8FAFC] ring-1 ring-[#E2E8F0] rounded-[8px]">
+          <div className="box-border flex-1 h-fit flex flex-col gap-[3px] py-2 px-2.5 justify-start items-start bg-slate-50 ring-1 ring-slate-200 rounded-lg">
             <span className="text-[11px] text-slate-500 font-medium whitespace-nowrap">
               Selesai
             </span>
-            <span className="text-[12px] text-[#0F172A] font-semibold tabular-nums whitespace-nowrap">
+            <span className="text-xs text-slate-900 font-semibold tabular-nums whitespace-nowrap">
               {endDate}
             </span>
           </div>
@@ -101,12 +101,12 @@ export default function SidebarFilter({
         </div>
       </div>
 
-      <div className="box-border w-full h-[1px] shrink-0 bg-[#E2E8F0]"></div>
+      <div className="box-border w-full h-px shrink-0 bg-slate-200"></div>
 
       {/* Sesuai Listrik Usaha Saya */}
-      <div className="box-border w-full h-fit shrink-0 flex flex-row gap-[10px] justify-start items-start">
+      <div className="box-border w-full h-fit shrink-0 flex flex-row gap-2.5 justify-start items-start">
         <div className="box-border flex-1 h-fit flex flex-col gap-[3px] justify-start items-start">
-          <div className="text-[12px] text-[#0F172A] font-bold text-left whitespace-nowrap">
+          <div className="text-xs text-slate-900 font-bold text-left whitespace-nowrap">
             Sesuai listrik usaha saya
           </div>
           <div className="text-[11px] leading-[15px] w-full text-slate-500 font-normal text-left tabular-nums">
@@ -116,22 +116,22 @@ export default function SidebarFilter({
         <button
           type="button"
           onClick={handleTogglePower}
-          className={`box-border w-[36px] shrink-0 h-[20px] flex flex-row p-[2px] items-center rounded-full transition-colors cursor-pointer border-0 ${
-            internalPowerMatch ? 'justify-end bg-[#2563EB]' : 'justify-start bg-slate-300'
+          className={`box-border w-9 shrink-0 h-5 flex flex-row p-0.5 items-center rounded-full transition-colors cursor-pointer border-0 ${
+            internalPowerMatch ? 'justify-end bg-blue-600' : 'justify-start bg-slate-300'
           }`}
         >
-          <div className="box-border w-[16px] shrink-0 h-[16px] bg-[#FFFFFF] rounded-full shadow-xs"></div>
+          <div className="box-border w-4 shrink-0 h-4 bg-white rounded-full shadow-xs"></div>
         </button>
       </div>
 
-      <div className="box-border w-full h-[1px] shrink-0 bg-[#E2E8F0]"></div>
+      <div className="box-border w-full h-px shrink-0 bg-slate-200"></div>
 
       {/* Harga Harian Maksimal */}
-      <div className="box-border w-full h-fit shrink-0 flex flex-col gap-[8px] justify-start items-start">
-        <div className="text-[12px] text-[#475569] font-semibold text-left whitespace-nowrap">
+      <div className="box-border w-full h-fit shrink-0 flex flex-col gap-2 justify-start items-start">
+        <div className="text-xs text-slate-600 font-semibold text-left whitespace-nowrap">
           Harga harian maksimal
         </div>
-        <div className="text-[16px] text-[#2563EB] font-bold tabular-nums tracking-tight text-left whitespace-nowrap">
+        <div className="text-base text-blue-600 font-bold tabular-nums tracking-tight text-left whitespace-nowrap">
           {formatRupiah(internalPrice)}
         </div>
 
@@ -144,7 +144,7 @@ export default function SidebarFilter({
             step={25000}
             value={internalPrice}
             onChange={handlePriceChange}
-            className="w-full accent-[#2563EB] cursor-pointer h-[4px] bg-slate-200 rounded-lg appearance-none"
+            className="w-full accent-blue-600 cursor-pointer h-1 bg-slate-200 rounded-lg appearance-none"
           />
         </div>
 
@@ -153,14 +153,14 @@ export default function SidebarFilter({
         </div>
       </div>
 
-      <div className="box-border w-full h-[1px] shrink-0 bg-[#E2E8F0]"></div>
+      <div className="box-border w-full h-px shrink-0 bg-slate-200"></div>
 
       {/* Batas Security Deposit */}
-      <div className="box-border w-full h-fit shrink-0 flex flex-col gap-[8px] justify-start items-start">
-        <div className="text-[12px] text-[#475569] font-semibold text-left whitespace-nowrap">
+      <div className="box-border w-full h-fit shrink-0 flex flex-col gap-2 justify-start items-start">
+        <div className="text-xs text-slate-600 font-semibold text-left whitespace-nowrap">
           Batas security deposit
         </div>
-        <div className="box-border w-full h-fit shrink-0 flex flex-row gap-[6px] justify-start items-start">
+        <div className="box-border w-full h-fit shrink-0 flex flex-row gap-1.5 justify-start items-start">
           {['< 300rb', '< 1jt', 'Semua'].map((opt) => {
             const isSelected = internalDeposit === opt
             return (
@@ -168,10 +168,10 @@ export default function SidebarFilter({
                 key={opt}
                 type="button"
                 onClick={() => handleDepositSelect(opt)}
-                className={`box-border flex-1 h-fit flex flex-row py-[7px] px-0 justify-center items-start rounded-[8px] cursor-pointer transition-all border-0 ${
+                className={`box-border flex-1 h-fit flex flex-row py-[7px] px-0 justify-center items-start rounded-lg cursor-pointer transition-all border-0 ${
                   isSelected
-                    ? 'bg-[#EFF6FF] ring-1 ring-[#2563EB] text-[#1D4ED8] font-bold'
-                    : 'bg-[#FFFFFF] ring-1 ring-[#E2E8F0] text-[#475569] hover:bg-slate-50 font-medium'
+                    ? 'bg-blue-50 ring-1 ring-blue-600 text-blue-700 font-bold'
+                    : 'bg-white ring-1 ring-slate-200 text-slate-600 hover:bg-slate-50 font-medium'
                 }`}
               >
                 <span className="text-[11px] whitespace-nowrap">{opt}</span>
@@ -181,23 +181,23 @@ export default function SidebarFilter({
         </div>
       </div>
 
-      <div className="box-border w-full h-[1px] shrink-0 bg-[#E2E8F0]"></div>
+      <div className="box-border w-full h-px shrink-0 bg-slate-200"></div>
 
       {/* Metode Pengiriman */}
-      <div className="box-border w-full h-fit shrink-0 flex flex-col gap-[8px] justify-start items-start">
-        <div className="text-[12px] text-[#475569] font-semibold text-left whitespace-nowrap">
+      <div className="box-border w-full h-fit shrink-0 flex flex-col gap-2 justify-start items-start">
+        <div className="text-xs text-slate-600 font-semibold text-left whitespace-nowrap">
           Metode pengiriman
         </div>
 
         {/* Option 1: Ambil sendiri di gudang */}
         <label
           onClick={() => handleDeliveryToggle('selfPickup')}
-          className="box-border w-fit h-fit shrink-0 flex flex-row gap-[8px] justify-start items-center cursor-pointer select-none"
+          className="box-border w-fit h-fit shrink-0 flex flex-row gap-2 justify-start items-center cursor-pointer select-none"
         >
           <div
-            className={`box-border w-[16px] shrink-0 h-[16px] flex flex-row justify-center items-center rounded-[4px] transition-colors ${
+            className={`box-border w-4 shrink-0 h-4 flex flex-row justify-center items-center rounded transition-colors ${
               internalDelivery.selfPickup
-                ? 'bg-[#2563EB]'
+                ? 'bg-blue-600'
                 : 'bg-white ring-1 ring-slate-300'
             }`}
           >
@@ -205,7 +205,7 @@ export default function SidebarFilter({
               <Check className="w-[11px] h-[11px] text-white stroke-[3]" />
             )}
           </div>
-          <span className="text-[12px] text-[#475569] font-normal text-left whitespace-nowrap">
+          <span className="text-xs text-slate-600 font-normal text-left whitespace-nowrap">
             Ambil sendiri di gudang
           </span>
         </label>
@@ -213,12 +213,12 @@ export default function SidebarFilter({
         {/* Option 2: Diantar kurir toko */}
         <label
           onClick={() => handleDeliveryToggle('courier')}
-          className="box-border w-fit h-fit shrink-0 flex flex-row gap-[8px] justify-start items-center cursor-pointer select-none"
+          className="box-border w-fit h-fit shrink-0 flex flex-row gap-2 justify-start items-center cursor-pointer select-none"
         >
           <div
-            className={`box-border w-[16px] shrink-0 h-[16px] flex flex-row justify-center items-center rounded-[4px] transition-colors ${
+            className={`box-border w-4 shrink-0 h-4 flex flex-row justify-center items-center rounded transition-colors ${
               internalDelivery.courier
-                ? 'bg-[#2563EB]'
+                ? 'bg-blue-600'
                 : 'bg-white ring-1 ring-slate-300'
             }`}
           >
@@ -226,7 +226,7 @@ export default function SidebarFilter({
               <Check className="w-[11px] h-[11px] text-white stroke-[3]" />
             )}
           </div>
-          <span className="text-[12px] text-[#475569] font-normal text-left whitespace-nowrap">
+          <span className="text-xs text-slate-600 font-normal text-left whitespace-nowrap">
             Diantar kurir toko
           </span>
         </label>
@@ -241,9 +241,9 @@ export default function SidebarFilter({
           depositLimit: internalDeposit,
           deliveryMethods: internalDelivery
         })}
-        className="box-border w-full h-fit shrink-0 flex flex-row gap-[8px] py-[11px] px-[16px] justify-center items-center bg-[#2563EB] hover:bg-blue-700 active:scale-[0.98] transition-all rounded-[10px] cursor-pointer border-0 mt-1 shadow-xs"
+        className="box-border w-full h-fit shrink-0 flex flex-row gap-2 py-[11px] px-4 justify-center items-center bg-blue-600 hover:bg-blue-700 active:scale-[0.98] transition-all rounded-[10px] cursor-pointer border-0 mt-1 shadow-xs"
       >
-        <span className="text-[13px] text-[#FFFFFF] font-semibold text-left whitespace-nowrap">
+        <span className="text-[13px] text-white font-semibold text-left whitespace-nowrap">
           Terapkan Filter
         </span>
       </button>
