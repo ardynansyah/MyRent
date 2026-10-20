@@ -63,9 +63,9 @@ export default function AdminDetailPengajuan({ onLogout }) {
   const [modalTolak, setModalTolak] = useState(false)
   const [toast, setToast] = useState('')
   const [stepTerbuka, setStepTerbuka] = useState(() => [true, true, true, true, true])
-  const [checklist, setChecklist] = useState(() =>
-    CHECKLIST_VERIFIKASI.map((item) => item.checked)
-  )
+  // Checklist verifikasi: default kosong. Admin wajib mencentang manual,
+  // tidak ada data mock yang otomatis tercentang saat halaman dibuka.
+  const [checkedItems, setCheckedItems] = useState([])
 
   const [pengajuan, setPengajuan] = useState(null)
   const [daftar, setDaftar] = useState([])
@@ -132,7 +132,7 @@ export default function AdminDetailPengajuan({ onLogout }) {
   const [idTerpantau, setIdTerpantau] = useState(params.id)
   if (params.id !== idTerpantau) {
     setIdTerpantau(params.id)
-    setChecklist(CHECKLIST_VERIFIKASI.map((item) => item.checked))
+    setCheckedItems([])
     setZoomedImage(null)
   }
 
@@ -208,10 +208,12 @@ export default function AdminDetailPengajuan({ onLogout }) {
   }
 
   const toggleChecklist = (index) => {
-    setChecklist((prev) => prev.map((checked, i) => (i === index ? !checked : checked)))
+    setCheckedItems((prev) =>
+      prev.includes(index) ? prev.filter((item) => item !== index) : [...prev, index]
+    )
   }
 
-  const checklistSelesai = checklist.filter(Boolean).length
+  const checklistSelesai = checkedItems.length
 
   // ── Tampilan memuat ─────────────────────────────────────────────────────
   if (isLoading) {
@@ -554,7 +556,7 @@ export default function AdminDetailPengajuan({ onLogout }) {
                       <span className="relative w-5 h-5 shrink-0 mt-0.5">
                         <input
                           type="checkbox"
-                          checked={checklist[index]}
+                          checked={checkedItems.includes(index)}
                           onChange={() => toggleChecklist(index)}
                           className="peer absolute inset-0 w-full h-full m-0 appearance-none rounded-md border-[1.5px] border-slate-300 bg-white checked:bg-blue-600 checked:border-blue-600 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600/40"
                         />
@@ -562,7 +564,7 @@ export default function AdminDetailPengajuan({ onLogout }) {
                       </span>
                       <span
                         className={`flex-1 text-sm leading-6 ${
-                          checklist[index] ? 'text-slate-500' : 'text-slate-900'
+                          checkedItems.includes(index) ? 'text-slate-500' : 'text-slate-900'
                         }`}
                       >
                         {item.label}

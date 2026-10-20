@@ -80,10 +80,10 @@ export function getStepTemplate(role) {
 
 /** Checklist manual yang harus dicek admin sebelum menyetujui. */
 export const CHECKLIST_VERIFIKASI = [
-  { label: 'Foto KTP jelas & tidak terpotong', checked: true },
-  { label: 'Nama KTP = nama rekening bank', checked: true },
-  { label: 'NIB aktif di sistem OSS', checked: true },
-  { label: 'Foto tempat usaha sesuai alamat', checked: false }
+  { label: 'Foto KTP jelas & tidak terpotong' },
+  { label: 'Nama KTP = nama rekening bank' },
+  { label: 'NIB aktif di sistem OSS' },
+  { label: 'Foto tempat usaha sesuai alamat' }
 ]
 
 /** Alasan cepat pada modal "Minta perbaikan" (status → Perlu perbaikan). */

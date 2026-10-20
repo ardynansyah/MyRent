@@ -194,10 +194,7 @@ export default function AuthPage({ onLoginSuccess, onNavigateRegister, onBackToL
       )}
 
       {/* Navbar Atas Terpadu (Mobile, Tablet, Desktop) */}
-      <AuthNavbar
-        onBackToHome={handleBack}
-        onNavigateRegister={handleRegisterRedirect}
-      />
+      <AuthNavbar onBackToHome={handleBack} />
 
       {/* Main Body */}
       <main className="w-full max-w-[1440px] flex-1 flex items-center justify-center px-4 sm:px-10 py-4 sm:py-8 lg:py-12">

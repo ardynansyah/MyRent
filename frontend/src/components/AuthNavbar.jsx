@@ -7,9 +7,9 @@ import { ArrowLeft } from 'lucide-react'
  * - Minimalist Auth Navbar yang konsisten dengan RegisterTopBar (h-16, bg-white, border-b, sticky top-0, px-4 sm:px-8).
  * - Responsif optimal di layar Mobile (<640px), Tablet (sm/md), dan Desktop (lg/xl).
  * - Sisi kiri: Logo MyRent + divider & label "Masuk ke Akun" (tampil pada sm ke atas).
- * - Sisi kanan: Tautan "Belum punya akun? Daftar" (desktop) + tombol "Kembali ke Beranda" yang compact di mobile.
+ * - Sisi kanan: tombol "Kembali ke Beranda" yang compact di mobile.
  */
-export default function AuthNavbar({ onBackToHome, onNavigateRegister }) {
+export default function AuthNavbar({ onBackToHome }) {
   return (
     <header className="w-full h-16 shrink-0 flex flex-row items-center justify-between px-4 sm:px-8 bg-white border-b border-slate-200 sticky top-0 z-30">
       {/* Sisi Kiri: Logo Brand & Identitas Halaman */}
@@ -28,21 +28,8 @@ export default function AuthNavbar({ onBackToHome, onNavigateRegister }) {
         </span>
       </div>
 
-      {/* Sisi Kanan: Tautan Registrasi Cepat & Tombol Kembali */}
+      {/* Sisi Kanan: Tombol Kembali ke Beranda */}
       <div className="flex items-center gap-2.5 sm:gap-4">
-        {onNavigateRegister && (
-          <div className="hidden md:flex items-center gap-1.5 text-xs">
-            <span className="text-slate-600">Belum punya akun?</span>
-            <button
-              type="button"
-              onClick={() => onNavigateRegister('penyewa')}
-              className="text-blue-600 font-bold hover:underline cursor-pointer transition-colors"
-            >
-              Daftar
-            </button>
-          </div>
-        )}
-
         <button
           type="button"
           onClick={onBackToHome}

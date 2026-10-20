@@ -164,31 +164,17 @@ export default function App() {
         <Route
           path="/login"
           element={
-            <>
-              {/* Floating Demo Switcher */}
-              <div className="fixed bottom-4 right-4 z-40 hidden sm:block">
-                <button
-                  type="button"
-                  onClick={() => navigate('/dashboard')}
-                  className="flex items-center gap-2 bg-slate-900/90 hover:bg-slate-900 text-white text-xs font-semibold px-4 py-2.5 rounded-full shadow-lg backdrop-blur border border-slate-700 hover:scale-105 active:scale-95 transition-all cursor-pointer"
-                >
-                  <span>Buka Dashboard Demo</span>
-                  <ArrowRight className="w-3.5 h-3.5" />
-                </button>
-              </div>
-
-              <AuthPage
-                onLoginSuccess={handleLoginSuccess}
-                onBackToLanding={() => navigate('/')}
-                onNavigateRegister={(selectedRole) => {
-                  if (selectedRole === 'pemilik') {
-                    navigate('/register/pemilik')
-                  } else {
-                    navigate('/register/penyewa')
-                  }
-                }}
-              />
-            </>
+            <AuthPage
+              onLoginSuccess={handleLoginSuccess}
+              onBackToLanding={() => navigate('/')}
+              onNavigateRegister={(selectedRole) => {
+                if (selectedRole === 'pemilik') {
+                  navigate('/register/pemilik')
+                } else {
+                  navigate('/register/penyewa')
+                }
+              }}
+            />
           }
         />
 
@@ -196,26 +182,12 @@ export default function App() {
         <Route
           path="/register/penyewa"
           element={
-            <>
-              {/* Floating Demo Switcher */}
-              <div className="fixed bottom-4 right-4 z-40 hidden sm:block">
-                <button
-                  type="button"
-                  onClick={() => navigate('/dashboard')}
-                  className="flex items-center gap-2 bg-slate-900/90 hover:bg-slate-900 text-white text-xs font-semibold px-4 py-2.5 rounded-full shadow-lg backdrop-blur border border-slate-700 hover:scale-105 active:scale-95 transition-all cursor-pointer"
-                >
-                  <span>Buka Dashboard Demo</span>
-                  <ArrowRight className="w-3.5 h-3.5" />
-                </button>
-              </div>
-
-              <RegisterPenyewaAlat
-                onNavigateLogin={() => navigate('/login')}
-                onBackToLogin={() => navigate('/login')}
-                onRegisterSuccess={handleRegisterPenyewaFinish}
-                onFinish={handleRegisterPenyewaFinish}
-              />
-            </>
+            <RegisterPenyewaAlat
+              onNavigateLogin={() => navigate('/login')}
+              onBackToLogin={() => navigate('/login')}
+              onRegisterSuccess={handleRegisterPenyewaFinish}
+              onFinish={handleRegisterPenyewaFinish}
+            />
           }
         />
 
@@ -223,24 +195,10 @@ export default function App() {
         <Route
           path="/register/pemilik"
           element={
-            <>
-              {/* Floating Demo Switcher */}
-              <div className="fixed bottom-4 right-4 z-40 hidden sm:block">
-                <button
-                  type="button"
-                  onClick={() => navigate('/dashboard')}
-                  className="flex items-center gap-2 bg-slate-900/90 hover:bg-slate-900 text-white text-xs font-semibold px-4 py-2.5 rounded-full shadow-lg backdrop-blur border border-slate-700 hover:scale-105 active:scale-95 transition-all cursor-pointer"
-                >
-                  <span>Buka Dashboard Demo</span>
-                  <ArrowRight className="w-3.5 h-3.5" />
-                </button>
-              </div>
-
-              <RegisterPemilikAlat
-                onBackToLogin={() => navigate('/login')}
-                onFinish={handleRegisterPemilikFinish}
-              />
-            </>
+            <RegisterPemilikAlat
+              onBackToLogin={() => navigate('/login')}
+              onFinish={handleRegisterPemilikFinish}
+            />
           }
         />
 
@@ -619,23 +577,6 @@ function Toast({ message }) {
       <CheckCircle2 className="w-4 h-4 text-emerald-300" />
       <span>{message}</span>
     </div>
-  )
-}
-
-function ArrowRight(props) {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={2}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      {...props}
-    >
-      <path d="M5 12h14" />
-      <path d="m12 5 7 7-7 7" />
-    </svg>
   )
 }
 
