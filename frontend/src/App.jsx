@@ -4,6 +4,8 @@ import LandingPage from './components/LandingPage'
 import AuthPage from './components/AuthPage'
 import RegisterPenyewaAlat from './components/registerPenyewaAlat'
 import RegisterPemilikAlat from './components/registerPemilikAlat/RegisterPemilikAlat'
+import BerandaSewa from './components/berandaPenyewa/BerandaSewa'
+import DetailAlat from './components/detailAlat/DetailAlat'
 import {
   Building2,
   KeyRound,
@@ -238,6 +240,32 @@ export default function App() {
               showToast={showToast}
               onNavigateHome={() => navigate('/')}
               onNavigateLogin={() => navigate('/login')}
+              onNavigateBerandaSewa={() => navigate('/beranda-sewa')}
+              onNavigateDetailAlat={() => navigate('/detail-alat')}
+            />
+          }
+        />
+
+        {/* Beranda Sewa Penyewa (Exported Design) */}
+        <Route
+          path="/beranda-sewa"
+          element={
+            <BerandaSewa
+              onSelectProduct={(product) => {
+                navigate('/detail-alat', { state: { product } })
+              }}
+              onNavigateHome={() => navigate('/')}
+            />
+          }
+        />
+
+        {/* Detail Alat (Exported Design) */}
+        <Route
+          path="/detail-alat"
+          element={
+            <DetailAlat
+              onBack={() => navigate('/beranda-sewa')}
+              onNavigateHome={() => navigate('/')}
             />
           }
         />
@@ -259,7 +287,9 @@ function DashboardView({
   categories,
   showToast,
   onNavigateHome,
-  onNavigateLogin
+  onNavigateLogin,
+  onNavigateBerandaSewa,
+  onNavigateDetailAlat
 }) {
   return (
     <div className="min-h-screen bg-[#F8FAFC] text-slate-800 flex flex-col font-sans">
@@ -314,6 +344,22 @@ function DashboardView({
             >
               <Plus className="w-4 h-4" />
               <span className="hidden xs:inline">Pasang Sewa Alat</span>
+            </button>
+
+            <button
+              onClick={onNavigateBerandaSewa}
+              className="flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-xl transition-all cursor-pointer"
+              title="Buka Beranda Sewa (Hasil Konversi HTML)"
+            >
+              <span>Beranda Sewa</span>
+            </button>
+
+            <button
+              onClick={onNavigateDetailAlat}
+              className="flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-xl transition-all cursor-pointer"
+              title="Buka Detail Alat (Hasil Konversi HTML)"
+            >
+              <span>Detail Alat</span>
             </button>
 
             <button
