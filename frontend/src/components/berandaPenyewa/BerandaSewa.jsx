@@ -189,7 +189,7 @@ export default function BerandaSewa({
   })
 
   return (
-    <div className="box-border w-full min-h-screen flex flex-col justify-start items-start bg-[#F8FAFC] font-['Plus_Jakarta_Sans',system-ui,sans-serif]">
+    <div className="box-border w-full min-h-screen flex flex-col justify-start items-start bg-[#F8FAFC]">
       {/* 1. Global Navigation Bar */}
       <NavbarPenyewa
         activeTab="jelajahi"
@@ -236,9 +236,9 @@ export default function BerandaSewa({
           <div className="box-border w-full h-fit shrink-0 flex flex-row gap-2 justify-between items-center">
             <div className="box-border w-fit shrink-0 h-fit flex flex-col gap-[3px] justify-start items-start">
               <h1 className="text-[17px] text-[#0F172A] font-bold text-left whitespace-nowrap m-0">
-                Alat tersedia untuk 12–15 Jun
+                Alat tersedia untuk <span className="tabular-nums">12–15 Jun</span>
               </h1>
-              <div className="text-[12px] text-[#475569] font-normal text-left whitespace-nowrap">
+              <div className="text-[12px] text-[#475569] font-normal text-left whitespace-nowrap tabular-nums">
                 {filteredProducts.length} alat ·{' '}
                 {powerMatch ? 'semua sesuai daya 1300 W' : 'semua kapasitas daya'}
               </div>

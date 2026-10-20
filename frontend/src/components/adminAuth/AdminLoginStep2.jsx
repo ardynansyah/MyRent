@@ -142,7 +142,7 @@ export default function AdminLoginStep2({
     <div className="box-border w-full min-h-screen flex flex-col justify-between items-center bg-[#F8FAFC] py-6 px-4">
       {/* TopBar */}
       <div className="box-border w-full max-w-[1440px] px-4 sm:px-12 py-3 flex flex-row justify-between items-center">
-        <div className="text-[10px] text-[#94A3B8] font-['Plus_Jakarta_Sans',system-ui,sans-serif] font-bold tracking-[1.5px] uppercase">
+        <div className="text-[10px] text-slate-500 font-bold tracking-[1.5px] uppercase">
           PORTAL INTERNAL
         </div>
         <button
@@ -163,10 +163,10 @@ export default function AdminLoginStep2({
         >
           {/* Header */}
           <div className="w-full flex flex-col gap-1">
-            <h1 className="text-[24px] leading-tight text-[#0F172A] font-['Plus_Jakarta_Sans',system-ui,sans-serif] font-extrabold tracking-[-0.7px] text-left">
+            <h1 className="text-[24px] leading-tight text-[#0F172A] font-extrabold tracking-tight text-left">
               Verifikasi kode admin
             </h1>
-            <p className="text-[12.5px] leading-[20px] text-[#475569] font-['Plus_Jakarta_Sans',system-ui,sans-serif] font-normal text-left">
+            <p className="text-[13px] leading-[20px] text-[#475569] font-normal text-left">
               Masukkan 6 digit kode verifikasi yang Anda buat sendiri di Pengaturan › Keamanan untuk
               menyelesaikan login.
             </p>
@@ -179,10 +179,10 @@ export default function AdminLoginStep2({
                 <UserCheck className="w-[14px] h-[14px]" />
               </div>
               <div className="flex flex-col text-left">
-                <span className="text-[11px] text-[#0F172A] font-['Plus_Jakarta_Sans',system-ui,sans-serif] font-bold">
+                <span className="text-[12px] text-[#0F172A] font-bold">
                   {email || 'admin@myrent.com'}
                 </span>
-                <span className="text-[9.5px] text-[#94A3B8] font-['Plus_Jakarta_Sans',system-ui,sans-serif] font-normal">
+                <span className="text-xs text-slate-500 font-normal">
                   Chrome · Jakarta, ID · {currentHour} WIB
                 </span>
               </div>
@@ -191,7 +191,7 @@ export default function AdminLoginStep2({
             <button
               type="button"
               onClick={onBackToStep1}
-              className="text-[10px] font-semibold text-[#2563EB] hover:text-blue-700 cursor-pointer"
+              className="text-[11px] font-semibold text-[#2563EB] hover:text-blue-700 cursor-pointer"
             >
               Ganti akun
             </button>
@@ -241,13 +241,13 @@ export default function AdminLoginStep2({
                     />
 
                     {digit ? (
-                      <span className="text-[22px] text-[#0F172A] font-['Plus_Jakarta_Sans',system-ui,sans-serif] font-bold">
+                      <span className="text-[24px] text-[#0F172A] font-mono font-bold tabular-nums">
                         {digit}
                       </span>
                     ) : isCurrent ? (
                       <div className="w-[2px] h-[22px] bg-[#2563EB] animate-pulse"></div>
                     ) : (
-                      <span className="text-[16px] text-[#CBD5E1] font-['Plus_Jakarta_Sans',system-ui,sans-serif] font-normal">
+                      <span className="text-[18px] text-[#CBD5E1] font-mono font-normal">
                         –
                       </span>
                     )}
@@ -257,17 +257,17 @@ export default function AdminLoginStep2({
             </div>
 
             {/* Meta Information: Timer & Attempts */}
-            <div className="box-border w-full flex flex-row justify-between items-center text-[10.5px] pt-1">
-              <div className="flex flex-row items-center gap-[5px] text-[#94A3B8]">
-                <Timer className="w-[12px] h-[12px]" />
-                <span className="font-['Plus_Jakarta_Sans',system-ui,sans-serif] font-normal">
+            <div className="box-border w-full flex flex-row justify-between items-center text-[11px] pt-1">
+              <div className="flex flex-row items-center gap-[5px] text-slate-500">
+                <Timer className="w-[13px] h-[13px]" />
+                <span className="font-normal font-mono tabular-nums">
                   {secondsLeft > 0
                     ? `Kode kedaluwarsa dalam ${formatTime(secondsLeft)}`
                     : 'Kode telah kedaluwarsa'}
                 </span>
               </div>
 
-              <div className="text-[#B45309] font-['Plus_Jakarta_Sans',system-ui,sans-serif] font-semibold">
+              <div className="text-[#B45309] font-medium tabular-nums">
                 {attemptsUsed} dari 5 percobaan
               </div>
             </div>
@@ -277,7 +277,7 @@ export default function AdminLoginStep2({
           <div className="w-full flex items-center justify-between p-2.5 bg-blue-50/70 border border-blue-100 rounded-[10px] text-xs text-blue-800">
             <span className="flex items-center gap-1.5 font-medium">
               <KeyRound className="w-3.5 h-3.5 text-blue-600" />
-              Kode Demo MVP: <strong className="font-bold text-blue-900">123456</strong>
+              Kode Demo MVP: <strong className="font-mono font-bold tabular-nums text-blue-900 tracking-wider">123456</strong>
             </span>
             <button
               type="button"
@@ -294,7 +294,7 @@ export default function AdminLoginStep2({
             disabled={isLoading || digits.join('').length !== 6}
             className="box-border w-full h-[46px] flex flex-row gap-[8px] justify-center items-center bg-[#0F172A] hover:bg-[#1E293B] active:scale-[0.99] disabled:opacity-50 text-white rounded-[10px] transition-all cursor-pointer shadow-xs"
           >
-            <span className="text-[13px] font-['Plus_Jakarta_Sans',system-ui,sans-serif] font-bold">
+            <span className="text-[13px] font-bold">
               {isLoading ? 'Memverifikasi kode...' : 'Verifikasi & masuk'}
             </span>
             <ArrowRight className="w-[15px] h-[15px] text-[#FFFFFF]" />
@@ -304,10 +304,10 @@ export default function AdminLoginStep2({
           <div className="box-border w-full flex flex-row gap-[9px] p-[11px] justify-start items-start bg-[#FFFBEB] outline outline-1 outline-[#FDE68A] -outline-offset-1 rounded-[10px]">
             <TriangleAlert className="w-[14px] h-[14px] text-[#B45309] shrink-0 mt-0.5" />
             <div className="flex-1 flex flex-col gap-[3px] text-left">
-              <div className="text-[11px] text-[#B45309] font-['Plus_Jakarta_Sans',system-ui,sans-serif] font-bold">
+              <div className="text-[11px] text-[#B45309] font-bold">
                 Jangan bagikan kode ini
               </div>
-              <div className="text-[10.5px] leading-[16px] text-[#92400E] font-['Plus_Jakarta_Sans',system-ui,sans-serif] font-normal">
+              <div className="text-xs leading-[17px] text-[#92400E] font-normal">
                 Tim SewaAlat tidak pernah meminta kode verifikasi Anda. Jika Anda tidak merasa login,
                 hentikan dan segera ubah kredensial akun.
               </div>

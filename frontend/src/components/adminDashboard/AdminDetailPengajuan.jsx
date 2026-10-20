@@ -323,14 +323,24 @@ export default function AdminDetailPengajuan({ onLogout }) {
                       <>
                         <div className="w-full flex flex-col gap-6">
                           <div className="w-full grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-5">
-                            {step.fields.map((field) => (
-                              <div key={field.label} className="flex flex-col gap-1.5">
-                                <span className="text-sm text-[#64748B]">{field.label}</span>
-                                <span className="text-base font-medium text-[#0F172A]">
-                                  {field.value}
-                                </span>
-                              </div>
-                            ))}
+                            {step.fields.map((field) => {
+                              const isNumericField =
+                                ['NIK', 'NIB', 'Bank & No. Rekening', 'Tahun Berdiri', 'Kota / Kode Pos'].includes(field.label) ||
+                                /\d{4,}/.test(field.value)
+
+                              return (
+                                <div key={field.label} className="flex flex-col gap-1.5">
+                                  <span className="text-sm text-[#64748B]">{field.label}</span>
+                                  <span
+                                    className={`text-base font-medium text-[#0F172A] ${
+                                      isNumericField ? 'font-mono tabular-nums' : ''
+                                    }`}
+                                  >
+                                    {field.value}
+                                  </span>
+                                </div>
+                              )
+                            })}
                           </div>
 
                           {step.daya ? (
@@ -340,7 +350,7 @@ export default function AdminDetailPengajuan({ onLogout }) {
                                 Daya listrik tempat usaha
                               </span>
                               <span className="flex-1 h-px bg-[#E2E8F0]" />
-                              <span className="text-sm font-semibold text-[#0F172A]">
+                              <span className="text-sm font-semibold tabular-nums text-[#0F172A]">
                                 {step.daya}
                               </span>
                             </div>

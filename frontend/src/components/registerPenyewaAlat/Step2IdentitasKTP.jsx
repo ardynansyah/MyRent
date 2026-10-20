@@ -20,11 +20,11 @@ export default function Step2IdentitasKTP({
             placeholder="3174 0921 8845 0003"
             value={formData.nik}
             onChange={(e) => handleInputChange('nik', e.target.value.replace(/\D/g, ''))}
-            className={`w-full bg-white text-[13px] rounded-[10px] px-3.5 py-2.5 text-slate-800 placeholder-[#94A3B8] border ${
+            className={`w-full bg-white text-[13px] rounded-[10px] px-3.5 py-2.5 text-slate-800 placeholder:text-slate-400 border ${
               errors.nik ? 'border-red-400 focus:ring-red-200' : 'border-[#CBD5E1] focus:border-[#2563EB] focus:ring-blue-100'
-            } focus:outline-none focus:ring-2 transition-all font-mono`}
+            } focus:outline-none focus:ring-2 transition-all font-mono tabular-nums tracking-wide`}
           />
-          {errors.nik && <span className="text-[10px] text-red-500">{errors.nik}</span>}
+          {errors.nik && <span className="text-xs font-medium text-red-600">{errors.nik}</span>}
         </div>
 
         {/* Nama sesuai KTP */}
@@ -37,11 +37,11 @@ export default function Step2IdentitasKTP({
             placeholder="Budi Santoso"
             value={formData.ktpName}
             onChange={(e) => handleInputChange('ktpName', e.target.value)}
-            className={`w-full bg-white text-[13px] rounded-[10px] px-3.5 py-2.5 text-slate-800 placeholder-[#94A3B8] border ${
+            className={`w-full bg-white text-[13px] rounded-[10px] px-3.5 py-2.5 text-slate-800 placeholder:text-slate-400 border ${
               errors.ktpName ? 'border-red-400 focus:ring-red-200' : 'border-[#CBD5E1] focus:border-[#2563EB] focus:ring-blue-100'
             } focus:outline-none focus:ring-2 transition-all`}
           />
-          {errors.ktpName && <span className="text-[10px] text-red-500">{errors.ktpName}</span>}
+          {errors.ktpName && <span className="text-xs font-medium text-red-600">{errors.ktpName}</span>}
         </div>
       </div>
 

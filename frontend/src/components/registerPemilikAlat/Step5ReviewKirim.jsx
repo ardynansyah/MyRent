@@ -71,10 +71,10 @@ export default function Step5ReviewKirim({
       <div className="w-full flex flex-col gap-3.5">
         <ReviewSection label="Akun & identitas">
           <ReviewRow>
-            {displayName} · {displayEmail} · {displayPhone}
+            {displayName} · {displayEmail} · <span className="font-mono tabular-nums">{displayPhone}</span>
           </ReviewRow>
           <ReviewRow>
-            NIK {displayNik} · {displayBadan} · NPWP {displayNpwp}
+            NIK <span className="font-mono font-bold tabular-nums text-slate-900">{displayNik}</span> · {displayBadan} · NPWP <span className="font-mono tabular-nums">{displayNpwp}</span>
           </ReviewRow>
         </ReviewSection>
 
@@ -83,13 +83,13 @@ export default function Step5ReviewKirim({
             {displayLokasi} · {displayAlamat}
           </ReviewRow>
           <ReviewRow>
-            {formData.hariOperasional || 'Senin–Sabtu'} ({formData.jamBuka || '08:00'}–{formData.jamTutup || '18:00'}) · titik GPS terambil
+            {formData.hariOperasional || 'Senin–Sabtu'} (<span className="font-mono tabular-nums">{formData.jamBuka || '08:00'}</span>–<span className="font-mono tabular-nums">{formData.jamTutup || '18:00'}</span>) · titik GPS terambil
           </ReviewRow>
         </ReviewSection>
 
         <ReviewSection label="Rekening pencairan">
           <ReviewRow>
-            {displayBank} · {displayRek} · a.n. {displayRekName}
+            {displayBank} · <span className="font-mono font-semibold tabular-nums text-slate-900 tracking-wide">{displayRek}</span> · a.n. {displayRekName}
           </ReviewRow>
         </ReviewSection>
 
@@ -119,11 +119,11 @@ export default function Step5ReviewKirim({
             >
               {agreeTruth && <Check className="w-[11px] h-[11px] text-white" strokeWidth={3} />}
             </div>
-            <span className="flex-1 text-left text-[11px] leading-[17px] text-[#475569]">
+            <span className="flex-1 text-left text-xs leading-[18px] text-[#475569]">
               Saya menyatakan seluruh data benar dan bersedia diverifikasi Admin.
             </span>
           </button>
-          {error && <span className="text-[10px] text-red-500">{error}</span>}
+          {error && <span className="text-xs font-medium text-red-600">{error}</span>}
         </ReviewSection>
       </div>
     </RegisterFormCard>

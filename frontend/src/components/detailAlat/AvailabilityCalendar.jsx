@@ -72,14 +72,14 @@ export default function AvailabilityCalendar({
   }
 
   return (
-    <div className="box-border w-full h-fit shrink-0 flex flex-col gap-[14px] p-[20px] justify-start items-start bg-[#FFFFFF] ring-1 ring-[#E2E8F0] rounded-[14px] font-['Plus_Jakarta_Sans',system-ui,sans-serif]">
+    <div className="box-border w-full h-fit shrink-0 flex flex-col gap-[14px] p-[20px] justify-start items-start bg-[#FFFFFF] ring-1 ring-[#E2E8F0] rounded-[14px]">
       {/* Calendar Header */}
       <div className="box-border w-full h-fit shrink-0 flex flex-row gap-0 justify-between items-center">
         <div className="box-border w-fit shrink-0 h-fit flex flex-col gap-[2px] justify-start items-start">
           <div className="text-[15px] text-[#0F172A] font-bold text-left whitespace-nowrap">
             {monthTitle}
           </div>
-          <div className="text-[11px] text-[#94A3B8] font-normal text-left whitespace-nowrap">
+          <div className="text-xs text-slate-500 font-normal text-left whitespace-nowrap">
             {subTitle}
           </div>
         </div>
@@ -106,7 +106,7 @@ export default function AvailabilityCalendar({
         {['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'].map((dow) => (
           <div
             key={dow}
-            className="text-[10px] text-[#94A3B8] font-bold text-center py-1 uppercase"
+            className="text-[11px] text-slate-500 font-semibold text-center py-1 uppercase tracking-wider"
           >
             {dow}
           </div>
@@ -120,7 +120,7 @@ export default function AvailabilityCalendar({
 
           let styleClasses = ''
           if (status === 'terisi') {
-            styleClasses = 'bg-[#F8FAFC] text-[#94A3B8] cursor-not-allowed opacity-60'
+            styleClasses = 'bg-[#F8FAFC] text-slate-400 cursor-not-allowed opacity-60'
           } else if (status === 'buffer') {
             styleClasses = 'bg-[#EFF6FF] text-[#1D4ED8] font-semibold cursor-pointer hover:ring-1 hover:ring-[#1D4ED8]'
           } else if (status === 'dipilih') {
@@ -136,7 +136,7 @@ export default function AvailabilityCalendar({
               type="button"
               disabled={status === 'terisi'}
               onClick={() => handleDayClick(day)}
-              className={`box-border h-[40px] flex flex-row justify-center items-center rounded-[8px] transition-all border-0 text-[12px] ${styleClasses}`}
+              className={`box-border h-[40px] flex flex-row justify-center items-center rounded-[8px] transition-all border-0 text-[13px] font-semibold tabular-nums ${styleClasses}`}
             >
               <span>{day}</span>
             </button>
@@ -149,7 +149,7 @@ export default function AvailabilityCalendar({
         {/* Tersedia */}
         <div className="box-border w-fit shrink-0 h-fit flex flex-row gap-[6px] justify-start items-center">
           <div className="box-border w-[12px] shrink-0 h-[12px] bg-[#FFFFFF] ring-1 ring-[#E2E8F0] rounded-[4px]"></div>
-          <span className="text-[10px] text-[#475569] font-normal whitespace-nowrap">
+          <span className="text-xs text-slate-600 font-medium whitespace-nowrap">
             Tersedia
           </span>
         </div>
@@ -157,7 +157,7 @@ export default function AvailabilityCalendar({
         {/* Terisi */}
         <div className="box-border w-fit shrink-0 h-fit flex flex-row gap-[6px] justify-start items-center">
           <div className="box-border w-[12px] shrink-0 h-[12px] bg-[#F8FAFC] rounded-[4px]"></div>
-          <span className="text-[10px] text-[#475569] font-normal whitespace-nowrap">
+          <span className="text-xs text-slate-600 font-medium whitespace-nowrap">
             Terisi
           </span>
         </div>
@@ -165,7 +165,7 @@ export default function AvailabilityCalendar({
         {/* Buffer Perawatan */}
         <div className="box-border w-fit shrink-0 h-fit flex flex-row gap-[6px] justify-start items-center">
           <div className="box-border w-[12px] shrink-0 h-[12px] bg-[#EFF6FF] rounded-[4px]"></div>
-          <span className="text-[10px] text-[#475569] font-normal whitespace-nowrap">
+          <span className="text-xs text-slate-600 font-medium whitespace-nowrap">
             Buffer perawatan
           </span>
         </div>
@@ -173,7 +173,7 @@ export default function AvailabilityCalendar({
         {/* Dipilih */}
         <div className="box-border w-fit shrink-0 h-fit flex flex-row gap-[6px] justify-start items-center">
           <div className="box-border w-[12px] shrink-0 h-[12px] bg-[#2563EB] rounded-[4px]"></div>
-          <span className="text-[10px] text-[#475569] font-normal whitespace-nowrap">
+          <span className="text-xs text-slate-600 font-medium whitespace-nowrap">
             Dipilih
           </span>
         </div>

@@ -27,7 +27,7 @@ export default function ProductCard({
   return (
     <div
       onClick={handleCardClick}
-      className="group box-border flex-1 min-w-[260px] max-w-full sm:max-w-[340px] h-fit flex flex-col gap-0 justify-start items-start bg-[#FFFFFF] ring-1 ring-[#E2E8F0] rounded-[14px] overflow-hidden hover:ring-[#2563EB]/40 hover:shadow-md transition-all cursor-pointer font-['Plus_Jakarta_Sans',system-ui,sans-serif]"
+      className="group box-border flex-1 min-w-[260px] max-w-full sm:max-w-[340px] h-fit flex flex-col gap-0 justify-start items-start bg-[#FFFFFF] ring-1 ring-[#E2E8F0] rounded-[14px] overflow-hidden hover:ring-[#2563EB]/40 hover:shadow-md transition-all cursor-pointer"
     >
       {/* Photo with Badges */}
       <div className="box-border w-full h-[168px] shrink-0 relative bg-slate-100 overflow-hidden">
@@ -53,7 +53,7 @@ export default function ProductCard({
         {/* Distance Badge */}
         <div className="box-border w-fit h-fit absolute left-[12px] top-[130px] flex flex-row gap-[5px] py-[4px] px-[9px] justify-start items-center bg-[#FFFFFF]/95 backdrop-blur rounded-full shadow-2xs z-10">
           <MapPin className="w-[11px] h-[11px] text-[#475569]" />
-          <span className="text-[10px] text-[#475569] font-semibold whitespace-nowrap">
+          <span className="text-[11px] text-[#475569] font-semibold tabular-nums whitespace-nowrap">
             {distance}
           </span>
         </div>
@@ -62,27 +62,27 @@ export default function ProductCard({
       {/* Card Content */}
       <div className="box-border w-full h-fit shrink-0 flex flex-col gap-[9px] p-[16px] justify-start items-start">
         {/* Meta (Watt & Min Rent) */}
-        <div className="text-[11px] text-[#2563EB] font-semibold text-left whitespace-nowrap">
+        <div className="text-[12px] text-[#2563EB] font-semibold tabular-nums text-left whitespace-nowrap">
           {meta}
         </div>
 
         {/* Name */}
-        <h3 className="text-[14px] leading-[19px] w-full text-[#0F172A] font-bold text-left line-clamp-2 min-h-[38px] m-0 group-hover:text-[#2563EB] transition-colors">
+        <h3 className="text-[14px] leading-[20px] w-full text-[#0F172A] font-bold text-left line-clamp-2 min-h-[40px] m-0 group-hover:text-[#2563EB] transition-colors">
           {name}
         </h3>
 
         {/* Price Row */}
         <div className="box-border w-full h-fit shrink-0 flex flex-row gap-[5px] justify-start items-end">
-          <div className="text-[17px] text-[#0F172A] font-extrabold tracking-[-0.3px] text-left whitespace-nowrap">
+          <div className="text-[18px] text-[#0F172A] font-extrabold tracking-tight tabular-nums text-left whitespace-nowrap">
             {price}
           </div>
-          <div className="text-[11px] text-[#94A3B8] font-normal text-left whitespace-nowrap pb-[2px]">
+          <div className="text-[12px] text-slate-500 font-normal text-left whitespace-nowrap pb-[2px]">
             {period}
           </div>
         </div>
 
         {/* Deposit Info */}
-        <div className="text-[10px] text-[#94A3B8] font-normal text-left whitespace-nowrap">
+        <div className="text-[11px] text-slate-500 font-medium tabular-nums text-left whitespace-nowrap">
           {deposit}
         </div>
 

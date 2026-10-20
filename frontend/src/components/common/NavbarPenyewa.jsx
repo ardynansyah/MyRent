@@ -22,12 +22,12 @@ export default function NavbarPenyewa({
   }
 
   return (
-    <header className="box-border w-full h-[68px] shrink-0 flex flex-row gap-4 lg:gap-[28px] px-4 md:px-8 justify-start items-center bg-[#FFFFFF] border-b border-[#E2E8F0] sticky top-0 z-40 transition-all font-['Plus_Jakarta_Sans',system-ui,sans-serif]">
+    <header className="box-border w-full h-[68px] shrink-0 flex flex-row gap-4 lg:gap-[28px] px-4 md:px-8 justify-start items-center bg-[#FFFFFF] border-b border-[#E2E8F0] sticky top-0 z-40 transition-all">
       {/* Wordmark Logo */}
       <button
         type="button"
         onClick={onNavigateHome}
-        className="text-[18px] text-[#2563EB] font-extrabold tracking-[-0.3px] text-left whitespace-nowrap cursor-pointer hover:opacity-90 transition-opacity bg-transparent border-0 p-0"
+        className="text-[18px] text-[#2563EB] font-extrabold tracking-tight text-left whitespace-nowrap cursor-pointer hover:opacity-90 transition-opacity bg-transparent border-0 p-0"
       >
         SewaAlat
       </button>
@@ -82,7 +82,7 @@ export default function NavbarPenyewa({
           className="text-[13px] text-[#0F172A] placeholder:text-[#94A3B8] bg-transparent border-0 outline-none w-full font-normal"
         />
         <div className="box-border w-fit shrink-0 h-fit flex flex-row gap-0 py-[5px] px-[10px] justify-start items-center bg-[#EFF6FF] rounded-full select-none">
-          <span className="text-[11px] text-[#1D4ED8] font-semibold whitespace-nowrap">
+          <span className="text-[11px] text-[#1D4ED8] font-semibold tabular-nums whitespace-nowrap">
             {userPower}
           </span>
         </div>
@@ -96,7 +96,7 @@ export default function NavbarPenyewa({
           className="box-border w-fit shrink-0 h-fit hidden sm:flex flex-row gap-[8px] py-[9px] px-[12px] justify-start items-center bg-[#FFFFFF] ring-1 ring-[#E2E8F0] rounded-[10px] cursor-pointer hover:bg-slate-50 transition-colors"
         >
           <CalendarDays className="w-[15px] h-[15px] text-[#475569]" />
-          <span className="text-[12px] text-[#0F172A] font-semibold whitespace-nowrap">
+          <span className="text-[12px] text-[#0F172A] font-semibold tabular-nums whitespace-nowrap">
             {dateRange}
           </span>
         </div>
@@ -107,7 +107,7 @@ export default function NavbarPenyewa({
           className="box-border w-fit shrink-0 h-fit flex flex-row gap-[8px] py-[9px] px-[12px] justify-start items-center bg-[#EFF6FF] rounded-[10px] cursor-pointer hover:bg-blue-100/70 transition-colors"
         >
           <Wallet className="w-[15px] h-[15px] text-[#1D4ED8]" />
-          <span className="text-[12px] text-[#1D4ED8] font-bold whitespace-nowrap">
+          <span className="text-[12px] text-[#1D4ED8] font-bold tabular-nums whitespace-nowrap">
             {walletBalance}
           </span>
         </div>

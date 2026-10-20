@@ -286,7 +286,7 @@ export default function LandingPage({
             {/* Trust Badges / Social Proof Metrics Bar */}
             <div className="pt-8 sm:pt-10 border-t border-slate-200/90 w-full max-w-2xl grid grid-cols-3 gap-4 sm:gap-8 text-center">
               <div>
-                <div className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-slate-900 tracking-tight">
+                <div className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-slate-900 tracking-tight tabular-nums">
                   120+
                 </div>
                 <div className="text-xs sm:text-sm text-slate-600 font-medium mt-1">
@@ -295,7 +295,7 @@ export default function LandingPage({
               </div>
 
               <div>
-                <div className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-emerald-600 tracking-tight">
+                <div className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-emerald-600 tracking-tight tabular-nums">
                   Rp 120jt+
                 </div>
                 <div className="text-xs sm:text-sm text-slate-600 font-medium mt-1">
@@ -304,7 +304,7 @@ export default function LandingPage({
               </div>
 
               <div>
-                <div className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-blue-600 tracking-tight">
+                <div className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-blue-600 tracking-tight tabular-nums">
                   100%
                 </div>
                 <div className="text-xs sm:text-sm text-slate-600 font-medium mt-1">
@@ -672,7 +672,7 @@ export default function LandingPage({
                         <IconComp className="w-3 h-3 text-blue-600" />
                         <span>{cat.category}</span>
                       </div>
-                      <div className="absolute bottom-3 right-3 bg-slate-950/80 backdrop-blur px-2 py-0.5 rounded text-[10px] font-medium text-white">
+                      <div className="absolute bottom-3 right-3 bg-slate-950/80 backdrop-blur px-2 py-0.5 rounded text-[10px] font-medium tabular-nums text-white">
                         {cat.count}
                       </div>
                     </div>
@@ -691,7 +691,7 @@ export default function LandingPage({
                   {/* Card Footer */}
                   <div className="p-5 pt-0">
                     <div className="pt-3 border-t border-slate-200/80 flex items-center justify-between">
-                      <span className="text-xs font-bold text-slate-800">
+                      <span className="text-xs font-bold tabular-nums text-slate-800">
                         {cat.price}
                       </span>
                       <button

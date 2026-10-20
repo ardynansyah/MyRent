@@ -157,11 +157,11 @@ export default function Step4AlamatRekening({
             placeholder="4471 8890 221"
             value={formData.bankAccount}
             onChange={(e) => handleInputChange('bankAccount', e.target.value)}
-            className={`w-full bg-white text-[13px] rounded-[10px] px-3.5 py-2.5 text-slate-800 placeholder-[#94A3B8] border ${
+            className={`w-full bg-white text-[13px] rounded-[10px] px-3.5 py-2.5 text-slate-800 placeholder:text-slate-400 border ${
               errors.bankAccount ? 'border-red-400 focus:ring-red-200' : 'border-[#CBD5E1] focus:border-[#2563EB] focus:ring-blue-100'
-            } focus:outline-none focus:ring-2 transition-all font-mono`}
+            } focus:outline-none focus:ring-2 transition-all font-mono tabular-nums tracking-wide`}
           />
-          {errors.bankAccount && <span className="text-[10px] text-red-500">{errors.bankAccount}</span>}
+          {errors.bankAccount && <span className="text-xs font-medium text-red-600">{errors.bankAccount}</span>}
         </div>
 
         {/* Nama Pemilik Rekening */}
@@ -174,13 +174,13 @@ export default function Step4AlamatRekening({
             placeholder="Budi Santoso"
             value={formData.bankAccountHolder}
             onChange={(e) => handleInputChange('bankAccountHolder', e.target.value)}
-            className={`w-full bg-white text-[13px] rounded-[10px] px-3.5 py-2.5 text-slate-800 placeholder-[#94A3B8] border ${
+            className={`w-full bg-white text-[13px] rounded-[10px] px-3.5 py-2.5 text-slate-800 placeholder:text-slate-400 border ${
               errors.bankAccountHolder ? 'border-red-400 focus:ring-red-200' : 'border-[#CBD5E1] focus:border-[#2563EB] focus:ring-blue-100'
             } focus:outline-none focus:ring-2 transition-all`}
           />
-          <p className="text-xs text-gray-500 mt-1">* Nama pemilik rekening harus sama persis dengan nama di KTP.</p>
+          <p className="text-xs text-slate-500 mt-1">* Nama pemilik rekening harus sama persis dengan nama di KTP.</p>
           {errors.bankAccountHolder && (
-            <span className="text-[10px] text-red-500">{errors.bankAccountHolder}</span>
+            <span className="text-xs font-medium text-red-600">{errors.bankAccountHolder}</span>
           )}
         </div>
       </div>

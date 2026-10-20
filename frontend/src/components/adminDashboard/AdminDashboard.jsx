@@ -129,7 +129,7 @@ export default function AdminDashboard({ onLogout }) {
                   }`}
                 >
                   {item.label}
-                  <span className={`ml-2 ${isActive ? 'text-[#93C5FD]' : 'text-[#94A3B8]'}`}>
+                  <span className={`ml-2 tabular-nums ${isActive ? 'text-[#93C5FD]' : 'text-slate-500'}`}>
                     {jumlah}
                   </span>
                 </button>
@@ -142,7 +142,7 @@ export default function AdminDashboard({ onLogout }) {
             <div className="overflow-x-auto">
               <table className="w-full min-w-[760px] text-left">
                 <thead className="bg-[#F8FAFC] text-[#64748B]">
-                  <tr className="text-xs font-bold tracking-[0.4px] uppercase">
+                  <tr className="text-xs font-bold tracking-wider uppercase">
                     <th className="py-3 px-6">Pengajuan</th>
                     <th className="py-3 px-6">Pemohon</th>
                     <th className="py-3 px-6">Lokasi</th>
@@ -159,8 +159,8 @@ export default function AdminDashboard({ onLogout }) {
                       <tr key={row.id} className="hover:bg-[#FAFBFC] transition-colors">
                         <td className="py-4 px-6">
                           <div className="flex flex-col gap-1">
-                            <span className="text-sm font-bold text-[#0F172A]">{row.id}</span>
-                            <span className="text-xs text-[#94A3B8]">Diajukan {row.diajukan}</span>
+                            <span className="text-xs font-mono font-bold tabular-nums text-[#0F172A]">{row.id}</span>
+                            <span className="text-xs text-slate-500 tabular-nums">Diajukan {row.diajukan}</span>
                           </div>
                         </td>
                         <td className="py-4 px-6">
@@ -174,7 +174,7 @@ export default function AdminDashboard({ onLogout }) {
                         <td className="py-4 px-6">
                           <div className="flex flex-col gap-1 max-w-[220px]">
                             <span className="text-sm text-[#475569] truncate">{row.lokasi}</span>
-                            <span className="text-xs text-[#94A3B8] truncate">{row.email}</span>
+                            <span className="text-xs text-slate-500 truncate">{row.email}</span>
                           </div>
                         </td>
                         <td className="py-4 px-6 hidden xl:table-cell">

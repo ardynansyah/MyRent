@@ -16,7 +16,7 @@ export default function ChipKategori({
   onSelectCategory
 }) {
   return (
-    <div className="box-border w-full h-[58px] shrink-0 flex flex-row gap-[10px] px-4 md:px-8 justify-start items-center bg-[#FFFFFF] border-b border-[#E2E8F0] overflow-x-auto scrollbar-none font-['Plus_Jakarta_Sans',system-ui,sans-serif]">
+    <div className="box-border w-full h-[58px] shrink-0 flex flex-row gap-[10px] px-4 md:px-8 justify-start items-center bg-[#FFFFFF] border-b border-[#E2E8F0] overflow-x-auto scrollbar-none">
       {categories.map((cat) => {
         const isSelected = selectedCategory === cat
         return (

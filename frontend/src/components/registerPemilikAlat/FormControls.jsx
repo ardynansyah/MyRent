@@ -11,7 +11,7 @@ export function FieldRow({ children }) {
 }
 
 /** Input teks dengan ikon leading opsional dan elemen trailing opsional */
-export function TextField({ label, icon: Icon, value, onChange, placeholder, type = 'text', trailing, error }) {
+export function TextField({ label, icon: Icon, value, onChange, placeholder, type = 'text', trailing, error, inputClassName = '' }) {
   return (
     <div className="w-full min-w-0 flex flex-col gap-1.5">
       <FieldLabel>{label}</FieldLabel>
@@ -24,11 +24,11 @@ export function TextField({ label, icon: Icon, value, onChange, placeholder, typ
           value={value}
           onChange={(e) => onChange?.(e.target.value)}
           placeholder={placeholder}
-          className="flex-1 min-w-0 bg-transparent text-[13px] text-[#0F172A] placeholder-[#94A3B8] focus:outline-none"
+          className={`flex-1 min-w-0 bg-transparent text-[13px] text-[#0F172A] placeholder:text-slate-400 focus:outline-none ${inputClassName}`}
         />
         {trailing}
       </div>
-      {error && <span className="text-[10px] text-red-500">{error}</span>}
+      {error && <span className="text-xs font-medium text-red-600">{error}</span>}
     </div>
   )
 }
@@ -45,9 +45,9 @@ export function TextAreaField({ label, value, onChange, placeholder, rows = 2, e
         placeholder={placeholder}
         className={`w-full min-h-[58px] py-[9px] px-[11px] bg-white border ${
           error ? 'border-red-400 focus:ring-red-200' : 'border-[#E2E8F0] focus:border-[#2563EB] focus:ring-[#2563EB]/15'
-        } rounded-[10px] text-[12px] leading-[19px] text-[#0F172A] placeholder-[#94A3B8] resize-none focus:outline-none focus:ring-2 transition-all`}
+        } rounded-[10px] text-[13px] leading-[20px] text-[#0F172A] placeholder:text-slate-400 resize-none focus:outline-none focus:ring-2 transition-all`}
       />
-      {error && <span className="text-[10px] text-red-500">{error}</span>}
+      {error && <span className="text-xs font-medium text-red-600">{error}</span>}
     </div>
   )
 }
@@ -114,11 +114,11 @@ export function UploadBox({ icon: Icon, title, subtitle, uploaded = false, onCli
       }`}
     >
       <Icon
-        className={`w-4 h-4 shrink-0 ${uploaded ? 'text-[#15803D]' : 'text-[#94A3B8]'}`}
+        className={`w-4 h-4 shrink-0 ${uploaded ? 'text-[#15803D]' : 'text-slate-400'}`}
         strokeWidth={2}
       />
-      <span className="text-[10px] font-semibold text-[#0F172A] whitespace-nowrap">{title}</span>
-      <span className="text-[9px] text-[#94A3B8] whitespace-nowrap">{subtitle}</span>
+      <span className="text-xs font-semibold text-[#0F172A] whitespace-nowrap">{title}</span>
+      <span className="text-[11px] text-slate-500 whitespace-nowrap">{subtitle}</span>
     </button>
   )
 }
@@ -134,7 +134,7 @@ export function CheckItem({ checked = false, onToggle, children }) {
       >
         {checked && <Check className="w-[11px] h-[11px] text-white" strokeWidth={3} />}
       </span>
-      <span className="flex-1 text-left text-[11px] leading-[17px] text-[#475569]">{children}</span>
+      <span className="flex-1 text-left text-xs leading-[18px] text-[#475569]">{children}</span>
     </>
   )
 

@@ -56,7 +56,7 @@ export default function DetailAlat({
   const formatRupiah = (val) => `Rp ${val.toLocaleString('id-ID')}`
 
   return (
-    <div className="box-border w-full min-h-screen flex flex-col justify-start items-start bg-[#F8FAFC] font-['Plus_Jakarta_Sans',system-ui,sans-serif]">
+    <div className="box-border w-full min-h-screen flex flex-col justify-start items-start bg-[#F8FAFC]">
       {/* 1. Global Navigation Bar */}
       <NavbarPenyewa
         activeTab="jelajahi"
@@ -110,16 +110,16 @@ export default function DetailAlat({
                 {/* Meta details: rating, distance, verification */}
                 <div className="box-border w-full h-fit shrink-0 flex flex-wrap gap-[14px] items-center pt-1 text-[12px]">
                   {/* Rating */}
-                  <div className="flex items-center gap-1 text-[#0F172A] font-bold">
+                  <div className="flex items-center gap-1 text-[#0F172A] font-bold tabular-nums">
                     <Star className="w-[14px] h-[14px] text-amber-500 fill-amber-500" />
                     <span>{equipment.rating}</span>
-                    <span className="text-[#94A3B8] font-normal">({equipment.reviewCount} ulasan)</span>
+                    <span className="text-slate-500 font-normal">({equipment.reviewCount} ulasan)</span>
                   </div>
 
                   <span className="text-slate-300">•</span>
 
                   {/* Location */}
-                  <div className="flex items-center gap-1.5 text-[#475569]">
+                  <div className="flex items-center gap-1.5 text-[#475569] tabular-nums">
                     <MapPin className="w-[13px] h-[13px] text-[#94A3B8]" />
                     <span>{equipment.distance} · {equipment.district}</span>
                   </div>
@@ -137,14 +137,14 @@ export default function DetailAlat({
               {/* Price Box */}
               <div className="box-border w-fit shrink-0 h-fit flex flex-col gap-[2px] justify-start sm:items-end">
                 <div className="box-border w-fit h-fit shrink-0 flex flex-row gap-[4px] justify-start items-end">
-                  <span className="text-[24px] sm:text-[26px] text-[#0F172A] font-extrabold tracking-[-0.8px] whitespace-nowrap">
+                  <span className="text-[24px] sm:text-[26px] text-[#0F172A] font-extrabold tracking-tight tabular-nums whitespace-nowrap">
                     {formatRupiah(equipment.dailyPrice)}
                   </span>
-                  <span className="text-[12px] text-[#94A3B8] font-normal pb-1 whitespace-nowrap">
+                  <span className="text-[12px] text-slate-500 font-normal pb-1 whitespace-nowrap">
                     /hari
                   </span>
                 </div>
-                <div className="text-[11px] text-[#94A3B8] font-normal whitespace-nowrap">
+                <div className="text-[11px] text-slate-500 font-medium tabular-nums whitespace-nowrap">
                   Deposit {formatRupiah(equipment.depositAmount)}
                 </div>
               </div>

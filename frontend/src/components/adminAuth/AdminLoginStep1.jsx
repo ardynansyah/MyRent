@@ -61,7 +61,7 @@ export default function AdminLoginStep1({
     <div className="box-border w-full min-h-screen flex flex-col justify-between items-center bg-[#F8FAFC] py-6 px-4">
       {/* TopBar */}
       <div className="box-border w-full max-w-[1440px] px-4 sm:px-12 py-3 flex flex-row justify-between items-center">
-        <div className="text-[10px] text-[#94A3B8] font-['Plus_Jakarta_Sans',system-ui,sans-serif] font-bold tracking-[1.5px] uppercase">
+        <div className="text-[10px] text-slate-500 font-bold tracking-[1.5px] uppercase">
           PORTAL INTERNAL
         </div>
         {onBackToHome && (
@@ -83,10 +83,10 @@ export default function AdminLoginStep1({
         >
           {/* Header */}
           <div className="w-full flex flex-col gap-1">
-            <h1 className="text-[26px] sm:text-[28px] leading-tight text-[#0F172A] font-['Plus_Jakarta_Sans',system-ui,sans-serif] font-extrabold tracking-[-0.9px] text-left">
+            <h1 className="text-[26px] sm:text-[28px] leading-tight text-[#0F172A] font-extrabold tracking-tight text-left">
               Masuk sebagai admin
             </h1>
-            <p className="text-[12.5px] leading-[20px] text-[#475569] font-['Plus_Jakarta_Sans',system-ui,sans-serif] font-normal text-left">
+            <p className="text-[13px] leading-[20px] text-[#475569] font-normal text-left">
               Gunakan email Gmail resmi yang terdaftar pada undangan admin SewaAlat.
             </p>
           </div>
@@ -104,13 +104,13 @@ export default function AdminLoginStep1({
             {/* Field Email */}
             <div className="box-border w-full flex flex-col gap-[6px]">
               <div className="box-border w-full flex flex-row justify-between items-center">
-                <label className="text-[12px] text-[#475569] font-['Plus_Jakarta_Sans',system-ui,sans-serif] font-semibold text-left">
+                <label className="text-[12px] text-[#475569] font-semibold text-left">
                   Email Gmail
                 </label>
                 {isGmailOrDomain && (
                   <div className="flex flex-row items-center gap-[4px]">
                     <CheckCircle2 className="w-[12px] h-[12px] text-[#15803D]" />
-                    <span className="text-[10px] text-[#15803D] font-['Plus_Jakarta_Sans',system-ui,sans-serif] font-semibold">
+                    <span className="text-[11px] text-[#15803D] font-semibold">
                       terdaftar
                     </span>
                   </div>
@@ -129,14 +129,14 @@ export default function AdminLoginStep1({
                   placeholder="admin@myrent.com atau rani.admin@gmail.com"
                   autoComplete="off"
                   required
-                  className="w-full bg-transparent border-none outline-none text-[12.5px] text-[#0F172A] font-['Plus_Jakarta_Sans',system-ui,sans-serif] font-normal placeholder:text-slate-400"
+                  className="w-full bg-transparent border-none outline-none text-[13px] text-[#0F172A] font-normal placeholder:text-slate-400"
                 />
                 {isEmailEntered && (
                   <CheckCircle2 className="w-[14px] h-[14px] text-[#2563EB] shrink-0" />
                 )}
               </div>
 
-              <div className="text-[10.5px] text-[#94A3B8] font-['Plus_Jakarta_Sans',system-ui,sans-serif] font-normal text-left">
+              <div className="text-xs text-slate-500 font-normal text-left">
                 Domain wajib @gmail.com atau @myrent.com
               </div>
             </div>
@@ -144,7 +144,7 @@ export default function AdminLoginStep1({
             {/* Field Kata Sandi */}
             <div className="box-border w-full flex flex-col gap-[6px]">
               <div className="box-border w-full flex flex-row justify-between items-center">
-                <label className="text-[12px] text-[#475569] font-['Plus_Jakarta_Sans',system-ui,sans-serif] font-semibold text-left">
+                <label className="text-[12px] text-[#475569] font-semibold text-left">
                   Kata sandi
                 </label>
                 <button
@@ -154,7 +154,7 @@ export default function AdminLoginStep1({
                       'Untuk mereset kata sandi admin, silakan hubungi tim DevOps internal HQ di it-support@myrent.id.'
                     )
                   }
-                  className="text-[10.5px] text-[#2563EB] hover:text-blue-700 font-['Plus_Jakarta_Sans',system-ui,sans-serif] font-bold text-left cursor-pointer"
+                  className="text-[11px] text-[#2563EB] hover:text-blue-700 font-bold text-left cursor-pointer"
                 >
                   Lupa kata sandi?
                 </button>
@@ -172,7 +172,7 @@ export default function AdminLoginStep1({
                   placeholder="••••••••••"
                   autoComplete="new-password"
                   required
-                  className="w-full bg-transparent border-none outline-none text-[13px] text-[#0F172A] font-['Plus_Jakarta_Sans',system-ui,sans-serif] font-normal placeholder:text-slate-400"
+                  className="w-full bg-transparent border-none outline-none text-[13px] text-[#0F172A] font-normal placeholder:text-slate-400"
                 />
                 <button
                   type="button"
@@ -187,7 +187,7 @@ export default function AdminLoginStep1({
                 </button>
               </div>
 
-              <div className="text-[10.5px] text-[#94A3B8] font-['Plus_Jakarta_Sans',system-ui,sans-serif] font-normal text-left">
+              <div className="text-xs text-slate-500 font-normal text-left">
                 Sandi sementara 12 karakter dari email undangan
               </div>
             </div>
@@ -196,17 +196,17 @@ export default function AdminLoginStep1({
             <div className="box-border w-full flex flex-row gap-[9px] p-[11px] justify-start items-start bg-[#FFFBEB] outline outline-1 outline-[#FDE68A] -outline-offset-1 rounded-[10px]">
               <KeyRound className="w-[14px] h-[14px] text-[#B45309] shrink-0 mt-0.5" />
               <div className="flex-1 flex flex-col gap-[3px] text-left">
-                <div className="text-[11px] text-[#B45309] font-['Plus_Jakarta_Sans',system-ui,sans-serif] font-bold">
+                <div className="text-[11px] text-[#B45309] font-bold">
                   Kata sandi sementara aktif
                 </div>
-                <div className="text-[10.5px] leading-[16px] text-[#92400E] font-['Plus_Jakarta_Sans',system-ui,sans-serif] font-normal flex flex-wrap items-center justify-between gap-1">
+                <div className="text-xs leading-[17px] text-[#92400E] font-normal flex flex-wrap items-center justify-between gap-1">
                   <span>
-                    <strong className="font-semibold">Admin#Sewa2026</strong> — wajib diganti setelah login pertama.
+                    <strong className="font-mono font-bold tracking-wide">Admin#Sewa2026</strong> — wajib diganti setelah login pertama.
                   </span>
                   <button
                     type="button"
                     onClick={fillDefaultCredentials}
-                    className="text-[10px] font-bold text-amber-800 underline hover:text-amber-950 cursor-pointer"
+                    className="text-[11px] font-bold text-amber-800 underline hover:text-amber-950 cursor-pointer"
                   >
                     Gunakan kredensial default
                   </button>
@@ -230,7 +230,7 @@ export default function AdminLoginStep1({
                 >
                   <div className="w-[14px] h-[14px] bg-[#FFFFFF] rounded-full shadow-xs"></div>
                 </div>
-                <span className="text-[11px] text-[#475569] group-hover:text-slate-800 font-['Plus_Jakarta_Sans',system-ui,sans-serif] font-normal">
+                <span className="text-[11px] text-[#475569] group-hover:text-slate-800 font-normal">
                   Ingat perangkat ini
                 </span>
               </button>
@@ -242,7 +242,7 @@ export default function AdminLoginStep1({
               disabled={isLoading}
               className="box-border w-full h-[46px] flex flex-row gap-[8px] justify-center items-center bg-[#0F172A] hover:bg-[#1E293B] active:scale-[0.99] disabled:opacity-60 text-white rounded-[10px] transition-all cursor-pointer shadow-xs mt-1"
             >
-              <span className="text-[13px] font-['Plus_Jakarta_Sans',system-ui,sans-serif] font-bold">
+              <span className="text-[13px] font-bold">
                 {isLoading ? 'Memverifikasi...' : 'Lanjut verifikasi'}
               </span>
               <ArrowRight className="w-[15px] h-[15px] text-[#FFFFFF]" />
@@ -251,8 +251,8 @@ export default function AdminLoginStep1({
 
           {/* Footer Security Notice */}
           <div className="box-border w-full flex flex-row gap-[7px] pt-[4px] justify-center items-center text-center">
-            <ShieldCheck className="w-[12px] h-[12px] text-[#94A3B8] shrink-0" />
-            <div className="text-[10.5px] text-[#94A3B8] font-['Plus_Jakarta_Sans',system-ui,sans-serif] font-normal">
+            <ShieldCheck className="w-[12px] h-[12px] text-slate-400 shrink-0" />
+            <div className="text-xs text-slate-500 font-normal">
               Akses terbatas. 5 percobaan gagal mengunci akun 30 menit.
             </div>
           </div>

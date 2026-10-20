@@ -56,7 +56,7 @@ export default function SidebarFilter({
   }
 
   return (
-    <aside className="box-border w-full lg:w-[264px] shrink-0 h-fit flex flex-col gap-[18px] p-[20px] justify-start items-start bg-[#FFFFFF] ring-1 ring-[#E2E8F0] rounded-[14px] font-['Plus_Jakarta_Sans',system-ui,sans-serif]">
+    <aside className="box-border w-full lg:w-[264px] shrink-0 h-fit flex flex-col gap-[18px] p-[20px] justify-start items-start bg-[#FFFFFF] ring-1 ring-[#E2E8F0] rounded-[14px]">
       {/* Head */}
       <div className="box-border w-full h-fit shrink-0 flex flex-row gap-0 justify-between items-center">
         <h2 className="text-[14px] text-[#0F172A] font-bold text-left whitespace-nowrap m-0">
@@ -80,23 +80,23 @@ export default function SidebarFilter({
         </div>
         <div className="box-border w-full h-fit shrink-0 flex flex-row gap-[8px] justify-start items-start">
           <div className="box-border flex-1 h-fit flex flex-col gap-[3px] py-[8px] px-[10px] justify-start items-start bg-[#F8FAFC] ring-1 ring-[#E2E8F0] rounded-[8px]">
-            <span className="text-[10px] text-[#94A3B8] font-normal whitespace-nowrap">
+            <span className="text-[11px] text-slate-500 font-medium whitespace-nowrap">
               Mulai
             </span>
-            <span className="text-[12px] text-[#0F172A] font-semibold whitespace-nowrap">
+            <span className="text-[12px] text-[#0F172A] font-semibold tabular-nums whitespace-nowrap">
               {startDate}
             </span>
           </div>
           <div className="box-border flex-1 h-fit flex flex-col gap-[3px] py-[8px] px-[10px] justify-start items-start bg-[#F8FAFC] ring-1 ring-[#E2E8F0] rounded-[8px]">
-            <span className="text-[10px] text-[#94A3B8] font-normal whitespace-nowrap">
+            <span className="text-[11px] text-slate-500 font-medium whitespace-nowrap">
               Selesai
             </span>
-            <span className="text-[12px] text-[#0F172A] font-semibold whitespace-nowrap">
+            <span className="text-[12px] text-[#0F172A] font-semibold tabular-nums whitespace-nowrap">
               {endDate}
             </span>
           </div>
         </div>
-        <div className="text-[11px] text-[#94A3B8] font-normal text-left whitespace-nowrap">
+        <div className="text-[11px] text-slate-500 font-normal tabular-nums text-left whitespace-nowrap">
           3 hari sewa · 1 hari buffer
         </div>
       </div>
@@ -109,7 +109,7 @@ export default function SidebarFilter({
           <div className="text-[12px] text-[#0F172A] font-bold text-left whitespace-nowrap">
             Sesuai listrik usaha saya
           </div>
-          <div className="text-[11px] leading-[15px] w-full text-[#94A3B8] font-normal text-left">
+          <div className="text-[11px] leading-[15px] w-full text-slate-500 font-normal text-left tabular-nums">
             Maks. 1300 W · hanya alat yang aman
           </div>
         </div>
@@ -131,7 +131,7 @@ export default function SidebarFilter({
         <div className="text-[12px] text-[#475569] font-semibold text-left whitespace-nowrap">
           Harga harian maksimal
         </div>
-        <div className="text-[16px] text-[#2563EB] font-bold text-left whitespace-nowrap">
+        <div className="text-[16px] text-[#2563EB] font-bold tabular-nums tracking-tight text-left whitespace-nowrap">
           {formatRupiah(internalPrice)}
         </div>
 
@@ -148,7 +148,7 @@ export default function SidebarFilter({
           />
         </div>
 
-        <div className="text-[10px] text-[#94A3B8] font-normal text-left whitespace-nowrap">
+        <div className="text-[11px] text-slate-500 font-normal tabular-nums text-left whitespace-nowrap">
           Rp 0 — Rp 500.000
         </div>
       </div>

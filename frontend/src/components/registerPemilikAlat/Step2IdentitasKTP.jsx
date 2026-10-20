@@ -89,6 +89,7 @@ export default function Step2IdentitasKTP({
             onChange={(val) => handleFieldChange('nik', val, setNik)}
             error={errors.nik}
             placeholder="3174 0921 8845 0003"
+            inputClassName="font-mono tabular-nums tracking-wide"
           />
           <TextField
             label="Nama sesuai KTP *"
@@ -156,6 +157,7 @@ export default function Step2IdentitasKTP({
           value={npwp}
           onChange={(val) => handleFieldChange('npwp', val, setNpwp)}
           placeholder="09.254.294.3-407.000"
+          inputClassName="font-mono tabular-nums tracking-wide"
         />
       </div>
     </RegisterFormCard>

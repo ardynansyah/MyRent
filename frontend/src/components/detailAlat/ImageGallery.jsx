@@ -19,7 +19,7 @@ export default function ImageGallery({
   const currentImage = images[selectedIndex] || images[0]
 
   return (
-    <div className="box-border w-full h-fit shrink-0 flex flex-col gap-[12px] justify-start items-start font-['Plus_Jakarta_Sans',system-ui,sans-serif]">
+    <div className="box-border w-full h-fit shrink-0 flex flex-col gap-[12px] justify-start items-start">
       {/* Main Large Photo */}
       <div className="box-border w-full h-[280px] sm:h-[380px] shrink-0 rounded-[16px] overflow-hidden relative bg-slate-100 shadow-2xs">
         <img
@@ -38,7 +38,7 @@ export default function ImageGallery({
         {/* Distance Badge */}
         <div className="box-border w-fit h-fit absolute left-[16px] bottom-[16px] flex flex-row gap-[5px] py-[5px] px-[10px] justify-start items-center bg-[#FFFFFF]/95 backdrop-blur rounded-full shadow-2xs z-10">
           <MapPin className="w-[12px] h-[12px] text-[#475569]" />
-          <span className="text-[11px] text-[#475569] font-semibold whitespace-nowrap">
+          <span className="text-[11px] text-[#475569] font-semibold tabular-nums whitespace-nowrap">
             {distance}
           </span>
         </div>

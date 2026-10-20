@@ -34,9 +34,9 @@ export default function Step5ReviewKirim({ formData, errors, handleInputChange, 
       {/* Ringkasan 2: Identitas KTP */}
       <div className="p-3.5 rounded-xl border border-[#E2E8F0] bg-[#F8FAFC] flex items-start justify-between">
         <div className="space-y-1">
-          <span className="text-[10px] font-bold text-blue-600 uppercase">2. Identitas (KTP)</span>
+          <span className="text-[11px] font-bold text-blue-600 uppercase tracking-wider">2. Identitas (KTP)</span>
           <div className="text-[13px] font-bold text-slate-900">
-            NIK {formData.nik || '-'} · {formData.birthPlace || '-'}, {formData.birthDate || '-'}
+            NIK <span className="font-mono font-bold tabular-nums text-slate-900">{formData.nik || '-'}</span> · {formData.birthPlace || '-'}, {formData.birthDate || '-'}
           </div>
           <div className="text-[11px] text-emerald-600 flex items-center gap-1 font-medium">
             <Check className="w-3 h-3" />
@@ -56,12 +56,12 @@ export default function Step5ReviewKirim({ formData, errors, handleInputChange, 
       {/* Ringkasan 3: Profil UMKM */}
       <div className="p-3.5 rounded-xl border border-[#E2E8F0] bg-[#F8FAFC] flex items-start justify-between">
         <div className="space-y-1">
-          <span className="text-[10px] font-bold text-blue-600 uppercase">3. Profil UMKM</span>
+          <span className="text-[11px] font-bold text-blue-600 uppercase tracking-wider">3. Profil UMKM</span>
           <div className="text-[13px] font-bold text-slate-900">
             {formData.businessName || '-'} · {formData.businessSector === 'Lainnya' && formData.customSector ? `${formData.businessSector} (${formData.customSector})` : formData.businessSector}
           </div>
           <div className="text-[11px] text-slate-500">
-            Daya Listrik: <strong className="text-slate-800">{formData.powerCapacity}</strong> · NIB: {formData.nib || 'Tidak ada'}
+            Daya Listrik: <strong className="text-slate-800 tabular-nums">{formData.powerCapacity}</strong> · NIB: <span className="font-mono tabular-nums">{formData.nib || 'Tidak ada'}</span>
           </div>
         </div>
         <button
@@ -77,12 +77,12 @@ export default function Step5ReviewKirim({ formData, errors, handleInputChange, 
       {/* Ringkasan 4: Alamat & Rekening */}
       <div className="p-3.5 rounded-xl border border-[#E2E8F0] bg-[#F8FAFC] flex items-start justify-between">
         <div className="space-y-1">
-          <span className="text-[10px] font-bold text-blue-600 uppercase">4. Alamat &amp; Rekening Refund</span>
+          <span className="text-[11px] font-bold text-blue-600 uppercase tracking-wider">4. Alamat &amp; Rekening Refund</span>
           <div className="text-[13px] font-bold text-slate-900">
-            {formData.address || '-'}, {formData.city || '-'} {formData.postalCode}
+            {formData.address || '-'}, {formData.city || '-'} <span className="font-mono tabular-nums">{formData.postalCode}</span>
           </div>
           <div className="text-[11px] text-slate-500">
-            {formData.bankName}: <span className="font-mono font-medium text-slate-800">{formData.bankAccount}</span> (a.n. {formData.bankAccountHolder})
+            {formData.bankName}: <span className="font-mono font-semibold tabular-nums text-slate-900 tracking-wide">{formData.bankAccount}</span> (a.n. {formData.bankAccountHolder})
           </div>
         </div>
         <button
@@ -130,7 +130,7 @@ export default function Step5ReviewKirim({ formData, errors, handleInputChange, 
         </label>
 
         {(errors.agreeTruth || errors.agreeTerms) && (
-          <span className="text-[10px] text-red-500 block">
+          <span className="text-xs font-medium text-red-600 block">
             Kedua persetujuan di atas wajib dicentang sebelum mengirim pendaftaran.
           </span>
         )}

@@ -459,7 +459,7 @@ function DashboardView({
               </div>
             </div>
             <div className="mt-3">
-              <div className="text-2xl font-bold text-slate-900">42 Mesin</div>
+              <div className="text-2xl font-bold text-slate-900 tabular-nums">42 Mesin</div>
               <div className="text-xs text-emerald-600 mt-1 font-medium">Siap kirim ke lokasi usaha</div>
             </div>
           </div>
@@ -472,7 +472,7 @@ function DashboardView({
               </div>
             </div>
             <div className="mt-3">
-              <div className="text-2xl font-bold text-slate-900">18 Unit</div>
+              <div className="text-2xl font-bold text-slate-900 tabular-nums">18 Unit</div>
               <div className="text-xs text-slate-500 mt-1">Okupansi 85% bulan ini</div>
             </div>
           </div>
@@ -485,7 +485,7 @@ function DashboardView({
               </div>
             </div>
             <div className="mt-3">
-              <div className="text-2xl font-bold text-slate-900">Rp 128.5jt</div>
+              <div className="text-2xl font-bold text-slate-900 tabular-nums">Rp 128.5jt</div>
               <div className="flex items-center gap-1.5 text-xs text-emerald-600 mt-1 font-medium">
                 <TrendingUp className="w-3.5 h-3.5" />
                 <span>Rata-rata 78% vs beli baru</span>
@@ -501,7 +501,7 @@ function DashboardView({
               </div>
             </div>
             <div className="mt-3">
-              <div className="text-2xl font-bold text-slate-900">120 UMKM</div>
+              <div className="text-2xl font-bold text-slate-900 tabular-nums">120 UMKM</div>
               <div className="flex items-center gap-1 text-xs text-blue-600 mt-1 font-medium">
                 <ShieldCheck className="w-3.5 h-3.5" />
                 <span>100% KYC & NIB Valid</span>
@@ -583,7 +583,7 @@ function DashboardView({
                   <div className="pt-3 border-t border-slate-100 flex items-center justify-between">
                     <div>
                       <div className="text-[10px] text-slate-400">Tarif Sewa</div>
-                      <div className="text-sm font-bold text-slate-900">
+                      <div className="text-sm font-bold text-slate-900 tabular-nums">
                         {item.price}
                         <span className="text-xs font-normal text-slate-500">{item.period}</span>
                       </div>
