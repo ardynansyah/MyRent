@@ -445,11 +445,54 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
         '409':
-          description: Email sudah terdaftar
+          description: Email, nomor telepon, atau NIK sudah terdaftar
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+
+  /api/auth/check-unique:
+    post:
+      tags: [Auth]
+      summary: Validasi real-time keunikan email, telepon, NIK, dan nomor rekening per step
+      description: |
+        Memeriksa apakah data tertentu sudah terdaftar di sistem.
+        Dipanggil oleh frontend pada setiap step pengisian formulir sebelum pengguna melangkah ke step selanjutnya.
+      operationId: checkUnique
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+                phone:
+                  type: string
+                whatsapp:
+                  type: string
+                nik:
+                  type: string
+                bankAccount:
+                  type: string
+                excludeUserId:
+                  type: string
+      responses:
+        '200':
+          description: Hasil pemeriksaan keunikan data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  available:
+                    type: boolean
+                  errors:
+                    type: object
+                    additionalProperties:
+                      type: string
 
   /api/auth/login:
     post:

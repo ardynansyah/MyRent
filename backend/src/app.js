@@ -17,6 +17,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const ENDPOINTS = [
   'GET /api/health',
   'POST /api/auth/register',
+  'POST /api/auth/check-unique',
   'POST /api/auth/login',
   'GET /api/auth/me',
   'GET /api/auth/submission-status/:emailOrId',

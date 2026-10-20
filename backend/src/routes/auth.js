@@ -6,6 +6,14 @@ import { prisma } from '../lib/prisma.js'
 import { config } from '../config.js'
 import { buildKycData, extractFormPayload } from '../lib/kyc.js'
 import { generateSubmissionCode } from '../lib/submissionCode.js'
+import {
+  findUserByPhone,
+  findUserByNik,
+  findUserByBankAccount,
+  normalizePhone,
+  normalizeNik,
+  normalizeBankAccount
+} from '../lib/userValidation.js'
 
 export const authRouter = Router()
 
@@ -95,6 +103,32 @@ authRouter.post('/register', async (req, res, next) => {
 
     // Kumpulkan seluruh detail form Step 1-5 (validasi file dibebaskan).
     const kycData = buildKycData(extractFormPayload(req.body ?? {}))
+
+    // Cek apakah nomor telepon sudah terdaftar pada pengguna lain
+    if (resolvedPhone && resolvedPhone !== '-') {
+      const existingPhoneUser = await findUserByPhone(resolvedPhone, existingUser?.id)
+      if (existingPhoneUser) {
+        return res.status(409).json({
+          error: {
+            code: 'PHONE_ALREADY_EXISTS',
+            message: 'Nomor WhatsApp / telepon sudah terdaftar. Silakan gunakan nomor lain.'
+          }
+        })
+      }
+    }
+
+    // Cek apakah NIK sudah terdaftar pada pengajuan lain
+    if (kycData?.nik) {
+      const existingNikUser = await findUserByNik(kycData.nik, existingUser?.id)
+      if (existingNikUser) {
+        return res.status(409).json({
+          error: {
+            code: 'NIK_ALREADY_EXISTS',
+            message: 'NIK KTP ini sudah terdaftar pada akun/pengajuan lain.'
+          }
+        })
+      }
+    }
 
     // Hash kata sandi dengan bcrypt (saltRounds = 10)
     const hashedPassword = await bcrypt.hash(password, 10)
@@ -192,6 +226,71 @@ authRouter.post('/register', async (req, res, next) => {
       message: 'Registrasi berhasil. Pengajuan Anda sedang menunggu verifikasi admin.',
       token,
       user: presentUser(newUser)
+    })
+  } catch (error) {
+    next(error)
+  }
+})
+
+/**
+ * POST /api/auth/check-unique
+ * Pengecekan real-time keunikan email, telepon, NIK, dan rekening
+ * untuk validasi pada setiap langkah (step) formulir sebelum lanjut ke step berikutnya.
+ */
+authRouter.post('/check-unique', async (req, res, next) => {
+  try {
+    const { email, phone, whatsapp, nik, bankAccount, excludeUserId } = req.body ?? {}
+    const errors = {}
+
+    if (email) {
+      const cleanEmail = String(email).trim().toLowerCase()
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+      if (emailRegex.test(cleanEmail)) {
+        const existing = await prisma.user.findUnique({
+          where: { email: cleanEmail }
+        })
+        if (existing && existing.id !== excludeUserId) {
+          errors.email = 'Email sudah terdaftar. Silakan gunakan email lain atau masuk.'
+        }
+      }
+    }
+
+    const targetPhone = phone || whatsapp
+    if (targetPhone) {
+      const cleanPhone = normalizePhone(targetPhone)
+      if (cleanPhone.length >= 9) {
+        const existing = await findUserByPhone(targetPhone, excludeUserId)
+        if (existing) {
+          errors.phone = 'Nomor WhatsApp / telepon sudah terdaftar. Gunakan nomor lain.'
+          errors.whatsapp = 'Nomor WhatsApp / telepon sudah terdaftar. Gunakan nomor lain.'
+        }
+      }
+    }
+
+    if (nik) {
+      const cleanNik = normalizeNik(nik)
+      if (cleanNik.length === 16) {
+        const existing = await findUserByNik(cleanNik, excludeUserId)
+        if (existing) {
+          errors.nik = 'NIK KTP ini sudah terdaftar pada akun/pengajuan lain.'
+        }
+      }
+    }
+
+    if (bankAccount) {
+      const cleanAcc = normalizeBankAccount(bankAccount)
+      if (cleanAcc.length >= 5) {
+        const existing = await findUserByBankAccount(cleanAcc, excludeUserId)
+        if (existing) {
+          errors.bankAccount = 'Nomor rekening ini sudah terdaftar pada akun lain.'
+          errors.nomorRekening = 'Nomor rekening ini sudah terdaftar pada akun lain.'
+        }
+      }
+    }
+
+    return res.json({
+      available: Object.keys(errors).length === 0,
+      errors
     })
   } catch (error) {
     next(error)
