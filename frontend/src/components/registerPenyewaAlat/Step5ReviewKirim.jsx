@@ -13,12 +13,12 @@ export default function Step5ReviewKirim({ formData, errors, handleInputChange, 
       {/* Ringkasan 1: Akun */}
       <div className="p-3.5 rounded-xl border border-slate-200 bg-slate-50 flex items-start justify-between">
         <div className="space-y-1">
-          <span className="text-[10px] font-bold text-blue-600 uppercase">1. Akun &amp; Kontak</span>
+          <span className="text-[10px] font-bold text-blue-600 uppercase tracking-wider">1. Akun &amp; Kontak</span>
           <div className="text-[13px] font-bold text-slate-900">
-            {formData.fullName || formData.ktpName || '-'} · {formData.email || '-'}
+            {formData.email || '-'}
           </div>
           <div className="text-[11px] text-slate-500">
-            WhatsApp: +62 {formData.phone || '-'}
+            WhatsApp: {formData.phone ? (formData.phone.startsWith('+62') ? formData.phone : formData.phone.startsWith('0') ? `+62 ${formData.phone.slice(1)}` : `+62 ${formData.phone}`) : '-'}
           </div>
         </div>
         <button
@@ -36,9 +36,12 @@ export default function Step5ReviewKirim({ formData, errors, handleInputChange, 
         <div className="space-y-1">
           <span className="text-[11px] font-bold text-blue-600 uppercase tracking-wider">2. Identitas (KTP)</span>
           <div className="text-[13px] font-bold text-slate-900">
+            {formData.ktpName || '-'}
+          </div>
+          <div className="text-[11px] text-slate-600">
             NIK <span className="font-mono font-bold tabular-nums text-slate-900">{formData.nik || '-'}</span> · {formData.birthPlace || '-'}, {formData.birthDate || '-'}
           </div>
-          <div className="text-[11px] text-emerald-600 flex items-center gap-1 font-medium">
+          <div className="text-[11px] text-emerald-600 flex items-center gap-1 font-medium pt-0.5">
             <Check className="w-3 h-3" />
             <span>Foto KTP &amp; Selfie terunggah</span>
           </div>
