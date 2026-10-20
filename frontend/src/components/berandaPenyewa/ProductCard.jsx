@@ -27,7 +27,7 @@ export default function ProductCard({
   return (
     <div
       onClick={handleCardClick}
-      className="group box-border flex-1 min-w-[260px] max-w-full sm:max-w-[340px] h-fit flex flex-col gap-0 justify-start items-start bg-[#FFFFFF] ring-1 ring-[#E2E8F0] rounded-[14px] overflow-hidden hover:ring-[#2563EB]/40 hover:shadow-md transition-all cursor-pointer font-['Plus_Jakarta_Sans',system-ui,sans-serif]"
+      className="group box-border flex-1 min-w-[260px] max-w-full sm:max-w-[340px] h-fit flex flex-col gap-0 justify-start items-start bg-white ring-1 ring-slate-200 rounded-[14px] overflow-hidden hover:ring-blue-600/40 hover:shadow-md transition-all cursor-pointer"
     >
       {/* Photo with Badges */}
       <div className="box-border w-full h-[168px] shrink-0 relative bg-slate-100 overflow-hidden">
@@ -44,56 +44,56 @@ export default function ProductCard({
         )}
 
         {/* Status Badge */}
-        <div className="box-border w-fit h-fit absolute left-[12px] top-[12px] flex flex-row gap-0 py-[5px] px-[10px] justify-start items-start bg-[#FFFFFF] rounded-full shadow-2xs z-10">
-          <span className="text-[11px] text-[#15803D] font-bold whitespace-nowrap">
+        <div className="box-border w-fit h-fit absolute left-3 top-3 flex flex-row gap-0 py-[5px] px-2.5 justify-start items-start bg-white rounded-full shadow-2xs z-10">
+          <span className="text-[11px] text-green-700 font-bold whitespace-nowrap">
             {status}
           </span>
         </div>
 
         {/* Distance Badge */}
-        <div className="box-border w-fit h-fit absolute left-[12px] top-[130px] flex flex-row gap-[5px] py-[4px] px-[9px] justify-start items-center bg-[#FFFFFF]/95 backdrop-blur rounded-full shadow-2xs z-10">
-          <MapPin className="w-[11px] h-[11px] text-[#475569]" />
-          <span className="text-[10px] text-[#475569] font-semibold whitespace-nowrap">
+        <div className="box-border w-fit h-fit absolute left-3 top-[130px] flex flex-row gap-[5px] py-1 px-[9px] justify-start items-center bg-white/95 backdrop-blur rounded-full shadow-2xs z-10">
+          <MapPin className="w-[11px] h-[11px] text-slate-600" />
+          <span className="text-[11px] text-slate-600 font-semibold tabular-nums whitespace-nowrap">
             {distance}
           </span>
         </div>
       </div>
 
       {/* Card Content */}
-      <div className="box-border w-full h-fit shrink-0 flex flex-col gap-[9px] p-[16px] justify-start items-start">
+      <div className="box-border w-full h-fit shrink-0 flex flex-col gap-[9px] p-4 justify-start items-start">
         {/* Meta (Watt & Min Rent) */}
-        <div className="text-[11px] text-[#2563EB] font-semibold text-left whitespace-nowrap">
+        <div className="text-xs text-blue-600 font-semibold tabular-nums text-left whitespace-nowrap">
           {meta}
         </div>
 
         {/* Name */}
-        <h3 className="text-[14px] leading-[19px] w-full text-[#0F172A] font-bold text-left line-clamp-2 min-h-[38px] m-0 group-hover:text-[#2563EB] transition-colors">
+        <h3 className="text-sm leading-5 w-full text-slate-900 font-bold text-left line-clamp-2 min-h-10 m-0 group-hover:text-blue-600 transition-colors">
           {name}
         </h3>
 
         {/* Price Row */}
         <div className="box-border w-full h-fit shrink-0 flex flex-row gap-[5px] justify-start items-end">
-          <div className="text-[17px] text-[#0F172A] font-extrabold tracking-[-0.3px] text-left whitespace-nowrap">
+          <div className="text-lg text-slate-900 font-extrabold tracking-tight tabular-nums text-left whitespace-nowrap">
             {price}
           </div>
-          <div className="text-[11px] text-[#94A3B8] font-normal text-left whitespace-nowrap pb-[2px]">
+          <div className="text-xs text-slate-500 font-normal text-left whitespace-nowrap pb-0.5">
             {period}
           </div>
         </div>
 
         {/* Deposit Info */}
-        <div className="text-[10px] text-[#94A3B8] font-normal text-left whitespace-nowrap">
+        <div className="text-[11px] text-slate-500 font-medium tabular-nums text-left whitespace-nowrap">
           {deposit}
         </div>
 
         {/* Divider */}
-        <div className="box-border w-full h-[1px] shrink-0 bg-[#E2E8F0] my-1"></div>
+        <div className="box-border w-full h-px shrink-0 bg-slate-200 my-1"></div>
 
         {/* Action Button: Pilih Tanggal Sewa */}
         <button
           type="button"
           onClick={handleButtonClick}
-          className="box-border w-full h-fit shrink-0 flex flex-row gap-[8px] py-[10px] px-[16px] justify-center items-center bg-[#EFF6FF] hover:bg-[#2563EB] text-[#1D4ED8] hover:text-[#FFFFFF] rounded-[10px] transition-all cursor-pointer border-0 font-semibold text-[13px] whitespace-nowrap"
+          className="box-border w-full h-fit shrink-0 flex flex-row gap-2 py-2.5 px-4 justify-center items-center bg-blue-50 hover:bg-blue-600 text-blue-700 hover:text-white rounded-[10px] transition-all cursor-pointer border-0 font-semibold text-[13px] whitespace-nowrap"
         >
           Pilih Tanggal Sewa
         </button>

@@ -22,20 +22,20 @@ export default function RegisterTopBar({
   const handleLogin = onBackToLogin || onLoginClick
 
   return (
-    <header className="w-full h-16 shrink-0 flex flex-row items-center justify-between px-4 sm:px-8 bg-white border-b border-[#E2E8F0] sticky top-0 z-30">
+    <header className="w-full h-16 shrink-0 flex flex-row items-center justify-between px-4 sm:px-8 bg-white border-b border-slate-200 sticky top-0 z-30">
       {/* Sisi Kiri: Logo + Garis Pemisah + Keterangan Role */}
       <div className="flex items-center gap-3">
         <button
           type="button"
           onClick={handleHome}
-          className="text-[18px] text-[#2563EB] font-extrabold tracking-[-0.3px] select-none hover:opacity-90 cursor-pointer transition-opacity"
+          className="text-lg text-blue-600 font-extrabold tracking-[-0.3px] select-none hover:opacity-90 cursor-pointer transition-opacity"
         >
           MyRent
         </button>
         {roleTitle && (
           <>
-            <div className="w-[1px] h-[16px] bg-[#E2E8F0] hidden sm:block" />
-            <span className="text-[12px] text-[#475569] font-semibold hidden sm:inline-block">
+            <div className="w-px h-4 bg-slate-200 hidden sm:block" />
+            <span className="text-xs text-slate-600 font-semibold hidden sm:inline-block">
               {roleTitle}
             </span>
           </>
@@ -61,12 +61,12 @@ export default function RegisterTopBar({
             </button>
           )}
 
-          <div className="flex items-center gap-1.5 text-[11px] sm:text-[12px]">
-            <span className="text-[#475569] hidden sm:inline">Sudah punya akun?</span>
+          <div className="flex items-center gap-1.5 text-[11px] sm:text-xs">
+            <span className="text-slate-600 hidden sm:inline">Sudah punya akun?</span>
             <button
               type="button"
               onClick={handleLogin}
-              className="text-[#2563EB] font-bold hover:underline cursor-pointer transition-colors"
+              className="text-blue-600 font-bold hover:underline cursor-pointer transition-colors"
             >
               {loginText}
             </button>

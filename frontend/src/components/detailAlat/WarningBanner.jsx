@@ -12,16 +12,16 @@ export default function WarningBanner({
   const defaultMessage = `Alat ini membutuhkan ${requiredWatt} W, sedangkan daya usaha Anda terdaftar ${userWatt} W. Konfirmasi ke pemilik alat sebelum menyewa untuk menghindari gagal operasi.`
 
   return (
-    <div className="box-border w-full h-fit shrink-0 flex flex-row gap-[12px] p-[14px] justify-start items-start bg-[#FFFBEB] ring-1 ring-[#FDE68A] rounded-[12px] font-['Plus_Jakarta_Sans',system-ui,sans-serif]">
+    <div className="box-border w-full h-fit shrink-0 flex flex-row gap-3 p-3.5 justify-start items-start bg-amber-50 ring-1 ring-amber-200 rounded-xl">
       {/* Alert Icon */}
-      <TriangleAlert className="w-[18px] h-[18px] text-[#B45309] shrink-0 mt-[1px]" />
+      <TriangleAlert className="w-4.5 h-4.5 text-amber-700 shrink-0 mt-px" />
 
       {/* Text Content */}
-      <div className="box-border flex-1 h-fit flex flex-col gap-[3px] justify-start items-start">
-        <div className="text-[12px] text-[#B45309] font-bold text-left whitespace-nowrap">
+      <div className="box-border flex-1 h-fit flex flex-col gap-0.75 justify-start items-start">
+        <div className="text-xs text-amber-700 font-bold text-left whitespace-nowrap">
           {title}
         </div>
-        <div className="text-[11px] leading-[17px] w-full text-[#92400E] font-normal text-left">
+        <div className="text-[11px] leading-4.25 w-full text-amber-800 font-normal tabular-nums text-left">
           {message || defaultMessage}
         </div>
       </div>
@@ -30,7 +30,7 @@ export default function WarningBanner({
       <button
         type="button"
         onClick={onActionClick}
-        className="text-[11px] text-[#B45309] font-bold text-left whitespace-nowrap hover:underline cursor-pointer bg-transparent border-0 p-0 self-start shrink-0"
+        className="text-[11px] text-amber-700 font-bold text-left whitespace-nowrap hover:underline cursor-pointer bg-transparent border-0 p-0 self-start shrink-0"
       >
         {actionText}
       </button>

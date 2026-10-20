@@ -39,17 +39,17 @@ export default function StepIndicator({ currentStep, onSelectStep }) {
   return (
     <aside className="hidden lg:flex w-[300px] shrink-0 flex-col gap-4 pt-1">
       {/* Label Kategori / Context */}
-      <div className="text-[10px] text-[#2563EB] font-bold tracking-[1.1px] uppercase">
+      <div className="text-[10px] text-blue-600 font-bold tracking-[1.1px] uppercase">
         PENDAFTARAN PENYEWA UMKM
       </div>
 
       {/* Heading Dinamis sesuai Langkah Aktif */}
-      <h1 className="text-[24px] font-extrabold text-[#0F172A] tracking-[-0.6px] leading-[1.25]">
+      <h1 className="text-2xl font-extrabold text-slate-900 tracking-[-0.6px] leading-[1.25]">
         {currentMeta.title}
       </h1>
 
       {/* Deskripsi Langkah */}
-      <p className="text-[12px] leading-[19px] text-[#475569]">
+      <p className="text-xs leading-[19px] text-slate-600">
         {currentMeta.desc}
       </p>
 
@@ -79,14 +79,14 @@ export default function StepIndicator({ currentStep, onSelectStep }) {
                 <div
                   className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold transition-all ${
                     isCompleted
-                      ? 'bg-[#F0FDF4] text-[#15803D] border border-emerald-300'
+                      ? 'bg-green-50 text-green-700 border border-emerald-300'
                       : isActive
                       ? 'bg-blue-600 text-white font-semibold shadow-sm'
                       : 'bg-white border-2 border-slate-300 text-slate-400'
                   }`}
                 >
                   {isCompleted ? (
-                    <Check className="w-3.5 h-3.5 text-[#15803D]" strokeWidth={2.8} />
+                    <Check className="w-3.5 h-3.5 text-green-700" strokeWidth={2.8} />
                   ) : (
                     stepItem.num
                   )}
@@ -95,7 +95,7 @@ export default function StepIndicator({ currentStep, onSelectStep }) {
                 {!isLast && (
                   <div
                     className={`w-0.5 h-[34px] sm:h-[38px] transition-colors ${
-                      isCompleted ? 'bg-[#15803D]' : 'bg-slate-200'
+                      isCompleted ? 'bg-green-700' : 'bg-slate-200'
                     }`}
                   />
                 )}
@@ -104,12 +104,12 @@ export default function StepIndicator({ currentStep, onSelectStep }) {
               {/* Teks Step & Status */}
               <div className="flex flex-col pt-0.5 pb-2">
                 <div
-                  className={`text-[12px] font-bold transition-colors ${
+                  className={`text-xs font-bold transition-colors ${
                     isActive
-                      ? 'text-[#0F172A]'
+                      ? 'text-slate-900'
                       : isCompleted
-                      ? 'text-[#0F172A] group-hover:text-blue-600'
-                      : 'text-[#64748B]'
+                      ? 'text-slate-900 group-hover:text-blue-600'
+                      : 'text-slate-500'
                   }`}
                 >
                   {stepItem.name}
@@ -132,9 +132,9 @@ export default function StepIndicator({ currentStep, onSelectStep }) {
       </div>
 
       {/* Info Box Bantuan & Keamanan */}
-      <div className="mt-4 p-3.5 rounded-2xl bg-white border border-[#E2E8F0] shadow-2xs flex items-start gap-2.5">
-        <ShieldCheck className="w-4 h-4 text-[#2563EB] shrink-0 mt-0.5" />
-        <div className="text-[11px] leading-[17px] text-[#475569]">
+      <div className="mt-4 p-3.5 rounded-2xl bg-white border border-slate-200 shadow-2xs flex items-start gap-2.5">
+        <ShieldCheck className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
+        <div className="text-[11px] leading-[17px] text-slate-600">
           Semua data Anda dilindungi enkripsi bank-grade dan hanya digunakan untuk kontrak sewa resmi MyRent.
         </div>
       </div>

@@ -597,7 +597,7 @@ export default function RegisterPenyewaAlat({
   const stepMeta = STEP_HEADER_TITLES[currentStep] || STEP_HEADER_TITLES[1]
 
   return (
-    <div className="min-h-screen w-full bg-[#F8FAFC] flex flex-col justify-between items-center text-slate-800 font-sans selection:bg-blue-100 selection:text-blue-700">
+    <div className="min-h-screen w-full bg-slate-50 flex flex-col justify-between items-center text-slate-800 font-sans selection:bg-blue-100 selection:text-blue-700">
       {/* Toast Notifikasi */}
       {notification && (
         <div className="fixed top-4 sm:top-6 right-4 sm:right-6 z-50 flex items-center gap-2.5 bg-slate-900 text-white px-4 py-3 rounded-xl shadow-xl text-xs sm:text-sm font-medium border border-slate-700/60 animate-in fade-in slide-in-from-top-4 duration-300 max-w-[90vw]">
@@ -620,23 +620,23 @@ export default function RegisterPenyewaAlat({
           <StepIndicator currentStep={currentStep} onSelectStep={setCurrentStep} />
 
           {/* Kolom Kanan: Card Form */}
-          <div className="w-full flex-1 max-w-[760px] bg-white rounded-2xl sm:rounded-3xl border border-[#E2E8F0] shadow-xl p-5 sm:p-8 flex flex-col gap-6">
+          <div className="w-full flex-1 max-w-[760px] bg-white rounded-2xl sm:rounded-3xl border border-slate-200 shadow-xl p-5 sm:p-8 flex flex-col gap-6">
             {/* Card Header */}
             <div className="flex flex-row justify-between items-start gap-3">
               <div className="flex flex-col gap-1">
-                <span className="text-[9px] font-bold tracking-[0.9px] text-[#2563EB] uppercase">
+                <span className="text-[9px] font-bold tracking-[0.9px] text-blue-600 uppercase">
                   LANGKAH {currentStep} DARI 5
                 </span>
-                <h2 className="text-[18px] sm:text-[20px] font-bold text-[#0F172A]">
+                <h2 className="text-lg sm:text-xl font-bold text-slate-900">
                   {stepMeta.title}
                 </h2>
-                <p className="text-[11px] sm:text-[12px] text-[#475569]">
+                <p className="text-[11px] sm:text-xs text-slate-600">
                   {stepMeta.desc}
                 </p>
               </div>
 
               {/* Badge Status Draf */}
-              <div className="shrink-0 bg-[#F8FAFC] border border-[#E2E8F0] px-2.5 py-1 rounded-full text-[10px] font-semibold text-[#64748B] flex items-center gap-1.5">
+              <div className="shrink-0 bg-slate-50 border border-slate-200 px-2.5 py-1 rounded-full text-[10px] font-semibold text-slate-500 flex items-center gap-1.5">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
                 <span>{draftSavedAt}</span>
               </div>
@@ -648,7 +648,7 @@ export default function RegisterPenyewaAlat({
                 <div
                   key={seg}
                   className={`flex-1 h-[5px] rounded-full transition-all duration-300 ${
-                    seg <= currentStep ? 'bg-[#2563EB]' : 'bg-[#E2E8F0]'
+                    seg <= currentStep ? 'bg-blue-600' : 'bg-slate-200'
                   }`}
                 />
               ))}
@@ -714,12 +714,12 @@ export default function RegisterPenyewaAlat({
               )}
 
               {/* FOOTER ACTIONS */}
-              <div className="pt-4 border-t border-[#E2E8F0] flex flex-row items-center justify-between gap-3">
+              <div className="pt-4 border-t border-slate-200 flex flex-row items-center justify-between gap-3">
                 {/* Tombol Kembali */}
                 <button
                   type="button"
                   onClick={handlePrev}
-                  className="flex items-center gap-1.5 text-[12px] font-semibold text-[#475569] hover:text-[#0F172A] px-3 py-2 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer"
+                  className="flex items-center gap-1.5 text-xs font-semibold text-slate-600 hover:text-slate-900 px-3 py-2 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer"
                 >
                   <ArrowLeft className="w-3.5 h-3.5" />
                   <span>{currentStep === 1 ? 'Ke Halaman Login' : 'Kembali'}</span>
@@ -730,7 +730,7 @@ export default function RegisterPenyewaAlat({
                   <button
                     type="button"
                     onClick={handleSaveDraft}
-                    className="hidden sm:inline-flex items-center px-4 py-2.5 bg-white hover:bg-slate-50 border border-[#E2E8F0] text-[12px] font-semibold text-[#0F172A] rounded-[10px] transition-all cursor-pointer shadow-2xs"
+                    className="hidden sm:inline-flex items-center px-4 py-2.5 bg-white hover:bg-slate-50 border border-slate-200 text-xs font-semibold text-slate-900 rounded-[10px] transition-all cursor-pointer shadow-2xs"
                   >
                     Simpan Draf
                   </button>
@@ -738,7 +738,7 @@ export default function RegisterPenyewaAlat({
                   <button
                     type="submit"
                     disabled={isSubmitting}
-                    className="flex items-center gap-2 px-5 py-2.5 bg-[#2563EB] hover:bg-blue-700 active:scale-[0.99] text-white text-[12px] font-semibold rounded-[10px] transition-all shadow-xs cursor-pointer"
+                    className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 active:scale-[0.99] text-white text-xs font-semibold rounded-[10px] transition-all shadow-xs cursor-pointer"
                   >
                     {isSubmitting ? (
                       <>
@@ -766,7 +766,7 @@ export default function RegisterPenyewaAlat({
       </main>
 
       {/* Footer */}
-      <footer className="w-full py-4 text-center text-[11px] text-[#94A3B8]">
+      <footer className="w-full py-4 text-center text-[11px] text-slate-400">
         © 2026 MyRent. Platform Sewa Alat Terverifikasi untuk UMKM Indonesia.
       </footer>
     </div>

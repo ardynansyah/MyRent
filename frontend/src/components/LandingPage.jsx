@@ -122,7 +122,7 @@ export default function LandingPage({
   ]
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] text-slate-800 font-sans selection:bg-blue-100 selection:text-blue-700">
+    <div className="min-h-screen bg-slate-50 text-slate-800 font-sans selection:bg-blue-100 selection:text-blue-700">
       {/* 1. STICKY HEADER / NAVBAR */}
       <header className="sticky top-0 z-50 backdrop-blur-md bg-white/90 border-b border-slate-200/80 transition-all">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-18 flex items-center justify-between gap-4">
@@ -131,7 +131,7 @@ export default function LandingPage({
             <button
               type="button"
               onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-              className="text-[22px] sm:text-[24px] text-[#2563EB] font-extrabold tracking-[-0.5px] select-none cursor-pointer flex items-center group"
+              className="text-[22px] sm:text-2xl text-blue-600 font-extrabold tracking-[-0.5px] select-none cursor-pointer flex items-center group"
             >
               <span>MyRent</span>
             </button>
@@ -171,7 +171,7 @@ export default function LandingPage({
             <button
               type="button"
               onClick={() => handleLoginClick('penyewa')}
-              className="bg-[#2563EB] hover:bg-blue-700 active:scale-95 text-white text-xs sm:text-sm font-semibold px-5 py-2.5 rounded-xl shadow-xs transition-all cursor-pointer"
+              className="bg-blue-600 hover:bg-blue-700 active:scale-95 text-white text-xs sm:text-sm font-semibold px-5 py-2.5 rounded-xl shadow-xs transition-all cursor-pointer"
             >
               Masuk ke Akun
             </button>
@@ -182,7 +182,7 @@ export default function LandingPage({
             <button
               type="button"
               onClick={() => handleLoginClick('penyewa')}
-              className="bg-[#2563EB] hover:bg-blue-700 text-white text-xs font-semibold px-3 py-1.5 rounded-lg shadow-xs transition-all cursor-pointer"
+              className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold px-3 py-1.5 rounded-lg shadow-xs transition-all cursor-pointer"
             >
               Masuk
             </button>
@@ -232,7 +232,7 @@ export default function LandingPage({
               <button
                 type="button"
                 onClick={() => handleLoginClick('penyewa')}
-                className="w-full py-2.5 bg-[#2563EB] hover:bg-blue-700 text-white text-center rounded-xl text-sm font-semibold shadow-xs transition-colors cursor-pointer"
+                className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-center rounded-xl text-sm font-semibold shadow-xs transition-colors cursor-pointer"
               >
                 Masuk ke Akun
               </button>
@@ -250,7 +250,7 @@ export default function LandingPage({
           <div className="max-w-4xl mx-auto text-center flex flex-col items-center space-y-8">
             {/* Main Headline */}
             <h1 className="text-3xl sm:text-5xl lg:text-[54px] font-extrabold text-slate-900 tracking-[-1px] leading-[1.15]">
-              Akses Mesin Usaha Berkualitas <span className="text-[#2563EB]">Tanpa Beban Biaya Modal</span> Tinggi.
+              Akses Mesin Usaha Berkualitas <span className="text-blue-600">Tanpa Beban Biaya Modal</span> Tinggi.
             </h1>
 
             {/* Sub-headline */}
@@ -266,7 +266,7 @@ export default function LandingPage({
               <button
                 type="button"
                 onClick={() => handleLoginClick('penyewa')}
-                className="w-full sm:w-auto flex items-center justify-center gap-2.5 bg-[#2563EB] hover:bg-blue-700 active:scale-98 text-white font-bold text-sm sm:text-base px-6 py-3.5 rounded-xl shadow-md shadow-blue-500/20 hover:shadow-lg hover:shadow-blue-500/30 transition-all cursor-pointer group"
+                className="w-full sm:w-auto flex items-center justify-center gap-2.5 bg-blue-600 hover:bg-blue-700 active:scale-98 text-white font-bold text-sm sm:text-base px-6 py-3.5 rounded-xl shadow-md shadow-blue-500/20 hover:shadow-lg hover:shadow-blue-500/30 transition-all cursor-pointer group"
               >
                 <Search className="w-4 h-4" />
                 <span>Cari &amp; Sewa Alat Sekarang</span>
@@ -286,7 +286,7 @@ export default function LandingPage({
             {/* Trust Badges / Social Proof Metrics Bar */}
             <div className="pt-8 sm:pt-10 border-t border-slate-200/90 w-full max-w-2xl grid grid-cols-3 gap-4 sm:gap-8 text-center">
               <div>
-                <div className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-slate-900 tracking-tight">
+                <div className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-slate-900 tracking-tight tabular-nums">
                   120+
                 </div>
                 <div className="text-xs sm:text-sm text-slate-600 font-medium mt-1">
@@ -295,7 +295,7 @@ export default function LandingPage({
               </div>
 
               <div>
-                <div className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-emerald-600 tracking-tight">
+                <div className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-emerald-600 tracking-tight tabular-nums">
                   Rp 120jt+
                 </div>
                 <div className="text-xs sm:text-sm text-slate-600 font-medium mt-1">
@@ -304,7 +304,7 @@ export default function LandingPage({
               </div>
 
               <div>
-                <div className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-blue-600 tracking-tight">
+                <div className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-blue-600 tracking-tight tabular-nums">
                   100%
                 </div>
                 <div className="text-xs sm:text-sm text-slate-600 font-medium mt-1">
@@ -330,7 +330,7 @@ export default function LandingPage({
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {/* Pilar 1: Efisiensi Modal */}
-            <div className="bg-[#F8FAFC] border border-slate-200/90 rounded-2xl p-7 flex flex-col justify-between hover:border-blue-400 hover:shadow-md transition-all group">
+            <div className="bg-slate-50 border border-slate-200/90 rounded-2xl p-7 flex flex-col justify-between hover:border-blue-400 hover:shadow-md transition-all group">
               <div className="space-y-4">
                 <div className="w-12 h-12 rounded-xl bg-blue-600/10 text-blue-600 flex items-center justify-center group-hover:scale-110 transition-transform">
                   <Coins className="w-6 h-6" />
@@ -360,7 +360,7 @@ export default function LandingPage({
             </div>
 
             {/* Pilar 2: Keamanan Transaksi Escrow */}
-            <div id="keamanan-escrow" className="bg-[#F8FAFC] border border-slate-200/90 rounded-2xl p-7 flex flex-col justify-between hover:border-emerald-400 hover:shadow-md transition-all group">
+            <div id="keamanan-escrow" className="bg-slate-50 border border-slate-200/90 rounded-2xl p-7 flex flex-col justify-between hover:border-emerald-400 hover:shadow-md transition-all group">
               <div className="space-y-4">
                 <div className="w-12 h-12 rounded-xl bg-emerald-600/10 text-emerald-600 flex items-center justify-center group-hover:scale-110 transition-transform">
                   <ShieldCheck className="w-6 h-6" />
@@ -390,7 +390,7 @@ export default function LandingPage({
             </div>
 
             {/* Pilar 3: Kelaikan Mesin & BAST Digital */}
-            <div className="bg-[#F8FAFC] border border-slate-200/90 rounded-2xl p-7 flex flex-col justify-between hover:border-indigo-400 hover:shadow-md transition-all group">
+            <div className="bg-slate-50 border border-slate-200/90 rounded-2xl p-7 flex flex-col justify-between hover:border-indigo-400 hover:shadow-md transition-all group">
               <div className="space-y-4">
                 <div className="w-12 h-12 rounded-xl bg-indigo-600/10 text-indigo-600 flex items-center justify-center group-hover:scale-110 transition-transform">
                   <FileCheck2 className="w-6 h-6" />
@@ -424,7 +424,7 @@ export default function LandingPage({
       </section>
 
       {/* 4. SEKSI CARA KERJA (HOW IT WORKS) DENGAN ROLE TABS */}
-      <section id="cara-kerja" className="py-20 bg-[#F8FAFC]">
+      <section id="cara-kerja" className="py-20 bg-slate-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto space-y-3 mb-10">
             <h2 className="text-2xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
@@ -442,7 +442,7 @@ export default function LandingPage({
                   onClick={() => setHowItWorksRole('penyewa')}
                   className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${
                     howItWorksRole === 'penyewa'
-                      ? 'bg-white text-[#2563EB] shadow-xs'
+                      ? 'bg-white text-blue-600 shadow-xs'
                       : 'text-slate-600 hover:text-slate-900'
                   }`}
                 >
@@ -454,7 +454,7 @@ export default function LandingPage({
                   onClick={() => setHowItWorksRole('pemilik')}
                   className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${
                     howItWorksRole === 'pemilik'
-                      ? 'bg-white text-[#2563EB] shadow-xs'
+                      ? 'bg-white text-blue-600 shadow-xs'
                       : 'text-slate-600 hover:text-slate-900'
                   }`}
                 >
@@ -645,7 +645,7 @@ export default function LandingPage({
             <button
               type="button"
               onClick={handleCatalogClick}
-              className="inline-flex items-center gap-2 bg-[#2563EB] hover:bg-blue-700 text-white text-xs sm:text-sm font-bold px-5 py-3 rounded-xl shadow-xs transition-all self-start md:self-auto cursor-pointer"
+              className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm font-bold px-5 py-3 rounded-xl shadow-xs transition-all self-start md:self-auto cursor-pointer"
             >
               <span>Lihat Semua Katalog Mesin</span>
               <ArrowRight className="w-4 h-4" />
@@ -658,7 +658,7 @@ export default function LandingPage({
               return (
                 <div
                   key={cat.id}
-                  className="bg-[#F8FAFC] border border-slate-200 rounded-2xl overflow-hidden hover:border-blue-400 hover:shadow-lg transition-all group flex flex-col justify-between"
+                  className="bg-slate-50 border border-slate-200 rounded-2xl overflow-hidden hover:border-blue-400 hover:shadow-lg transition-all group flex flex-col justify-between"
                 >
                   <div>
                     {/* Image Header */}
@@ -672,7 +672,7 @@ export default function LandingPage({
                         <IconComp className="w-3 h-3 text-blue-600" />
                         <span>{cat.category}</span>
                       </div>
-                      <div className="absolute bottom-3 right-3 bg-slate-950/80 backdrop-blur px-2 py-0.5 rounded text-[10px] font-medium text-white">
+                      <div className="absolute bottom-3 right-3 bg-slate-950/80 backdrop-blur px-2 py-0.5 rounded text-[10px] font-medium tabular-nums text-white">
                         {cat.count}
                       </div>
                     </div>
@@ -691,13 +691,13 @@ export default function LandingPage({
                   {/* Card Footer */}
                   <div className="p-5 pt-0">
                     <div className="pt-3 border-t border-slate-200/80 flex items-center justify-between">
-                      <span className="text-xs font-bold text-slate-800">
+                      <span className="text-xs font-bold tabular-nums text-slate-800">
                         {cat.price}
                       </span>
                       <button
                         type="button"
                         onClick={handleCatalogClick}
-                        className="text-xs font-bold text-[#2563EB] hover:text-blue-800 inline-flex items-center gap-1 transition-colors cursor-pointer"
+                        className="text-xs font-bold text-blue-600 hover:text-blue-800 inline-flex items-center gap-1 transition-colors cursor-pointer"
                       >
                         <span>Sewa</span>
                         <ArrowUpRight className="w-3.5 h-3.5" />
@@ -766,7 +766,7 @@ export default function LandingPage({
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10 pb-12 border-b border-slate-200">
             {/* Col 1: Brand & Tagline */}
             <div className="lg:col-span-2 space-y-4">
-              <div className="text-[24px] text-[#2563EB] font-extrabold tracking-[-0.5px]">
+              <div className="text-2xl text-blue-600 font-extrabold tracking-[-0.5px]">
                 MyRent
               </div>
               <p className="text-xs sm:text-sm text-slate-600 leading-relaxed max-w-sm">

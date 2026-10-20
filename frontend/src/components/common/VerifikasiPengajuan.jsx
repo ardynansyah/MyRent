@@ -184,7 +184,7 @@ export default function VerifikasiPengajuan({
       <button
         type="button"
         onClick={handleContactAdmin}
-        className="text-[11px] sm:text-[12px] text-[#2563EB] font-bold hover:underline cursor-pointer transition-colors"
+        className="text-[11px] sm:text-xs text-blue-600 font-bold hover:underline cursor-pointer transition-colors"
       >
         Pusat bantuan
       </button>
@@ -192,7 +192,7 @@ export default function VerifikasiPengajuan({
   )
 
   return (
-    <div className="min-h-screen w-full bg-[#F8FAFC] flex flex-col justify-between items-center text-slate-800 font-sans selection:bg-blue-100 selection:text-blue-700">
+    <div className="min-h-screen w-full bg-slate-50 flex flex-col justify-between items-center text-slate-800 font-sans selection:bg-blue-100 selection:text-blue-700">
       {/* Toast Notifikasi */}
       {toastMessage && (
         <div className="fixed top-4 sm:top-6 right-4 sm:right-6 z-50 flex items-center gap-2.5 bg-slate-900 text-white px-4 py-3 rounded-xl shadow-xl text-xs sm:text-sm font-medium border border-slate-700/60 animate-in fade-in slide-in-from-top-4 duration-300 max-w-[90vw]">
@@ -210,7 +210,7 @@ export default function VerifikasiPengajuan({
       />
 
       {/* Konten Utama: 2 Kolom Responsif (Pitch + Status Card) */}
-      <main className="w-full max-w-[1080px] flex-1 flex flex-col lg:flex-row gap-8 lg:gap-[44px] px-4 sm:px-8 py-8 sm:py-12 justify-center items-center lg:items-start">
+      <main className="w-full max-w-[1080px] flex-1 flex flex-col lg:flex-row gap-8 lg:gap-11 px-4 sm:px-8 py-8 sm:py-12 justify-center items-center lg:items-start">
         {/* Kolom Kiri: Pitch & Status Stepper */}
         <div className="w-full max-w-[440px] flex flex-col gap-3.5 text-left shrink-0">
           {/* Badge Status */}
@@ -222,12 +222,12 @@ export default function VerifikasiPengajuan({
           </div>
 
           {/* Judul Utama */}
-          <h1 className="text-[26px] sm:text-[30px] leading-[32px] sm:leading-[36px] text-[#0F172A] font-extrabold tracking-[-0.8px]">
+          <h1 className="text-[26px] sm:text-3xl leading-8 sm:leading-9 text-slate-900 font-extrabold tracking-[-0.8px]">
             {activeConfig.headline}
           </h1>
 
           {/* Subtitle Penjelasan */}
-          <p className="text-[13px] leading-[21px] text-[#475569]">{activeConfig.subtitle}</p>
+          <p className="text-[13px] leading-[21px] text-slate-600">{activeConfig.subtitle}</p>
 
           {/* Catatan admin (perbaikan / penolakan) */}
           {adminNote ? (
@@ -257,32 +257,32 @@ export default function VerifikasiPengajuan({
             {/* Step 1: Akun & Identitas Dikirim (Selesai) */}
             <div className="w-full flex flex-row gap-3 items-start pb-1">
               <div className="w-[22px] flex flex-col items-center shrink-0">
-                <div className="w-[22px] h-[22px] rounded-full bg-[#F0FDF4] border border-emerald-200 flex items-center justify-center">
-                  <Check className="w-3 h-3 text-[#15803D]" strokeWidth={2.8} />
+                <div className="w-[22px] h-[22px] rounded-full bg-green-50 border border-emerald-200 flex items-center justify-center">
+                  <Check className="w-3 h-3 text-green-700" strokeWidth={2.8} />
                 </div>
-                <div className="w-[1.5px] h-[28px] bg-[#15803D]" />
+                <div className="w-[1.5px] h-7 bg-green-700" />
               </div>
               <div className="flex flex-col gap-0.5 pt-0.5">
-                <span className="text-[12px] font-bold text-[#0F172A]">
+                <span className="text-xs font-bold text-slate-900">
                   Akun &amp; identitas dikirim
                 </span>
-                <span className="text-[10px] text-[#94A3B8]">Hari ini · Data terkirim</span>
+                <span className="text-[10px] text-slate-400">Hari ini · Data terkirim</span>
               </div>
             </div>
 
             {/* Step 2: Profil & Rekening Lengkap (Selesai) */}
             <div className="w-full flex flex-row gap-3 items-start pb-1">
               <div className="w-[22px] flex flex-col items-center shrink-0">
-                <div className="w-[22px] h-[22px] rounded-full bg-[#F0FDF4] border border-emerald-200 flex items-center justify-center">
-                  <Check className="w-3 h-3 text-[#15803D]" strokeWidth={2.8} />
+                <div className="w-[22px] h-[22px] rounded-full bg-green-50 border border-emerald-200 flex items-center justify-center">
+                  <Check className="w-3 h-3 text-green-700" strokeWidth={2.8} />
                 </div>
-                <div className="w-[1.5px] h-[28px] bg-[#15803D]" />
+                <div className="w-[1.5px] h-7 bg-green-700" />
               </div>
               <div className="flex flex-col gap-0.5 pt-0.5">
-                <span className="text-[12px] font-bold text-[#0F172A]">
+                <span className="text-xs font-bold text-slate-900">
                   {isPenyewa ? 'Profil & rekening lengkap' : 'Gudang & rekening lengkap'}
                 </span>
-                <span className="text-[10px] text-[#94A3B8]">Hari ini · Terverifikasi sistem</span>
+                <span className="text-[10px] text-slate-400">Hari ini · Terverifikasi sistem</span>
               </div>
             </div>
 
@@ -290,33 +290,33 @@ export default function VerifikasiPengajuan({
             <div className="w-full flex flex-row gap-3 items-start pb-1">
               <div className="w-[22px] flex flex-col items-center shrink-0">
                 {step3State === 'done' ? (
-                  <div className="w-[22px] h-[22px] rounded-full bg-[#F0FDF4] border border-emerald-200 flex items-center justify-center">
-                    <Check className="w-3 h-3 text-[#15803D]" strokeWidth={2.8} />
+                  <div className="w-[22px] h-[22px] rounded-full bg-green-50 border border-emerald-200 flex items-center justify-center">
+                    <Check className="w-3 h-3 text-green-700" strokeWidth={2.8} />
                   </div>
                 ) : step3State === 'failed' ? (
-                  <div className="w-[22px] h-[22px] rounded-full bg-[#FEF2F2] border border-red-200 flex items-center justify-center">
-                    <XCircle className="w-3 h-3 text-[#B91C1C]" strokeWidth={2.4} />
+                  <div className="w-[22px] h-[22px] rounded-full bg-red-50 border border-red-200 flex items-center justify-center">
+                    <XCircle className="w-3 h-3 text-red-700" strokeWidth={2.4} />
                   </div>
                 ) : (
-                  <div className="w-[22px] h-[22px] rounded-full bg-[#2563EB] flex items-center justify-center shadow-xs">
+                  <div className="w-[22px] h-[22px] rounded-full bg-blue-600 flex items-center justify-center shadow-xs">
                     <span className="text-[10px] font-bold text-white">3</span>
                   </div>
                 )}
                 <div
                   className={`w-[1.5px] h-[28px] ${
-                    step4State === 'done' ? 'bg-[#15803D]' : 'bg-[#E2E8F0]'
+                    step4State === 'done' ? 'bg-green-700' : 'bg-slate-200'
                   }`}
                 />
               </div>
               <div className="flex flex-col gap-0.5 pt-0.5">
-                <span className="text-[12px] font-bold text-[#0F172A]">Peninjauan Admin</span>
+                <span className="text-xs font-bold text-slate-900">Peninjauan Admin</span>
                 <span
                   className={`text-[10px] font-semibold ${
                     step3State === 'failed'
-                      ? 'text-[#B91C1C]'
+                      ? 'text-red-700'
                       : step3State === 'done'
-                      ? 'text-[#15803D]'
-                      : 'text-[#2563EB]'
+                      ? 'text-green-700'
+                      : 'text-blue-600'
                   }`}
                 >
                   {step3State === 'failed'
@@ -334,20 +334,20 @@ export default function VerifikasiPengajuan({
             <div className="w-full flex flex-row gap-3 items-start">
               <div className="w-[22px] flex flex-col items-center shrink-0">
                 {step4State === 'done' ? (
-                  <div className="w-[22px] h-[22px] rounded-full bg-[#F0FDF4] border border-emerald-200 flex items-center justify-center">
-                    <Check className="w-3 h-3 text-[#15803D]" strokeWidth={2.8} />
+                  <div className="w-[22px] h-[22px] rounded-full bg-green-50 border border-emerald-200 flex items-center justify-center">
+                    <Check className="w-3 h-3 text-green-700" strokeWidth={2.8} />
                   </div>
                 ) : (
-                  <div className="w-[22px] h-[22px] rounded-full bg-white border border-[#CBD5E1] flex items-center justify-center">
-                    <span className="text-[10px] font-bold text-[#94A3B8]">4</span>
+                  <div className="w-[22px] h-[22px] rounded-full bg-white border border-slate-300 flex items-center justify-center">
+                    <span className="text-[10px] font-bold text-slate-400">4</span>
                   </div>
                 )}
               </div>
               <div className="flex flex-col gap-0.5 pt-0.5">
-                <span className="text-[12px] font-medium text-[#475569]">
+                <span className="text-xs font-medium text-slate-600">
                   {isPenyewa ? 'Akun aktif & bisa menyewa' : 'Toko aktif & bisa posting alat'}
                 </span>
-                <span className="text-[10px] text-[#94A3B8]">
+                <span className="text-[10px] text-slate-400">
                   {step4State === 'done' ? 'Selesai' : 'Menunggu keputusan'}
                 </span>
               </div>
@@ -356,17 +356,17 @@ export default function VerifikasiPengajuan({
         </div>
 
         {/* Kolom Kanan: Card Status Pemeriksaan */}
-        <div className="w-full max-w-[460px] bg-white border border-[#E2E8F0] rounded-[18px] p-6 sm:p-7 shadow-sm flex flex-col gap-4 text-left">
+        <div className="w-full max-w-[460px] bg-white border border-slate-200 rounded-[18px] p-6 sm:p-7 shadow-sm flex flex-col gap-4 text-left">
           {/* Card Title & Sub */}
           <div className="flex flex-col gap-1">
-            <h2 className="text-[14px] font-bold text-[#0F172A]">
+            <h2 className="text-sm font-bold text-slate-900">
               {isApproved
                 ? 'Ringkasan verifikasi'
                 : isRejected
                 ? 'Hasil peninjauan admin'
                 : 'Yang sedang diperiksa Admin'}
             </h2>
-            <p className="text-[11px] leading-[17px] text-[#475569]">
+            <p className="text-[11px] leading-[17px] text-slate-600">
               {isApproved
                 ? 'Seluruh data sudah lolos pemeriksaan admin. Akun Anda siap digunakan.'
                 : isRejected
@@ -379,24 +379,24 @@ export default function VerifikasiPengajuan({
           <div className="w-full flex flex-col gap-2.5">
             {isPenyewa ? (
               <>
-                <div className="w-full flex flex-row items-center gap-2.5 p-2.5 bg-[#F8FAFC] rounded-[9px] border border-slate-100">
-                  <CheckCircle2 className="w-4 h-4 text-[#15803D] shrink-0" />
-                  <span className="text-[11px] text-[#475569]">Data akun &amp; email terverifikasi</span>
+                <div className="w-full flex flex-row items-center gap-2.5 p-2.5 bg-slate-50 rounded-[9px] border border-slate-100">
+                  <CheckCircle2 className="w-4 h-4 text-green-700 shrink-0" />
+                  <span className="text-[11px] text-slate-600">Data akun &amp; email terverifikasi</span>
                 </div>
-                <div className="w-full flex flex-row items-center gap-2.5 p-2.5 bg-[#F8FAFC] rounded-[9px] border border-slate-100">
-                  <CheckCircle2 className="w-4 h-4 text-[#15803D] shrink-0" />
-                  <span className="text-[11px] text-[#475569]">Foto KTP &amp; selfie terbaca jelas</span>
+                <div className="w-full flex flex-row items-center gap-2.5 p-2.5 bg-slate-50 rounded-[9px] border border-slate-100">
+                  <CheckCircle2 className="w-4 h-4 text-green-700 shrink-0" />
+                  <span className="text-[11px] text-slate-600">Foto KTP &amp; selfie terbaca jelas</span>
                 </div>
-                <div className="w-full flex flex-row items-center gap-2.5 p-2.5 bg-[#F8FAFC] rounded-[9px] border border-slate-100">
-                  <CheckCircle2 className="w-4 h-4 text-[#15803D] shrink-0" />
-                  <span className="text-[11px] text-[#475569]">
+                <div className="w-full flex flex-row items-center gap-2.5 p-2.5 bg-slate-50 rounded-[9px] border border-slate-100">
+                  <CheckCircle2 className="w-4 h-4 text-green-700 shrink-0" />
+                  <span className="text-[11px] text-slate-600">
                     Daya listrik usaha {powerText} tercatat
                   </span>
                 </div>
                 {needsRevision ? (
-                  <div className="w-full flex flex-row items-center gap-2.5 p-2.5 bg-[#FFFBEB] rounded-[9px] border border-amber-200/60">
-                    <AlertCircle className="w-4 h-4 text-[#B45309] shrink-0" />
-                    <span className="text-[11px] font-medium text-[#B45309]">
+                  <div className="w-full flex flex-row items-center gap-2.5 p-2.5 bg-amber-50 rounded-[9px] border border-amber-200/60">
+                    <AlertCircle className="w-4 h-4 text-amber-700 shrink-0" />
+                    <span className="text-[11px] font-medium text-amber-700">
                       Admin meminta perbaikan pada step {(revisionSteps || []).join(', ') || '-'}
                     </span>
                   </div>
@@ -404,22 +404,22 @@ export default function VerifikasiPengajuan({
               </>
             ) : (
               <>
-                <div className="w-full flex flex-row items-center gap-2.5 p-2.5 bg-[#F8FAFC] rounded-[9px] border border-slate-100">
-                  <CheckCircle2 className="w-4 h-4 text-[#15803D] shrink-0" />
-                  <span className="text-[11px] text-[#475569]">Identitas &amp; NIK sesuai KTP</span>
+                <div className="w-full flex flex-row items-center gap-2.5 p-2.5 bg-slate-50 rounded-[9px] border border-slate-100">
+                  <CheckCircle2 className="w-4 h-4 text-green-700 shrink-0" />
+                  <span className="text-[11px] text-slate-600">Identitas &amp; NIK sesuai KTP</span>
                 </div>
-                <div className="w-full flex flex-row items-center gap-2.5 p-2.5 bg-[#F8FAFC] rounded-[9px] border border-slate-100">
-                  <CheckCircle2 className="w-4 h-4 text-[#15803D] shrink-0" />
-                  <span className="text-[11px] text-[#475569]">Titik GPS gudang terverifikasi</span>
+                <div className="w-full flex flex-row items-center gap-2.5 p-2.5 bg-slate-50 rounded-[9px] border border-slate-100">
+                  <CheckCircle2 className="w-4 h-4 text-green-700 shrink-0" />
+                  <span className="text-[11px] text-slate-600">Titik GPS gudang terverifikasi</span>
                 </div>
-                <div className="w-full flex flex-row items-center gap-2.5 p-2.5 bg-[#F8FAFC] rounded-[9px] border border-slate-100">
-                  <CheckCircle2 className="w-4 h-4 text-[#15803D] shrink-0" />
-                  <span className="text-[11px] text-[#475569]">Rekening pencairan atas nama sendiri</span>
+                <div className="w-full flex flex-row items-center gap-2.5 p-2.5 bg-slate-50 rounded-[9px] border border-slate-100">
+                  <CheckCircle2 className="w-4 h-4 text-green-700 shrink-0" />
+                  <span className="text-[11px] text-slate-600">Rekening pencairan atas nama sendiri</span>
                 </div>
                 {needsRevision ? (
-                  <div className="w-full flex flex-row items-center gap-2.5 p-2.5 bg-[#FFFBEB] rounded-[9px] border border-amber-200/60">
-                    <AlertCircle className="w-4 h-4 text-[#B45309] shrink-0" />
-                    <span className="text-[11px] font-medium text-[#B45309]">
+                  <div className="w-full flex flex-row items-center gap-2.5 p-2.5 bg-amber-50 rounded-[9px] border border-amber-200/60">
+                    <AlertCircle className="w-4 h-4 text-amber-700 shrink-0" />
+                    <span className="text-[11px] font-medium text-amber-700">
                       Admin meminta perbaikan pada step {(revisionSteps || []).join(', ') || '-'}
                     </span>
                   </div>
@@ -429,12 +429,12 @@ export default function VerifikasiPengajuan({
           </div>
 
           {/* Kotak Informasi Nomor Pengajuan */}
-          <div className="w-full p-3 bg-[#EFF6FF] border border-blue-100/80 rounded-[10px] flex flex-col gap-1">
-            <span className="text-[9px] font-bold text-[#1D4ED8] tracking-[0.8px] uppercase">
+          <div className="w-full p-3 bg-blue-50 border border-blue-100/80 rounded-[10px] flex flex-col gap-1">
+            <span className="text-[9px] font-bold text-blue-700 tracking-[0.8px] uppercase">
               NOMOR PENGAJUAN
             </span>
-            <span className="text-[13px] font-extrabold text-[#2563EB] tracking-wide">{regCode}</span>
-            <span className="text-[10px] text-[#94A3B8]">
+            <span className="text-[13px] font-extrabold text-blue-600 tracking-wide">{regCode}</span>
+            <span className="text-[10px] text-slate-400">
               Terdaftar di sistem MyRent · diperbarui {updatedAtLabel}
             </span>
           </div>
@@ -444,7 +444,7 @@ export default function VerifikasiPengajuan({
             <button
               type="button"
               onClick={onFinish}
-              className="w-full py-2.5 px-4 bg-[#2563EB] hover:bg-blue-700 active:scale-[0.99] text-white text-[12px] font-semibold rounded-[10px] transition-all shadow-xs cursor-pointer flex items-center justify-center gap-2"
+              className="w-full py-2.5 px-4 bg-blue-600 hover:bg-blue-700 active:scale-[0.99] text-white text-xs font-semibold rounded-[10px] transition-all shadow-xs cursor-pointer flex items-center justify-center gap-2"
             >
               <span>{activeConfig.primaryLabel}</span>
               <ArrowRight className="w-3.5 h-3.5" />
@@ -455,7 +455,7 @@ export default function VerifikasiPengajuan({
                 type="button"
                 onClick={onRefreshStatus}
                 disabled={isRefreshing}
-                className="w-full py-2.5 px-4 bg-white hover:bg-slate-50 active:scale-[0.99] text-[#0F172A] border border-[#E2E8F0] text-[12px] font-semibold rounded-[10px] transition-all cursor-pointer flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
+                className="w-full py-2.5 px-4 bg-white hover:bg-slate-50 active:scale-[0.99] text-slate-900 border border-slate-200 text-xs font-semibold rounded-[10px] transition-all cursor-pointer flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
               >
                 <RefreshCw className={`w-3.5 h-3.5 text-slate-500 ${isRefreshing ? 'animate-spin' : ''}`} />
                 <span>{isRefreshing ? 'Memuat status terbaru...' : 'Cek / Refresh Status'}</span>
@@ -466,7 +466,7 @@ export default function VerifikasiPengajuan({
               <button
                 type="button"
                 onClick={onEditData}
-                className="w-full py-2.5 px-4 bg-white hover:bg-slate-50 active:scale-[0.99] text-[#0F172A] border border-[#E2E8F0] text-[12px] font-semibold rounded-[10px] transition-all cursor-pointer flex items-center justify-center gap-2"
+                className="w-full py-2.5 px-4 bg-white hover:bg-slate-50 active:scale-[0.99] text-slate-900 border border-slate-200 text-xs font-semibold rounded-[10px] transition-all cursor-pointer flex items-center justify-center gap-2"
               >
                 <Edit3 className="w-3.5 h-3.5 text-slate-500" />
                 <span>Ubah Data yang Dikirim</span>
@@ -477,7 +477,7 @@ export default function VerifikasiPengajuan({
               <button
                 type="button"
                 onClick={onStartNewRegistration}
-                className="w-full py-2.5 px-4 bg-white hover:bg-slate-50 active:scale-[0.99] text-[#0F172A] border border-[#E2E8F0] text-[12px] font-semibold rounded-[10px] transition-all cursor-pointer flex items-center justify-center gap-2"
+                className="w-full py-2.5 px-4 bg-white hover:bg-slate-50 active:scale-[0.99] text-slate-900 border border-slate-200 text-xs font-semibold rounded-[10px] transition-all cursor-pointer flex items-center justify-center gap-2"
               >
                 <Edit3 className="w-3.5 h-3.5 text-slate-500" />
                 <span>Daftar ulang dengan email lain</span>
@@ -487,11 +487,11 @@ export default function VerifikasiPengajuan({
 
           {/* Footer Card */}
           <div className="w-full flex flex-row gap-1.5 justify-center items-center pt-1 text-[11px]">
-            <span className="text-[#94A3B8]">Butuh dipercepat?</span>
+            <span className="text-slate-400">Butuh dipercepat?</span>
             <button
               type="button"
               onClick={handleContactAdmin}
-              className="text-[#2563EB] font-bold hover:underline cursor-pointer"
+              className="text-blue-600 font-bold hover:underline cursor-pointer"
             >
               Hubungi Admin
             </button>
@@ -500,7 +500,7 @@ export default function VerifikasiPengajuan({
       </main>
 
       {/* Footer Bawah */}
-      <footer className="w-full py-4 text-center text-[11px] text-[#94A3B8]">
+      <footer className="w-full py-4 text-center text-[11px] text-slate-400">
         © 2026 MyRent. Platform Sewa Alat Terverifikasi untuk UMKM Indonesia.
       </footer>
     </div>

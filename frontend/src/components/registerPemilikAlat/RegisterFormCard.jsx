@@ -20,20 +20,20 @@ export default function RegisterFormCard({
         e.preventDefault()
         onNext?.()
       }}
-      className="w-full max-w-[760px] flex flex-col gap-[18px] p-5 sm:p-7 bg-white border border-[#E2E8F0] rounded-2xl shadow-sm"
+      className="w-full max-w-[760px] flex flex-col gap-4.5 p-5 sm:p-7 bg-white border border-slate-200 rounded-2xl shadow-sm"
     >
       {/* Kepala kartu */}
       <div className="w-full flex flex-row justify-between items-start gap-3">
         <div className="flex-1 min-w-0 flex flex-col gap-[3px]">
-          <div className="text-[9px] font-bold tracking-[0.9px] text-[#2563EB]">
+          <div className="text-[9px] font-bold tracking-[0.9px] text-blue-600">
             LANGKAH {step} DARI 5
           </div>
-          <h2 className="text-[19px] font-bold text-[#0F172A]">{title}</h2>
-          <p className="text-[11px] leading-[17px] text-[#475569]">{subtitle}</p>
+          <h2 className="text-[19px] font-bold text-slate-900">{title}</h2>
+          <p className="text-[11px] leading-[17px] text-slate-600">{subtitle}</p>
         </div>
 
-        <div className="shrink-0 px-2.5 py-[5px] bg-[#F8FAFC] rounded-full">
-          <span className="text-[10px] font-semibold text-[#94A3B8] whitespace-nowrap">
+        <div className="shrink-0 px-2.5 py-[5px] bg-slate-50 rounded-full">
+          <span className="text-[10px] font-semibold text-slate-400 whitespace-nowrap">
             Draf tersimpan
           </span>
         </div>
@@ -45,7 +45,7 @@ export default function RegisterFormCard({
           <div
             key={segment}
             className={`flex-1 h-[5px] rounded-full transition-colors ${
-              segment <= step ? 'bg-[#2563EB]' : 'bg-[#E2E8F0]'
+              segment <= step ? 'bg-blue-600' : 'bg-slate-200'
             }`}
           />
         ))}
@@ -55,11 +55,11 @@ export default function RegisterFormCard({
       <div className="w-full flex flex-col gap-3.5">{children}</div>
 
       {/* Footer navigasi */}
-      <div className="w-full flex flex-row justify-between items-center gap-3 pt-3.5 border-t border-[#E2E8F0]">
+      <div className="w-full flex flex-row justify-between items-center gap-3 pt-3.5 border-t border-slate-200">
         <button
           type="button"
           onClick={onBack}
-          className="text-[12px] font-semibold text-[#475569] hover:text-[#0F172A] cursor-pointer transition-colors"
+          className="text-xs font-semibold text-slate-600 hover:text-slate-900 cursor-pointer transition-colors"
         >
           {backLabel}
         </button>
@@ -68,13 +68,13 @@ export default function RegisterFormCard({
           <button
             type="button"
             onClick={onSaveDraft}
-            className="px-[18px] py-[11px] bg-white border border-[#E2E8F0] rounded-[10px] text-[12px] font-semibold text-[#0F172A] hover:bg-slate-50 cursor-pointer transition-colors"
+            className="px-4.5 py-[11px] bg-white border border-slate-200 rounded-[10px] text-xs font-semibold text-slate-900 hover:bg-slate-50 cursor-pointer transition-colors"
           >
             Simpan Draf
           </button>
           <button
             type="submit"
-            className="px-[18px] py-[11px] bg-[#2563EB] hover:bg-blue-700 active:scale-[0.99] rounded-[10px] text-[12px] font-semibold text-white cursor-pointer transition-all shadow-xs"
+            className="px-4.5 py-[11px] bg-blue-600 hover:bg-blue-700 active:scale-[0.99] rounded-[10px] text-xs font-semibold text-white cursor-pointer transition-all shadow-xs"
           >
             {nextLabel}
           </button>

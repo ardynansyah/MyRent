@@ -85,7 +85,7 @@ export default function Step1BuatAkun({
     <button
       type="button"
       onClick={onToggle}
-      className="text-[#94A3B8] hover:text-[#475569] p-0.5 cursor-pointer transition-colors"
+      className="text-slate-400 hover:text-slate-600 p-0.5 cursor-pointer transition-colors"
       title={isVisible ? `Sembunyikan ${label}` : `Tampilkan ${label}`}
     >
       {isVisible ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -146,7 +146,7 @@ export default function Step1BuatAkun({
 
         {/* Persetujuan */}
         <div className="w-full flex flex-col gap-1.5 pt-1">
-          <div className="text-[12px] font-semibold text-[#475569]">Persetujuan</div>
+          <div className="text-xs font-semibold text-slate-600">Persetujuan</div>
           <div className="w-full flex flex-col gap-2">
             <CheckItem
               checked={agreeTerms}
