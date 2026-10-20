@@ -1,4 +1,5 @@
 import { Check, UploadCloud, ShieldCheck, X } from 'lucide-react'
+import ModernDatePicker from '../common/ModernDatePicker'
 
 export default function Step2IdentitasKTP({
   formData,
@@ -69,13 +70,11 @@ export default function Step2IdentitasKTP({
           <label className="text-xs font-semibold text-slate-600">
             Tanggal Lahir *
           </label>
-          <input
-            type="date"
+          <ModernDatePicker
             value={formData.birthDate}
-            onChange={(e) => handleInputChange('birthDate', e.target.value)}
-            className={`w-full bg-white text-[13px] rounded-[10px] px-3.5 py-2.5 text-slate-800 placeholder-slate-400 border ${
-              errors.birthDate ? 'border-red-400 focus:ring-red-200' : 'border-slate-300 focus:border-blue-600 focus:ring-blue-100'
-            } focus:outline-none focus:ring-2 transition-all`}
+            onChange={(val) => handleInputChange('birthDate', val)}
+            placeholder="Pilih tanggal lahir"
+            error={errors.birthDate}
           />
           {errors.birthDate && <span className="text-[10px] text-red-500">{errors.birthDate}</span>}
         </div>
