@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { ChevronLeft, ChevronRight, Info } from 'lucide-react'
-import { addDays, diffDays, formatShortDate, normalizeDate } from '../../lib/dateHelpers'
+import { diffDays, formatShortDate, normalizeDate } from '../../lib/dateHelpers'
 
 // Status ketersediaan default untuk Juni 2025.
 // 'terisi'   → sedang disewa (tidak bisa dipilih)
@@ -69,96 +69,111 @@ export default function AvailabilityCalendar({
     return time > startTime && time < endTime
   }
 
-  /**
-   * Geser tanggal selesai otomatis sampai DURASI minimal terpenuhi dan tidak
-   * menabrak hari yang sudah 'terisi'.
-   */
-  const adjustEndDate = (start) => {
-    let end = addDays(start, minDays - 1)
-
-    for (let i = 0; i < daysInMonth; i += 1) {
-      // Melebihi kalender bulan ini → mundur ke hari kosong terakhir.
-      if (end.getFullYear() !== year || end.getMonth() !== month) {
-        end = new Date(year, month, daysInMonth)
-        while (end.getTime() > start.getTime() && getStatus(end.getDate()) === 'terisi') {
-          end = addDays(end, -1)
-        }
-        break
-      }
-
-      // Lewati hari yang sudah terisi.
-      if (getStatus(end.getDate()) !== 'terisi') break
-
-      end = addDays(end, 1)
-    }
-
-    return end
+  const isForbiddenDay = (day) => {
+    const s = getStatus(day)
+    return s === 'terisi' || s === 'buffer'
   }
 
   const handleDayClick = (day) => {
-    // Tanggal yang sedang disewa tidak bisa dipilih.
-    if (getStatus(day) === 'terisi') return
+    // Tanggal terisi atau buffer tidak bisa dipilih
+    if (isForbiddenDay(day)) return
 
     const clicked = toDate(day)
 
-    // ── Kasus 1: klik pertama → set sebagai tanggal mulai ─────────────────
+    // ── Kasus 1: Belum ada tanggal terpilih → set tanggal mulai ────────
     if (startTime === null) {
       onSelectionChange?.(clicked, null)
-      setNotice(`Pilih tanggal selesai (minimal ${minDays} hari sewa).`)
+      if (minDays === 1) {
+        setNotice(null)
+      } else {
+        setNotice(`Pilih tanggal selesai (minimal sewa ${minDays} hari).`)
+      }
       return
     }
 
-    // ── Kasus 2: klik ulang tanggal yang sudah aktif → reset kalender ────
-    // (hanya saat rentang sudah lengkap, supaya sewa 1 hari tetap bisa dibuat)
+    // ── Kasus 2: Klik ulang tanggal yang sama saat baru 1 tanggal dipilih ──
+    // Batalkan pilihan sehingga kembali bersih (null, null)
+    if (endTime === null && clicked.getTime() === startTime) {
+      onSelectionChange?.(null, null)
+      setNotice(null)
+      return
+    }
+
+    // ── Kasus 3: Rentang sudah lengkap & klik tanggal start atau end → reset
     if (endTime !== null && (isStart(day) || isEnd(day))) {
       onSelectionChange?.(null, null)
       setNotice(null)
       return
     }
 
-    // ── Kasus 3: rentang sudah lengkap & klik tanggal lain → mulai baru ──
+    // ── Kasus 4: Rentang sudah lengkap & klik tanggal lain → mulai baru
     if (endTime !== null) {
       onSelectionChange?.(clicked, null)
-      setNotice(`Pilih tanggal selesai (minimal ${minDays} hari sewa).`)
+      if (minDays === 1) {
+        setNotice(null)
+      } else {
+        setNotice(`Pilih tanggal selesai (minimal sewa ${minDays} hari).`)
+      }
       return
     }
 
-    // ── Kasus 4: klik kedua → tentukan rentang mulai & selesai ───────────
+    // ── Kasus 5: Klik tanggal kedua → tentukan rentang ──────────────────
     let start = normalizeDate(selectionStart)
     let end = clicked
 
-    // Klik tanggal yang lebih awal → rentang dibalik (yang diklik jadi mulai).
+    // Jika yang diklik lebih awal dari start, tukar agar start selalu awal
     if (clicked.getTime() < start.getTime()) {
       start = clicked
       end = normalizeDate(selectionStart)
     }
 
-    let duration = diffDays(start, end) + 1
-    let isAdjusted = false
+    const startDay = start.getDate()
+    const endDay = end.getDate()
 
-    // Durasi lebih pendek dari minimal sewa → geser tanggal selesai otomatis.
-    if (duration < minDays) {
-      end = adjustEndDate(start)
-      duration = diffDays(start, end) + 1
-      isAdjusted = true
+    // LAKUKAN PENGECEKAN TANGGAL DI ANTARA Start dan End
+    let blockedDay = null
+    let blockedStatus = null
+    for (let d = startDay; d <= endDay; d++) {
+      const st = getStatus(d)
+      if (st === 'terisi' || st === 'buffer') {
+        blockedDay = d
+        blockedStatus = st
+        break
+      }
     }
 
-    onSelectionChange?.(start, end)
-
-    if (!isAdjusted) {
-      setNotice(null)
+    if (blockedDay !== null) {
+      // Ada tanggal terisi atau buffer yang ikut terblok:
+      // Batalkan pilihan (reset ke Start date saja) dan gagalkan dengan notifikasi
+      onSelectionChange?.(selectionStart, null)
+      const statusLabel = blockedStatus === 'terisi' ? 'sudah terisi' : 'buffer perawatan'
+      setNotice(
+        `Rentang tanggal tidak valid: tanggal ${blockedDay} ${statusLabel}. Pilihan dikembalikan ke tanggal mulai.`
+      )
       return
     }
 
-    setNotice(
-      duration >= minDays
-        ? `Minimal sewa ${minDays} hari — rentang otomatis disesuaikan menjadi ${duration} hari.`
-        : `Minimal sewa ${minDays} hari — bulan ini tidak punya cukup hari kosong, rentang dibatasi ${duration} hari.`
-    )
+    const duration = diffDays(start, end) + 1
+    if (duration < minDays) {
+      onSelectionChange?.(selectionStart, null)
+      setNotice(
+        `Minimal sewa untuk alat ini adalah ${minDays} hari (Anda memilih ${duration} hari).`
+      )
+      return
+    }
+
+    onSelectionChange?.(start, end)
+    setNotice(null)
   }
 
+  // Jika minRentDays === 1 dan user hanya memilih 1 tanggal, anggap valid sebagai sewa 1 hari.
+  const isSingleDayValid = minDays === 1 && selectionStart && !selectionEnd
   const rentalDays =
-    selectionStart && selectionEnd ? diffDays(selectionStart, selectionEnd) + 1 : 0
+    selectionStart && selectionEnd
+      ? diffDays(selectionStart, selectionEnd) + 1
+      : isSingleDayValid
+      ? 1
+      : 0
 
   return (
     <div className="box-border w-full h-fit shrink-0 flex flex-col gap-3.5 p-5 justify-start items-start bg-white ring-1 ring-slate-200 rounded-[14px]">
@@ -206,23 +221,26 @@ export default function AvailabilityCalendar({
       <div className="w-full grid grid-cols-7 gap-1.5">
         {daysArray.map((day) => {
           const status = getStatus(day)
+          const isForbidden = status === 'terisi' || status === 'buffer'
           const selectedStart = isStart(day)
           const selectedEnd = isEnd(day)
           const inRange = isBetween(day)
 
           let styleClasses = ''
           if (selectedStart || selectedEnd) {
-            // Tanggal mulai & selesai → warna primary penuh.
-            styleClasses = 'bg-primary text-primary-foreground font-bold shadow-xs cursor-pointer scale-[1.02]'
+            // Tanggal mulai & selesai → warna primary penuh
+            styleClasses = 'bg-blue-600 text-white font-bold shadow-xs cursor-pointer scale-[1.02]'
           } else if (inRange) {
-            // Tanggal di tengah rentang → warna primary transparan.
-            styleClasses = 'bg-primary/20 text-primary font-semibold cursor-pointer hover:bg-primary/30'
+            // Tanggal di tengah rentang → warna primary transparan
+            styleClasses = 'bg-blue-100 text-blue-800 font-semibold cursor-pointer hover:bg-blue-200'
           } else if (status === 'terisi') {
-            styleClasses = 'bg-slate-50 text-slate-400 cursor-not-allowed opacity-60'
+            // Terisi: dilarang, merah pudar kontras
+            styleClasses = 'bg-red-50 text-red-500 ring-1 ring-red-200/70 pointer-events-none opacity-50 cursor-not-allowed'
           } else if (status === 'buffer') {
-            styleClasses = 'bg-blue-50 text-blue-700 font-semibold cursor-pointer hover:ring-1 hover:ring-blue-700'
+            // Buffer: dilarang, abu-abu kontras
+            styleClasses = 'bg-slate-100 text-slate-500 ring-1 ring-slate-300 pointer-events-none opacity-50 cursor-not-allowed'
           } else {
-            // tersedia
+            // Tersedia
             styleClasses = 'bg-white ring-1 ring-slate-200 text-slate-900 hover:bg-blue-50/50 hover:ring-blue-600 font-medium cursor-pointer'
           }
 
@@ -230,7 +248,7 @@ export default function AvailabilityCalendar({
             <button
               key={day}
               type="button"
-              disabled={status === 'terisi'}
+              disabled={isForbidden}
               onClick={() => handleDayClick(day)}
               aria-label={`${day} ${status}`}
               aria-pressed={selectedStart || selectedEnd || inRange}
@@ -248,7 +266,11 @@ export default function AvailabilityCalendar({
           {selectionStart ? (
             <>
               Mulai {formatShortDate(selectionStart)}
-              {selectionEnd ? ` · Selesai ${formatShortDate(selectionEnd)} · ${rentalDays} hari sewa` : ' · pilih tanggal selesai'}
+              {selectionEnd
+                ? ` · Selesai ${formatShortDate(selectionEnd)} · ${rentalDays} hari sewa`
+                : isSingleDayValid
+                ? ` · Selesai ${formatShortDate(selectionStart)} · 1 hari sewa`
+                : ` · pilih tanggal selesai (minimal ${minDays} hari sewa)`}
             </>
           ) : (
             'Belum ada tanggal dipilih'
@@ -256,7 +278,7 @@ export default function AvailabilityCalendar({
         </div>
 
         {notice && (
-          <div className="box-border w-full flex flex-row gap-2 px-3 py-2 justify-start items-start bg-amber-50 ring-1 ring-amber-100 rounded-lg">
+          <div className="box-border w-full flex flex-row gap-2 px-3 py-2 justify-start items-start bg-amber-50 ring-1 ring-amber-200 rounded-lg">
             <Info className="w-3.5 h-3.5 shrink-0 mt-0.5 text-amber-600" />
             <p className="text-[11px] leading-4 text-amber-700 font-normal text-left m-0">
               {notice}
@@ -277,15 +299,15 @@ export default function AvailabilityCalendar({
 
         {/* Terisi */}
         <div className="box-border w-fit shrink-0 h-fit flex flex-row gap-1.5 justify-start items-center">
-          <div className="box-border w-3 shrink-0 h-3 bg-slate-50 rounded"></div>
+          <div className="box-border w-3 shrink-0 h-3 bg-red-100 ring-1 ring-red-200 rounded"></div>
           <span className="text-xs text-slate-600 font-medium whitespace-nowrap">
-            Terisi
+            Terisi (tidak dapat dipilih)
           </span>
         </div>
 
         {/* Buffer Perawatan */}
         <div className="box-border w-fit shrink-0 h-fit flex flex-row gap-1.5 justify-start items-center">
-          <div className="box-border w-3 shrink-0 h-3 bg-blue-50 rounded"></div>
+          <div className="box-border w-3 shrink-0 h-3 bg-slate-200 ring-1 ring-slate-300 rounded"></div>
           <span className="text-xs text-slate-600 font-medium whitespace-nowrap">
             Buffer perawatan
           </span>
@@ -293,7 +315,7 @@ export default function AvailabilityCalendar({
 
         {/* Dipilih (mulai & selesai) */}
         <div className="box-border w-fit shrink-0 h-fit flex flex-row gap-1.5 justify-start items-center">
-          <div className="box-border w-3 shrink-0 h-3 bg-primary rounded"></div>
+          <div className="box-border w-3 shrink-0 h-3 bg-blue-600 rounded"></div>
           <span className="text-xs text-slate-600 font-medium whitespace-nowrap">
             Dipilih
           </span>
@@ -301,7 +323,7 @@ export default function AvailabilityCalendar({
 
         {/* Rentang terpilih (in-between) */}
         <div className="box-border w-fit shrink-0 h-fit flex flex-row gap-1.5 justify-start items-center">
-          <div className="box-border w-3 shrink-0 h-3 bg-primary/20 rounded"></div>
+          <div className="box-border w-3 shrink-0 h-3 bg-blue-100 rounded"></div>
           <span className="text-xs text-slate-600 font-medium whitespace-nowrap">
             Dalam rentang
           </span>

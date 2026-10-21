@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { useParams } from 'react-router-dom'
-import { Loader2, MapPin, ShieldCheck, TriangleAlert } from 'lucide-react'
+import { Info, Loader2, MapPin, ShieldCheck, TriangleAlert } from 'lucide-react'
 import NavbarPenyewa from '../common/NavbarPenyewa'
 import ImageGallery from './ImageGallery'
 import SpecGrid from './SpecGrid'
@@ -33,12 +33,8 @@ export default function DetailAlat({
   const [error, setError] = useState(null)
 
   // ── Seleksi tanggal sewa (dikendalikan dari AvailabilityCalendar) ──────
-  const [selectionStart, setSelectionStart] = useState(
-    () => new Date(CALENDAR_YEAR, CALENDAR_MONTH, 12)
-  )
-  const [selectionEnd, setSelectionEnd] = useState(
-    () => new Date(CALENDAR_YEAR, CALENDAR_MONTH, 15)
-  )
+  const [selectionStart, setSelectionStart] = useState(null)
+  const [selectionEnd, setSelectionEnd] = useState(null)
   const [dateWarning, setDateWarning] = useState(false)
   const [showPowerModal, setShowPowerModal] = useState(false)
 
@@ -79,13 +75,22 @@ export default function DetailAlat({
     }
   }, [id])
 
+  const minRentDays = equipment?.minRentDays || equipment?.maintenanceBufferDays || 1
+  const isSingleDayValid = minRentDays === 1 && selectionStart && !selectionEnd
+
   // Rentang sewa terpilih → jumlah hari & teks tanggal untuk panel checkout.
   const rentalDays =
-    selectionStart && selectionEnd ? Math.max(1, diffDays(selectionStart, selectionEnd) + 1) : 0
+    selectionStart && selectionEnd
+      ? Math.max(1, diffDays(selectionStart, selectionEnd) + 1)
+      : isSingleDayValid
+      ? 1
+      : 0
 
   const startDateFormatted = selectionStart ? formatLongDate(selectionStart) : 'Pilih tanggal'
   const endDateFormatted = selectionEnd
     ? formatLongDate(selectionEnd)
+    : isSingleDayValid
+    ? formatLongDate(selectionStart)
     : startDateFormatted
 
   // Kalender memberi tahu perubahan rentang (termasuk reset saat klik ulang).
@@ -256,12 +261,21 @@ export default function DetailAlat({
             />
           )}
 
+          {/* Highlight Peringatan Minimal Sewa */}
+          <div className="box-border w-full flex flex-row gap-2.5 p-3.5 justify-start items-center bg-blue-50/80 ring-1 ring-blue-200 rounded-[12px]">
+            <Info className="w-4 h-4 shrink-0 text-blue-600" />
+            <p className="text-xs text-blue-900 font-medium m-0">
+              Pilih tanggal sewa di kalender. Minimal sewa:{' '}
+              <span className="font-bold">{minRentDays} Hari</span>
+            </p>
+          </div>
+
           {/* Availability Calendar */}
           <AvailabilityCalendar
             monthTitle="Ketersediaan Juni 2025"
             year={CALENDAR_YEAR}
             month={CALENDAR_MONTH}
-            minRentDays={equipment.maintenanceBufferDays}
+            minRentDays={minRentDays}
             selectionStart={selectionStart}
             selectionEnd={selectionEnd}
             onSelectionChange={handleSelectionChange}
@@ -319,7 +333,8 @@ export default function DetailAlat({
               ownerAddress={`${equipment.location} (${Number(equipment.distance).toLocaleString('id-ID')} km)`}
               onAjukanSewa={(checkoutData) => {
                 // Tanggal belum lengkap → jangan kirim pengajuan.
-                if (!selectionStart || !selectionEnd) {
+                const isReady = (selectionStart && selectionEnd) || isSingleDayValid
+                if (!isReady) {
                   setDateWarning(true)
                   return
                 }
