@@ -137,11 +137,46 @@ export function normalizeFileValue(value) {
 }
 
 /**
+ * Ubah data daya listrik pada kycData menjadi angka watt.
+ *
+ * Sumber nilai (berurutan prioritas):
+ *  1. `kycData.dayaListrik`   → sudah ternormalisasi (mis. `1300` atau `"1300 W"`)
+ *  2. `kycData.customPower`   → input manual (mis. `"2000"`)
+ *  3. `kycData.powerCapacity` → pilihan pill (mis. `"1300 W"`, `"> 3500 W"`)
+ *
+ * Dipakai frontend untuk membandingkan kapasitas listrik usaha penyewa
+ * dengan kebutuhan daya sebuah alat sebelum menyewa.
+ *
+ * @param {object|null} kycData
+ * @returns {number|null} watt, atau null bila datanya tidak tersedia
+ */
+export function resolvePowerLimit(kycData) {
+  if (!isPlainObject(kycData)) return null
+
+  const candidates = [kycData.dayaListrik, kycData.customPower, kycData.powerCapacity]
+
+  for (const candidate of candidates) {
+    if (candidate === null || candidate === undefined || candidate === '') continue
+
+    const match = String(candidate).match(/\d+/)
+    if (!match) continue
+
+    const watt = Number(match[0])
+    if (Number.isFinite(watt) && watt > 0) return watt
+  }
+
+  return null
+}
+
+/**
  * Bersihkan & normalisasi seluruh isi form registrasi menjadi objek kycData.
  *
  * `kycData` memirror payload formulir apa adanya (Step 1-5), termasuk
  * `email` dan nomor whatsapp/telepon, sehingga portal admin bisa memetakan
  * data sesuai step aslinya. Yang dibuang hanya kredensial (password).
+ *
+ * `dayaListrik` ditambahkan sebagai hasil normalisasi watt supaya frontend
+ * bisa membandingkan kapasitas listrik usaha dengan kebutuhan daya alat.
  *
  * @param {object} raw - payload mentah dari frontend
  * @returns {object} kycData siap disimpan ke kolom JSON
@@ -159,6 +194,9 @@ export function buildKycData(raw) {
     const isFileKey = KNOWN_FILE_KEYS.has(key) || looksLikeFileValue(value)
     kycData[key] = isFileKey ? normalizeFileValue(value) : value
   }
+
+  const dayaListrik = resolvePowerLimit(kycData)
+  if (dayaListrik !== null) kycData.dayaListrik = dayaListrik
 
   return kycData
 }

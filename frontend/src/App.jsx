@@ -10,6 +10,9 @@ import AdminAuthWrapper from './components/adminAuth/AdminAuthWrapper'
 import AdminDashboardPlaceholder from './components/adminAuth/AdminDashboardPlaceholder'
 import AdminProtectedRoute from './components/adminAuth/AdminProtectedRoute'
 import AdminDetailPengajuan from './components/adminDashboard/AdminDetailPengajuan'
+import UserProtectedRoute from './components/common/UserProtectedRoute'
+import PemilikProtectedRoute from './components/common/PemilikProtectedRoute'
+import { logoutUser } from './lib/userSession'
 import {
   Building2,
   KeyRound,
@@ -223,34 +226,50 @@ export default function App() {
           }
         />
 
-        {/* Beranda Sewa Penyewa (Exported Design) */}
+        {/* Beranda Sewa Penyewa (Exported Design)
+            Hanya penyewa yang sudah login (role PENYEWA) yang boleh membuka katalog. */}
         <Route
           path="/beranda-sewa"
           element={
-            <BerandaSewa
-              onSelectProduct={(product) => {
-                navigate('/detail-alat', { state: { product } })
-              }}
-              onNavigateHome={() => navigate('/')}
-            />
+            <UserProtectedRoute>
+              <BerandaSewa
+                onSelectProduct={(product) => {
+                  navigate(`/detail-alat/${product.id}`)
+                }}
+                onNavigateHome={() => navigate('/')}
+              />
+            </UserProtectedRoute>
           }
         />
 
-        {/* Detail Alat (Exported Design) */}
+        {/* Detail Alat (Exported Design) — ID alat diambil dari URL. */}
         <Route
-          path="/detail-alat"
+          path="/detail-alat/:id"
           element={
-            <DetailAlat
-              onBack={() => navigate('/beranda-sewa')}
-              onNavigateHome={() => navigate('/')}
-            />
+            <UserProtectedRoute>
+              <DetailAlat
+                onBack={() => navigate('/beranda-sewa')}
+                onNavigateHome={() => navigate('/')}
+              />
+            </UserProtectedRoute>
           }
         />
 
-        {/* Dashboard Pemilik Placeholder */}
+        {/* Tanpa ID alat tidak ada detail yang bisa ditampilkan → kembali ke katalog. */}
+        <Route path="/detail-alat" element={<Navigate to="/beranda-sewa" replace />} />
+
+        {/* Dashboard Pemilik Placeholder
+            Dilindungi `PemilikProtectedRoute`: setelah logout, halaman ini
+            tidak bisa dibuka lagi lewat tombol Back browser maupun URL langsung. */}
         <Route
           path="/dashboard-pemilik"
-          element={<DashboardPemilikPlaceholder />}
+          element={
+            <PemilikProtectedRoute>
+              <DashboardPemilikPlaceholder
+                onLogout={() => setCurrentUser(null)}
+              />
+            </PemilikProtectedRoute>
+          }
         />
 
         {/* Portal Rahasia Internal HQ Admin (2-Step Verification) */}
@@ -580,8 +599,18 @@ function Toast({ message }) {
   )
 }
 
-function DashboardPemilikPlaceholder() {
+function DashboardPemilikPlaceholder({ onLogout }) {
   const navigate = useNavigate()
+
+  // Logout permanen:
+  // 1. `logoutUser` menghapus token + data user dari localStorage.
+  // 2. Navigasi ke /login memakai `replace: true` (di dalam logoutUser) agar
+  //    halaman dashboard tidak bisa dibuka lagi lewat tombol Back browser.
+  const handleLogout = () => {
+    if (onLogout) onLogout()
+    logoutUser(navigate)
+  }
+
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col justify-between text-slate-800 font-sans">
       <header className="sticky top-0 z-40 backdrop-blur-md bg-white/90 border-b border-slate-200 px-4 sm:px-8 py-3.5 flex items-center justify-between">
@@ -607,13 +636,7 @@ function DashboardPemilikPlaceholder() {
           </button>
           <button
             type="button"
-            onClick={() => {
-              // Hapus kredensial lalu arahkan dengan `replace` agar halaman dashboard
-              // tidak bisa dibuka kembali lewat tombol Back browser.
-              localStorage.removeItem('token')
-              localStorage.removeItem('user')
-              navigate('/login', { replace: true })
-            }}
+            onClick={handleLogout}
             className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 transition-colors cursor-pointer"
           >
             Keluar
@@ -635,13 +658,6 @@ function DashboardPemilikPlaceholder() {
             </p>
           </div>
           <div className="pt-2 flex flex-col gap-2">
-            <button
-              type="button"
-              onClick={() => navigate('/')}
-              className="w-full h-10 bg-blue-600 hover:bg-blue-700 active:scale-[0.99] text-white font-semibold text-xs rounded-xl transition-all cursor-pointer shadow-xs"
-            >
-              Kembali ke Beranda Utama
-            </button>
             <button
               type="button"
               onClick={() => navigate('/beranda-sewa')}

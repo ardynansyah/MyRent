@@ -22,7 +22,10 @@ export default function CheckoutPanel({
   }
 
   return (
-    <div className="box-border w-full h-fit shrink-0 flex flex-col gap-4 p-5 justify-start items-start bg-white ring-1 ring-slate-200 rounded-2xl shadow-xs sticky top-22">
+    // Catatan: posisi sticky TIDAK lagi dipasang di panel ini.
+    // Panel checkout dan kartu profil toko digabung dalam satu wrapper sticky
+    // di DetailAlat.jsx supaya keduanya menggulung bersama tanpa saling menimpa.
+    <div className="box-border w-full h-fit shrink-0 flex flex-col gap-4 p-5 justify-start items-start bg-white ring-1 ring-slate-200 rounded-2xl shadow-xs">
       {/* Header */}
       <div className="box-border w-full h-fit shrink-0 flex flex-row gap-0 justify-between items-center">
         <h2 className="text-[15px] text-slate-900 font-bold text-left whitespace-nowrap m-0">

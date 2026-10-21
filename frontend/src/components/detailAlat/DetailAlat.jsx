@@ -1,69 +1,154 @@
-import React, { useState } from 'react'
-import { MapPin, ShieldCheck, Star } from 'lucide-react'
+import React, { useEffect, useMemo, useState } from 'react'
+import { useParams } from 'react-router-dom'
+import { Loader2, MapPin, ShieldCheck, TriangleAlert } from 'lucide-react'
 import NavbarPenyewa from '../common/NavbarPenyewa'
 import ImageGallery from './ImageGallery'
 import SpecGrid from './SpecGrid'
 import WarningBanner from './WarningBanner'
 import AvailabilityCalendar from './AvailabilityCalendar'
 import CheckoutPanel from './CheckoutPanel'
+import { formatRupiah, getEquipment } from '../../lib/equipmentsApi'
+import { getSessionUser, getUserInitials, getUserPowerLimit } from '../../lib/userSession'
+import { diffDays, formatLongDate } from '../../lib/dateHelpers'
 
-// Default equipment data matching DetailAlat-export.html
-const DEFAULT_EQUIPMENT = {
-  id: 7,
-  category: 'Mesin Kopi',
-  subcategory: 'Espresso Machine',
-  name: 'Mesin Espresso Otomatis 2 Grup',
-  rating: '4.9',
-  reviewCount: 18,
-  distance: '6.5 km',
-  district: 'Kec. Cilandak',
-  isVerifiedOwner: true,
-  dailyPrice: 320000,
-  depositAmount: 1200000,
-  powerWatt: 2200,
-  weight: '34 kg',
-  dimensions: '40 × 53 × 35 cm',
-  maintenanceBuffer: '1 Hari',
-  userPowerLimit: 1300,
-  about:
-    'Mesin espresso 2 grup dengan sistem PID dan dual boiler, stabil untuk produksi 150–200 cangkir per hari. Sudah termasuk portafilter, tamper, dan pitcher susu. Perawatan rutin dilakukan setiap 3 bulan oleh teknisi pemilik.',
-  badges: ['Min. 3 hari', 'Ambil sendiri', 'Kurir toko', 'BAST digital'],
-  owner: {
-    initials: 'KS',
-    name: 'Kopi Senja Roastery',
-    stats: '34 alat disewakan · 4.9 rating',
-    verified: true
-  }
+const STATUS_LABEL = {
+  TERSEDIA: 'Tersedia',
+  DISEWA: 'Disewa',
+  MAINTENANCE: 'Pemeliharaan'
 }
 
+// Bulan kalender ketersediaan alat (Juni 2025), 0-based.
+const CALENDAR_YEAR = 2025
+const CALENDAR_MONTH = 5
+
 export default function DetailAlat({
-  equipment = DEFAULT_EQUIPMENT,
   onBack,
   onNavigateHome,
   onAjukanSewa
 }) {
-  const [selectedRange, setSelectedRange] = useState([12, 15])
+  const { id } = useParams()
+
+  const [equipment, setEquipment] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+
+  // ── Seleksi tanggal sewa (dikendalikan dari AvailabilityCalendar) ──────
+  const [selectionStart, setSelectionStart] = useState(
+    () => new Date(CALENDAR_YEAR, CALENDAR_MONTH, 12)
+  )
+  const [selectionEnd, setSelectionEnd] = useState(
+    () => new Date(CALENDAR_YEAR, CALENDAR_MONTH, 15)
+  )
+  const [dateWarning, setDateWarning] = useState(false)
   const [showPowerModal, setShowPowerModal] = useState(false)
 
+  // Kapasitas daya listrik usaha penyewa (dari sesi login di localStorage).
+  const user = getSessionUser()
+  const userPowerLimit = getUserPowerLimit(user)
+
+  // ── Ambil detail alat dari backend ──────────────────────────────────────
+  useEffect(() => {
+    let isActive = true
+
+    const loadEquipment = async () => {
+      setLoading(true)
+      setError(null)
+
+      try {
+        const data = await getEquipment(id)
+        if (isActive) setEquipment(data)
+      } catch (err) {
+        if (isActive) {
+          setEquipment(null)
+          setError(err.message || 'Gagal memuat detail alat')
+        }
+      } finally {
+        if (isActive) setLoading(false)
+      }
+    }
+
+    if (id) {
+      loadEquipment()
+    } else {
+      setError('ID alat tidak ditemukan pada URL')
+      setLoading(false)
+    }
+
+    return () => {
+      isActive = false
+    }
+  }, [id])
+
+  // Rentang sewa terpilih → jumlah hari & teks tanggal untuk panel checkout.
   const rentalDays =
-    selectedRange.length === 2
-      ? Math.max(1, selectedRange[1] - selectedRange[0] + 1)
-      : 1
+    selectionStart && selectionEnd ? Math.max(1, diffDays(selectionStart, selectionEnd) + 1) : 0
 
-  const startDateFormatted = selectedRange.length >= 1 ? `Kam, ${selectedRange[0]} Jun 2025` : 'Pilih tanggal'
-  const endDateFormatted = selectedRange.length === 2 ? `Min, ${selectedRange[1]} Jun 2025` : startDateFormatted
+  const startDateFormatted = selectionStart ? formatLongDate(selectionStart) : 'Pilih tanggal'
+  const endDateFormatted = selectionEnd
+    ? formatLongDate(selectionEnd)
+    : startDateFormatted
 
-  const formatRupiah = (val) => `Rp ${val.toLocaleString('id-ID')}`
+  // Kalender memberi tahu perubahan rentang (termasuk reset saat klik ulang).
+  const handleSelectionChange = (start, end) => {
+    setSelectionStart(start)
+    setSelectionEnd(end)
+    setDateWarning(false)
+  }
+
+  // Badge & info turunan dari baris database.
+  const badges = useMemo(() => {
+    if (!equipment) return []
+    return [
+      `Jeda rawat ${equipment.maintenanceBufferDays} hari`,
+      'Ambil sendiri',
+      'Kurir toko',
+      'BAST digital'
+    ]
+  }, [equipment])
+
+  const ownerInitials = equipment?.owner ? getUserInitials(equipment.owner) : '?'
+
+  // Alat membutuhkan daya lebih besar dari kapasitas listrik usaha penyewa.
+  const isPowerExceeded =
+    Boolean(equipment) &&
+    userPowerLimit !== null &&
+    equipment.powerWatt > userPowerLimit
+
+  if (loading) {
+    return (
+      <div className="box-border w-full min-h-screen flex flex-col justify-center items-center gap-3 bg-slate-50">
+        <Loader2 className="w-6 h-6 text-blue-600 animate-spin" />
+        <p className="text-sm text-slate-600">Memuat detail alat…</p>
+      </div>
+    )
+  }
+
+  if (error || !equipment) {
+    return (
+      <div className="box-border w-full min-h-screen flex flex-col justify-center items-center gap-3 bg-slate-50 px-4 text-center">
+        <TriangleAlert className="w-6 h-6 text-amber-600" />
+        <h1 className="text-base font-bold text-slate-900">Detail alat tidak dapat dimuat</h1>
+        <p className="text-xs text-slate-600">{error || 'Alat tidak ditemukan'}</p>
+        <button
+          type="button"
+          onClick={onBack || onNavigateHome}
+          className="mt-2 text-xs font-semibold text-blue-600 hover:underline bg-transparent border-0 cursor-pointer"
+        >
+          Kembali ke Jelajahi Alat
+        </button>
+      </div>
+    )
+  }
+
+  const statusLabel = STATUS_LABEL[equipment.status] || equipment.status
 
   return (
     <div className="box-border w-full min-h-screen flex flex-col justify-start items-start bg-slate-50">
       {/* 1. Global Navigation Bar */}
       <NavbarPenyewa
         activeTab="jelajahi"
-        userPower="1300 W"
         dateRange="12 – 15 Jun"
         walletBalance="Rp 1.250.000"
-        userInitials="BS"
         onNavigateHome={onNavigateHome}
       />
 
@@ -90,8 +175,9 @@ export default function DetailAlat({
 
           {/* Image Gallery */}
           <ImageGallery
-            distance={equipment.distance}
-            status="Tersedia"
+            images={equipment.images}
+            status={statusLabel}
+            distance={`${Number(equipment.distance).toLocaleString('id-ID')} km`}
           />
 
           {/* Title and Meta Header */}
@@ -100,20 +186,18 @@ export default function DetailAlat({
               {/* Left Info */}
               <div className="box-border flex-1 h-fit flex flex-col gap-1.5 justify-start items-start">
                 <span className="text-[11px] text-blue-600 font-bold tracking-[0.4px] uppercase whitespace-nowrap">
-                  {equipment.category} · {equipment.subcategory}
+                  {equipment.category}
                 </span>
 
                 <h1 className="text-[22px] sm:text-[28px] leading-tight text-slate-900 font-extrabold tracking-[-0.8px] text-left m-0">
                   {equipment.name}
                 </h1>
 
-                {/* Meta details: rating, distance, verification */}
+                {/* Meta details: status, lokasi, verifikasi */}
                 <div className="box-border w-full h-fit shrink-0 flex flex-wrap gap-3.5 items-center pt-1 text-xs">
-                  {/* Rating */}
-                  <div className="flex items-center gap-1 text-slate-900 font-bold tabular-nums">
-                    <Star className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
-                    <span>{equipment.rating}</span>
-                    <span className="text-slate-500 font-normal">({equipment.reviewCount} ulasan)</span>
+                  {/* Status */}
+                  <div className="flex items-center gap-1.5 text-slate-600">
+                    <span className="font-semibold">{statusLabel}</span>
                   </div>
 
                   <span className="text-slate-300">•</span>
@@ -121,7 +205,9 @@ export default function DetailAlat({
                   {/* Location */}
                   <div className="flex items-center gap-1.5 text-slate-600 tabular-nums">
                     <MapPin className="w-3.25 h-3.25 text-slate-400" />
-                    <span>{equipment.distance} · {equipment.district}</span>
+                    <span>
+                      {Number(equipment.distance).toLocaleString('id-ID')} km · {equipment.location}
+                    </span>
                   </div>
 
                   <span className="text-slate-300">•</span>
@@ -138,14 +224,14 @@ export default function DetailAlat({
               <div className="box-border w-fit shrink-0 h-fit flex flex-col gap-0.5 justify-start sm:items-end">
                 <div className="box-border w-fit h-fit shrink-0 flex flex-row gap-1 justify-start items-end">
                   <span className="text-2xl sm:text-[26px] text-slate-900 font-extrabold tracking-tight tabular-nums whitespace-nowrap">
-                    {formatRupiah(equipment.dailyPrice)}
+                    {formatRupiah(equipment.pricePerDay)}
                   </span>
                   <span className="text-xs text-slate-500 font-normal pb-1 whitespace-nowrap">
                     /hari
                   </span>
                 </div>
                 <div className="text-[11px] text-slate-500 font-medium tabular-nums whitespace-nowrap">
-                  Deposit {formatRupiah(equipment.depositAmount)}
+                  Deposit {formatRupiah(equipment.deposit)}
                 </div>
               </div>
             </div>
@@ -155,17 +241,17 @@ export default function DetailAlat({
           <SpecGrid
             power={`${equipment.powerWatt} W`}
             rawPower={equipment.powerWatt}
-            userPowerLimit={equipment.userPowerLimit}
-            weight={equipment.weight}
+            userPowerLimit={userPowerLimit ?? 0}
+            weight={`${equipment.weightKg} kg`}
             dimensions={equipment.dimensions}
-            maintenanceBuffer={equipment.maintenanceBuffer}
+            maintenanceBuffer={`${equipment.maintenanceBufferDays} Hari`}
           />
 
           {/* Warning Banner (Shown when tool power exceeds user's power) */}
-          {equipment.powerWatt > equipment.userPowerLimit && (
+          {isPowerExceeded && (
             <WarningBanner
               requiredWatt={equipment.powerWatt}
-              userWatt={equipment.userPowerLimit}
+              userWatt={userPowerLimit}
               onActionClick={() => setShowPowerModal(true)}
             />
           )}
@@ -173,8 +259,12 @@ export default function DetailAlat({
           {/* Availability Calendar */}
           <AvailabilityCalendar
             monthTitle="Ketersediaan Juni 2025"
-            selectedRange={selectedRange}
-            onSelectRange={setSelectedRange}
+            year={CALENDAR_YEAR}
+            month={CALENDAR_MONTH}
+            minRentDays={equipment.maintenanceBufferDays}
+            selectionStart={selectionStart}
+            selectionEnd={selectionEnd}
+            onSelectionChange={handleSelectionChange}
           />
 
           {/* About / Description Card */}
@@ -183,14 +273,14 @@ export default function DetailAlat({
               Tentang alat ini
             </h2>
             <p className="text-xs leading-5 w-full text-slate-600 font-normal text-left m-0">
-              {equipment.about}
+              {equipment.description}
             </p>
 
             {/* Badges */}
             <div className="box-border w-full h-fit shrink-0 flex flex-wrap gap-2 justify-start items-start pt-1">
-              {equipment.badges.map((badge, idx) => (
+              {badges.map((badge) => (
                 <div
-                  key={idx}
+                  key={badge}
                   className="box-border w-fit shrink-0 h-fit flex flex-row py-1.25 px-2.5 justify-start items-center bg-slate-50 ring-1 ring-slate-200 rounded-full"
                 >
                   <span className="text-[11px] text-slate-600 font-semibold whitespace-nowrap">
@@ -202,51 +292,74 @@ export default function DetailAlat({
           </div>
         </section>
 
-        {/* Right Column: Checkout Panel + Owner Card */}
-        <section className="box-border w-full lg:w-105 shrink-0 h-fit flex flex-col gap-3.5 justify-start items-start">
-          {/* Checkout & Rental Calculation Panel */}
-          <CheckoutPanel
-            dailyPrice={equipment.dailyPrice}
-            depositAmount={equipment.depositAmount}
-            rentalDays={rentalDays}
-            startDateText={startDateFormatted}
-            endDateText={endDateFormatted}
-            ownerAddress={`${equipment.district} (${equipment.distance})`}
-            onAjukanSewa={(checkoutData) => {
-              if (onAjukanSewa) onAjukanSewa(checkoutData)
-              else {
-                alert(`Pengajuan sewa berhasil dibuat untuk ${equipment.name}!`)
-              }
-            }}
-          />
-
-          {/* Owner Profile Card */}
-          <div className="box-border w-full h-fit shrink-0 flex flex-row gap-3 p-4 justify-start items-center bg-white ring-1 ring-slate-200 rounded-[14px]">
-            {/* Owner Initials Avatar */}
-            <div className="box-border w-10 shrink-0 h-10 flex flex-row justify-center items-center bg-blue-50 rounded-full">
-              <span className="text-[13px] text-blue-700 font-bold whitespace-nowrap">
-                {equipment.owner.initials}
-              </span>
-            </div>
-
-            {/* Owner Meta */}
-            <div className="box-border flex-1 h-fit flex flex-col gap-0.5 justify-start items-start">
-              <div className="text-xs text-slate-900 font-bold text-left whitespace-nowrap">
-                {equipment.owner.name}
-              </div>
-              <div className="text-[10px] text-slate-400 font-normal text-left whitespace-nowrap">
-                {equipment.owner.stats}
-              </div>
-            </div>
-
-            {/* Verified Badge */}
-            {equipment.owner.verified && (
-              <div className="box-border w-fit shrink-0 h-fit flex flex-row py-1.25 px-2.5 justify-start items-center bg-green-50 rounded-full">
-                <span className="text-[11px] text-green-700 font-semibold whitespace-nowrap">
-                  Terverifikasi
-                </span>
+        {/* Right Column: Checkout Panel + Owner Card
+            `self-stretch` memberi ruang gulir pada kolom kanan supaya wrapper
+            sticky di bawah benar-benar bisa bergerak (bukan terkunci statis). */}
+        <section className="box-border w-full lg:w-105 shrink-0 self-stretch flex flex-col justify-start items-start">
+          {/* Wrapper sticky tunggal: CheckoutPanel + Profil Toko digabung agar
+              keduanya menggulir bersamaan dan tidak saling menimpa. */}
+          <div className="box-border sticky top-24 w-full h-fit flex flex-col gap-4 justify-start items-start">
+            {/* Peringatan: rentang tanggal belum lengkap */}
+            {dateWarning && (
+              <div className="box-border w-full flex flex-row gap-2 p-3 justify-start items-start bg-amber-50 ring-1 ring-amber-200 rounded-[10px]">
+                <TriangleAlert className="w-4 h-4 shrink-0 mt-0.5 text-amber-600" />
+                <p className="text-[11px] leading-4 text-amber-700 font-normal text-left m-0">
+                  Pilih tanggal mulai &amp; selesai sewa di kalender sebelum mengajukan sewa.
+                </p>
               </div>
             )}
+
+            {/* Checkout & Rental Calculation Panel */}
+            <CheckoutPanel
+              dailyPrice={equipment.pricePerDay}
+              depositAmount={equipment.deposit}
+              rentalDays={rentalDays}
+              startDateText={startDateFormatted}
+              endDateText={endDateFormatted}
+              ownerAddress={`${equipment.location} (${Number(equipment.distance).toLocaleString('id-ID')} km)`}
+              onAjukanSewa={(checkoutData) => {
+                // Tanggal belum lengkap → jangan kirim pengajuan.
+                if (!selectionStart || !selectionEnd) {
+                  setDateWarning(true)
+                  return
+                }
+
+                setDateWarning(false)
+                if (onAjukanSewa) onAjukanSewa(checkoutData)
+                else {
+                  alert(`Pengajuan sewa berhasil dibuat untuk ${equipment.name}!`)
+                }
+              }}
+            />
+
+            {/* Owner Profile Card */}
+            <div className="box-border w-full h-fit shrink-0 flex flex-row gap-3 p-4 justify-start items-center bg-white ring-1 ring-slate-200 rounded-[14px]">
+              {/* Owner Initials Avatar */}
+              <div className="box-border w-10 shrink-0 h-10 flex flex-row justify-center items-center bg-blue-50 rounded-full">
+                <span className="text-[13px] text-blue-700 font-bold whitespace-nowrap">
+                  {ownerInitials}
+                </span>
+              </div>
+
+              {/* Owner Meta */}
+              <div className="box-border flex-1 h-fit flex flex-col gap-0.5 justify-start items-start">
+                <div className="text-xs text-slate-900 font-bold text-left whitespace-nowrap">
+                  {equipment.owner?.fullName || 'Pemilik Alat'}
+                </div>
+                <div className="text-[10px] text-slate-400 font-normal text-left whitespace-nowrap">
+                  {equipment.owner?.email || '-'}
+                </div>
+              </div>
+
+              {/* Verified Badge */}
+              {equipment.owner?.verificationStatus === 'DISETUJUI' && (
+                <div className="box-border w-fit shrink-0 h-fit flex flex-row py-1.25 px-2.5 justify-start items-center bg-green-50 rounded-full">
+                  <span className="text-[11px] text-green-700 font-semibold whitespace-nowrap">
+                    Terverifikasi
+                  </span>
+                </div>
+              )}
+            </div>
           </div>
         </section>
       </main>
@@ -257,7 +370,7 @@ export default function DetailAlat({
           <div className="bg-white rounded-2xl max-w-sm w-full p-6 space-y-4 shadow-xl">
             <h3 className="text-base font-bold text-slate-900">Perbarui Daya Listrik UMKM</h3>
             <p className="text-xs text-slate-600 leading-relaxed">
-              Daya terdaftar saat ini: <strong>1300 W</strong>. Anda dapat mengajukan penyesuaian daya listrik tempat usaha atau sewa genset tambahan.
+              Daya terdaftar saat ini: <strong>{userPowerLimit} W</strong>. Anda dapat mengajukan penyesuaian daya listrik tempat usaha atau sewa genset tambahan.
             </p>
             <div className="flex justify-end gap-2 pt-2">
               <button

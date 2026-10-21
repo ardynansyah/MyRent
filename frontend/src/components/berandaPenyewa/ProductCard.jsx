@@ -1,16 +1,31 @@
 import React from 'react'
 import { MapPin } from 'lucide-react'
+import { formatRupiah } from '../../lib/equipmentsApi'
+import fallbackImage from '../../assets/beranda/item_1.jpg'
 
+const STATUS_LABEL = {
+  TERSEDIA: 'Tersedia',
+  DISEWA: 'Disewa',
+  MAINTENANCE: 'Pemeliharaan'
+}
+
+/**
+ * Kartu alat pada katalog beranda penyewa.
+ *
+ * Seluruh props berasal dari baris tabel `Equipment` (lihat API
+ * `GET /api/equipments`) — tidak ada data dummy statis di sini.
+ */
 export default function ProductCard({
   id,
-  image,
-  status = 'Tersedia',
-  distance = '2.4 km',
-  meta = '1300 Watt · Min. 2 Hari',
-  name = 'Espresso Machine La Marzocco GS3',
-  price = 'Rp 150.000',
-  period = '/hari',
-  deposit = 'Deposit: Rp 500.000 (100% kembali)',
+  name = '',
+  category = '',
+  pricePerDay = 0,
+  deposit = 0,
+  powerWatt = 0,
+  maintenanceBufferDays = 1,
+  distance = 0,
+  status = 'TERSEDIA',
+  images = [],
   onSelectDate,
   onClick
 }) {
@@ -24,6 +39,10 @@ export default function ProductCard({
     else if (onClick) onClick(id)
   }
 
+  const image = images?.[0] || fallbackImage
+  const meta = `${powerWatt} Watt · Min. ${maintenanceBufferDays} Hari`
+  const statusLabel = STATUS_LABEL[status] || status
+
   return (
     <div
       onClick={handleCardClick}
@@ -35,6 +54,9 @@ export default function ProductCard({
           <img
             src={image}
             alt={name}
+            onError={(e) => {
+              e.currentTarget.src = fallbackImage
+            }}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
           />
         ) : (
@@ -46,15 +68,24 @@ export default function ProductCard({
         {/* Status Badge */}
         <div className="box-border w-fit h-fit absolute left-3 top-3 flex flex-row gap-0 py-[5px] px-2.5 justify-start items-start bg-white rounded-full shadow-2xs z-10">
           <span className="text-[11px] text-green-700 font-bold whitespace-nowrap">
-            {status}
+            {statusLabel}
           </span>
         </div>
+
+        {/* Category Badge */}
+        {category && (
+          <div className="box-border w-fit h-fit absolute right-3 top-3 flex flex-row gap-0 py-[5px] px-2.5 justify-start items-start bg-white/95 backdrop-blur rounded-full shadow-2xs z-10">
+            <span className="text-[11px] text-blue-700 font-semibold whitespace-nowrap">
+              {category}
+            </span>
+          </div>
+        )}
 
         {/* Distance Badge */}
         <div className="box-border w-fit h-fit absolute left-3 top-[130px] flex flex-row gap-[5px] py-1 px-[9px] justify-start items-center bg-white/95 backdrop-blur rounded-full shadow-2xs z-10">
           <MapPin className="w-[11px] h-[11px] text-slate-600" />
           <span className="text-[11px] text-slate-600 font-semibold tabular-nums whitespace-nowrap">
-            {distance}
+            {Number(distance).toLocaleString('id-ID')} km
           </span>
         </div>
       </div>
@@ -74,16 +105,16 @@ export default function ProductCard({
         {/* Price Row */}
         <div className="box-border w-full h-fit shrink-0 flex flex-row gap-[5px] justify-start items-end">
           <div className="text-lg text-slate-900 font-extrabold tracking-tight tabular-nums text-left whitespace-nowrap">
-            {price}
+            {formatRupiah(pricePerDay)}
           </div>
           <div className="text-xs text-slate-500 font-normal text-left whitespace-nowrap pb-0.5">
-            {period}
+            /hari
           </div>
         </div>
 
         {/* Deposit Info */}
         <div className="text-[11px] text-slate-500 font-medium tabular-nums text-left whitespace-nowrap">
-          {deposit}
+          Deposit: {formatRupiah(deposit)} (100% kembali)
         </div>
 
         {/* Divider */}

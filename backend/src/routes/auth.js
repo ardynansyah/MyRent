@@ -4,7 +4,7 @@ import jwt from 'jsonwebtoken'
 import { Prisma } from '@prisma/client'
 import { prisma } from '../lib/prisma.js'
 import { config } from '../config.js'
-import { buildKycData, extractFormPayload } from '../lib/kyc.js'
+import { buildKycData, extractFormPayload, resolvePowerLimit } from '../lib/kyc.js'
 import { generateSubmissionCode } from '../lib/submissionCode.js'
 import {
   findUserByPhone,
@@ -31,10 +31,16 @@ function normalizeRole(role) {
  * Bentuk objek user yang dikembalikan ke frontend.
  * Termasuk data status verifikasi supaya frontend bisa melakukan gatekeeping.
  *
+ * `kycData` yang dikembalikan sengaja dibuat ringkas (hanya data daya
+ * listrik) supaya aman disimpan di localStorage browser — data form lengkap
+ * berisi foto base64 & NIK tetap hanya tersedia lewat endpoint admin.
+ *
  * @param {object} user - baris user dari Prisma
  * @returns {object}
  */
 function presentUser(user) {
+  const kycData = user.kycData && typeof user.kycData === 'object' ? user.kycData : {}
+
   return {
     id: user.id,
     email: user.email,
@@ -45,6 +51,12 @@ function presentUser(user) {
     verificationStatus: user.verificationStatus ?? 'MENUNGGU',
     revisionSteps: Array.isArray(user.revisionSteps) ? user.revisionSteps : [],
     adminNote: user.adminNote ?? null,
+    kycData: {
+      // Daya listrik usaha dalam watt (null bila belum diisi di form registrasi).
+      dayaListrik: resolvePowerLimit(kycData),
+      powerCapacity: kycData.powerCapacity ?? null,
+      customPower: kycData.customPower ?? null
+    },
     createdAt: user.createdAt
   }
 }

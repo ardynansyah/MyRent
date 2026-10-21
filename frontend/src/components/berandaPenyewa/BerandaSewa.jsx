@@ -1,192 +1,200 @@
-import React, { useState } from 'react'
-import { ChevronDown } from 'lucide-react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
+import { Check, ChevronDown, Loader2, TriangleAlert } from 'lucide-react'
 import NavbarPenyewa from '../common/NavbarPenyewa'
 import ChipKategori from './ChipKategori'
 import SidebarFilter from './SidebarFilter'
 import ProductCard from './ProductCard'
+import { listEquipments } from '../../lib/equipmentsApi'
+import { getSessionUser, getUserPowerLimit } from '../../lib/userSession'
+import { formatShortDate } from '../../lib/dateHelpers'
 
-// Imported clean assets from export
-import item1 from '../../assets/beranda/item_1.jpg'
-import item2 from '../../assets/beranda/item_2.jpg'
-import item3 from '../../assets/beranda/item_3.jpg'
-import item4 from '../../assets/beranda/item_4.jpg'
-import item5 from '../../assets/beranda/item_5.jpg'
-import item6 from '../../assets/beranda/item_6.jpg'
-import item7 from '../../assets/beranda/item_7.jpg'
-import item8 from '../../assets/beranda/item_8.jpg'
-import item9 from '../../assets/beranda/item_9.jpg'
+const ALL_CATEGORY = 'Semua Alat'
+const NEAREST_CATEGORY = 'Terdekat'
 
-const INITIAL_PRODUCTS = [
-  {
-    id: 1,
-    name: 'Espresso Machine La Marzocco GS3',
-    meta: '1300 Watt · Min. 2 Hari',
-    watt: 1300,
-    price: 'Rp 150.000',
-    rawPrice: 150000,
-    period: '/hari',
-    deposit: 'Deposit: Rp 500.000 (100% kembali)',
-    distance: '2.4 km',
-    status: 'Tersedia',
-    category: 'Mesin Kopi',
-    image: item1
-  },
-  {
-    id: 2,
-    name: 'Oven Deck Bakery 2 Pintu',
-    meta: '1200 Watt · Min. 3 Hari',
-    watt: 1200,
-    price: 'Rp 210.000',
-    rawPrice: 210000,
-    period: '/hari',
-    deposit: 'Deposit: Rp 750.000 (100% kembali)',
-    distance: '3.1 km',
-    status: 'Tersedia',
-    category: 'Oven & Bakery',
-    image: item2
-  },
-  {
-    id: 3,
-    name: 'Mesin Kemasan Vakum Otomatis',
-    meta: '900 Watt · Min. 1 Hari',
-    watt: 900,
-    price: 'Rp 95.000',
-    rawPrice: 95000,
-    period: '/hari',
-    deposit: 'Deposit: Rp 300.000 (100% kembali)',
-    distance: '1.2 km',
-    status: 'Tersedia',
-    category: 'Mesin Kemasan',
-    image: item3
-  },
-  {
-    id: 4,
-    name: 'Mesin Jahit Industri Juki DDL-8700',
-    meta: '400 Watt · Min. 7 Hari',
-    watt: 400,
-    price: 'Rp 75.000',
-    rawPrice: 75000,
-    period: '/hari',
-    deposit: 'Deposit: Rp 400.000 (100% kembali)',
-    distance: '5.8 km',
-    status: 'Tersedia',
-    category: 'Konveksi',
-    image: item4
-  },
-  {
-    id: 5,
-    name: 'Mixer Planetary 20 Liter',
-    meta: '1100 Watt · Min. 2 Hari',
-    watt: 1100,
-    price: 'Rp 120.000',
-    rawPrice: 120000,
-    period: '/hari',
-    deposit: 'Deposit: Rp 350.000 (100% kembali)',
-    distance: '4.0 km',
-    status: 'Tersedia',
-    category: 'Oven & Bakery',
-    image: item5
-  },
-  {
-    id: 6,
-    name: 'Grinder Kopi Flat Burr Elektrik',
-    meta: '650 Watt · Min. 2 Hari',
-    watt: 650,
-    price: 'Rp 85.000',
-    rawPrice: 85000,
-    period: '/hari',
-    deposit: 'Deposit: Rp 250.000 (100% kembali)',
-    distance: '2.4 km',
-    status: 'Tersedia',
-    category: 'Mesin Kopi',
-    image: item6
-  },
-  {
-    id: 7,
-    name: 'Mesin Espresso Otomatis 2 Grup',
-    meta: '2200 Watt · Min. 3 Hari',
-    watt: 2200,
-    price: 'Rp 320.000',
-    rawPrice: 320000,
-    period: '/hari',
-    deposit: 'Deposit: Rp 1.200.000 (100% kembali)',
-    distance: '6.5 km',
-    status: 'Tersedia',
-    category: 'Mesin Kopi',
-    image: item7
-  },
-  {
-    id: 8,
-    name: 'Chiller Display 2 Pintu',
-    meta: '800 Watt · Min. 2 Hari',
-    watt: 800,
-    price: 'Rp 110.000',
-    rawPrice: 110000,
-    period: '/hari',
-    deposit: 'Deposit: Rp 450.000 (100% kembali)',
-    distance: '2.9 km',
-    status: 'Tersedia',
-    category: 'Mesin Kemasan',
-    image: item8
-  },
-  {
-    id: 9,
-    name: 'Mesin Gulung Adonan Sheeter',
-    meta: '550 Watt · Min. 3 Hari',
-    watt: 550,
-    price: 'Rp 90.000',
-    rawPrice: 90000,
-    period: '/hari',
-    deposit: 'Deposit: Rp 300.000 (100% kembali)',
-    distance: '7.2 km',
-    status: 'Tersedia',
-    category: 'Oven & Bakery',
-    image: item9
-  }
+// Opsi dropdown "Urutkan".
+const SORT_OPTIONS = [
+  { value: 'terdekat', label: 'Terdekat' },
+  { value: 'termurah', label: 'Termurah' },
+  { value: 'termahal', label: 'Termahal' }
 ]
 
+// Filter sidebar: rentang tanggal + batas security deposit.
+const createInitialFilters = () => ({
+  dateRange: { start: null, end: null },
+  maxDeposit: 'semua'
+})
+
 export default function BerandaSewa({
-  products = INITIAL_PRODUCTS,
   onSelectProduct,
   onNavigateHome
 }) {
-  const [selectedCategory, setSelectedCategory] = useState('Sesuai Listrik Saya (1300W)')
+  const [equipments, setEquipments] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+
   const [searchQuery, setSearchQuery] = useState('')
   const [maxPrice, setMaxPrice] = useState(500000)
   const [powerMatch, setPowerMatch] = useState(true)
 
+  // ── Urutkan (dropdown) ──────────────────────────────────────────────────
+  const [sortBy, setSortBy] = useState('terdekat')
+  const [sortOpen, setSortOpen] = useState(false)
+  const sortRef = useRef(null)
+
+  // ── Filter sidebar ──────────────────────────────────────────────────────
+  const [filters, setFilters] = useState(createInitialFilters)
+
+  // Kapasitas daya listrik usaha penyewa (dari sesi login).
+  const user = getSessionUser()
+  const powerLimit = getUserPowerLimit(user)
+  const powerMatchLabel = powerLimit ? `Sesuai Listrik Saya (${powerLimit}W)` : ALL_CATEGORY
+
+  const [selectedCategory, setSelectedCategory] = useState(powerMatchLabel)
+
+  // Tutup dropdown "Urutkan" saat klik di luar atau tekan Escape.
+  useEffect(() => {
+    if (!sortOpen) return undefined
+
+    const handlePointerDown = (event) => {
+      if (sortRef.current && !sortRef.current.contains(event.target)) {
+        setSortOpen(false)
+      }
+    }
+
+    const handleKeyDown = (event) => {
+      if (event.key === 'Escape') setSortOpen(false)
+    }
+
+    document.addEventListener('mousedown', handlePointerDown)
+    document.addEventListener('keydown', handleKeyDown)
+    return () => {
+      document.removeEventListener('mousedown', handlePointerDown)
+      document.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [sortOpen])
+
+  // ── Ambil katalog alat dari backend ─────────────────────────────────────
+  useEffect(() => {
+    let isActive = true
+
+    const loadEquipments = async () => {
+      setLoading(true)
+      setError(null)
+
+      try {
+        const data = await listEquipments()
+        if (isActive) setEquipments(data)
+      } catch (err) {
+        if (isActive) {
+          setEquipments([])
+          setError(err.message || 'Gagal memuat katalog alat')
+        }
+      } finally {
+        if (isActive) setLoading(false)
+      }
+    }
+
+    loadEquipments()
+
+    return () => {
+      isActive = false
+    }
+  }, [])
+
+  // Kategori chip dihitung dari data yang benar-benar ada di database.
+  const categories = useMemo(() => {
+    const fromData = Array.from(
+      new Set(equipments.map((item) => item.category).filter(Boolean))
+    )
+
+    return [
+      ALL_CATEGORY,
+      ...(powerLimit ? [powerMatchLabel] : []),
+      ...fromData,
+      NEAREST_CATEGORY
+    ]
+  }, [equipments, powerLimit, powerMatchLabel])
+
+  // Batas deposit aktif ('semua' = tanpa batas).
+  const maxDeposit = filters.maxDeposit === 'semua' ? Infinity : Number(filters.maxDeposit)
+
   // Filter logic
-  const filteredProducts = products.filter((item) => {
-    // Search filter
-    if (
-      searchQuery &&
-      !item.name.toLowerCase().includes(searchQuery.toLowerCase()) &&
-      !item.category.toLowerCase().includes(searchQuery.toLowerCase())
-    ) {
-      return false
+  const filteredProducts = useMemo(() => {
+    return equipments.filter((item) => {
+      // Search filter
+      if (
+        searchQuery &&
+        !item.name.toLowerCase().includes(searchQuery.toLowerCase()) &&
+        !item.category.toLowerCase().includes(searchQuery.toLowerCase())
+      ) {
+        return false
+      }
+
+      // Category filter
+      if (selectedCategory === powerMatchLabel && powerLimit) {
+        if (item.powerWatt > powerLimit) return false
+      } else if (selectedCategory === ALL_CATEGORY || selectedCategory === NEAREST_CATEGORY) {
+        // keep
+      } else if (item.category !== selectedCategory) {
+        return false
+      }
+
+      // Power toggle filter from sidebar
+      if (powerMatch && powerLimit && item.powerWatt > powerLimit) {
+        return false
+      }
+
+      // Max price
+      if (item.pricePerDay > maxPrice) {
+        return false
+      }
+
+      // Batas security deposit (filter sidebar)
+      if (Number(item.deposit) > maxDeposit) {
+        return false
+      }
+
+      return true
+    })
+  }, [equipments, searchQuery, selectedCategory, powerMatch, powerLimit, powerMatchLabel, maxPrice, maxDeposit])
+
+  // Sorting hasil filter sesuai pilihan dropdown "Urutkan".
+  const sortedProducts = useMemo(() => {
+    const list = [...filteredProducts]
+
+    if (sortBy === 'termurah') {
+      return list.sort((a, b) => Number(a.pricePerDay) - Number(b.pricePerDay))
     }
 
-    // Category filter
-    if (selectedCategory === 'Sesuai Listrik Saya (1300W)') {
-      if (item.watt > 1300) return false
-    } else if (selectedCategory === 'Semua Alat' || selectedCategory === 'Terdekat') {
-      // keep
-    } else if (item.category !== selectedCategory) {
-      return false
+    if (sortBy === 'termahal') {
+      return list.sort((a, b) => Number(b.pricePerDay) - Number(a.pricePerDay))
     }
 
-    // Power toggle filter from sidebar
-    if (powerMatch && item.watt > 1300) {
-      return false
-    }
+    // 'terdekat' → jarak (km) terdekat lebih dulu
+    return list.sort((a, b) => Number(a.distance) - Number(b.distance))
+  }, [filteredProducts, sortBy])
 
-    // Max price
-    if (item.rawPrice > maxPrice) {
-      return false
-    }
+  // Label rentang tanggal untuk header & navbar.
+  const dateRangeLabel = useMemo(() => {
+    const { start, end } = filters.dateRange
 
-    return true
-  })
+    if (start && end) return `${formatShortDate(start)} – ${formatShortDate(end)}`
+    if (start) return formatShortDate(start)
+    if (end) return formatShortDate(end)
+
+    return 'Semua tanggal'
+  }, [filters.dateRange])
+
+  const activeSortLabel =
+    SORT_OPTIONS.find((option) => option.value === sortBy)?.label ?? 'Terdekat'
+
+  const resetFilters = () => {
+    setSelectedCategory(ALL_CATEGORY)
+    setSearchQuery('')
+    setMaxPrice(500000)
+    setPowerMatch(false)
+    setFilters(createInitialFilters())
+  }
 
   return (
     <div className="box-border w-full min-h-screen flex flex-col justify-start items-start bg-slate-50">
@@ -195,15 +203,14 @@ export default function BerandaSewa({
         activeTab="jelajahi"
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
-        userPower="1300 W"
-        dateRange="12 – 15 Jun"
+        dateRange={dateRangeLabel}
         walletBalance="Rp 1.250.000"
-        userInitials="BS"
         onNavigateHome={onNavigateHome}
       />
 
       {/* 2. Chip Filter Bar */}
       <ChipKategori
+        categories={categories}
         selectedCategory={selectedCategory}
         onSelectCategory={setSelectedCategory}
       />
@@ -212,21 +219,18 @@ export default function BerandaSewa({
       <main className="box-border w-full max-w-[1440px] mx-auto h-fit flex flex-col lg:flex-row gap-6 py-7 px-4 md:px-8 pb-10 justify-start items-start">
         {/* Left: Filter Sidebar */}
         <SidebarFilter
-          startDate="12 Jun 2025"
-          endDate="15 Jun 2025"
+          filters={filters}
+          onFiltersChange={setFilters}
           powerMatch={powerMatch}
           onPowerMatchChange={setPowerMatch}
+          powerLimit={powerLimit}
           maxPrice={maxPrice}
           onMaxPriceChange={setMaxPrice}
-          onReset={() => {
-            setSelectedCategory('Semua Alat')
-            setSearchQuery('')
-            setMaxPrice(500000)
-            setPowerMatch(false)
-          }}
-          onApply={(filters) => {
-            setPowerMatch(filters.powerMatch)
-            setMaxPrice(filters.maxPrice)
+          onReset={resetFilters}
+          onApply={(next) => {
+            setPowerMatch(next.powerMatch)
+            setMaxPrice(next.maxPrice)
+            setFilters((prev) => ({ ...prev, maxDeposit: next.maxDeposit }))
           }}
         />
 
@@ -236,50 +240,112 @@ export default function BerandaSewa({
           <div className="box-border w-full h-fit shrink-0 flex flex-row gap-2 justify-between items-center">
             <div className="box-border w-fit shrink-0 h-fit flex flex-col gap-[3px] justify-start items-start">
               <h1 className="text-[17px] text-slate-900 font-bold text-left whitespace-nowrap m-0">
-                Alat tersedia untuk <span className="tabular-nums">12–15 Jun</span>
+                Alat tersedia untuk <span className="tabular-nums">{dateRangeLabel}</span>
               </h1>
               <div className="text-xs text-slate-600 font-normal text-left whitespace-nowrap tabular-nums">
-                {filteredProducts.length} alat ·{' '}
-                {powerMatch ? 'semua sesuai daya 1300 W' : 'semua kapasitas daya'}
+                {loading ? 'Memuat katalog…' : `${sortedProducts.length} alat · `}
+                {powerMatch && powerLimit ? `semua sesuai daya ${powerLimit} W` : 'semua kapasitas daya'}
               </div>
             </div>
 
             {/* Sort Dropdown */}
-            <div className="box-border w-fit shrink-0 h-fit flex flex-row gap-2 py-2 px-3 justify-start items-center bg-white ring-1 ring-slate-200 rounded-lg cursor-pointer hover:bg-slate-50 transition-colors">
-              <span className="text-xs text-slate-900 font-semibold whitespace-nowrap">
-                Urutkan: Terdekat
-              </span>
-              <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
+            <div ref={sortRef} className="relative box-border w-fit shrink-0 h-fit">
+              <button
+                type="button"
+                onClick={() => setSortOpen((open) => !open)}
+                aria-haspopup="listbox"
+                aria-expanded={sortOpen}
+                className="box-border w-fit shrink-0 h-fit flex flex-row gap-2 py-2 px-3 justify-start items-center bg-white ring-1 ring-slate-200 rounded-lg cursor-pointer hover:bg-slate-50 transition-colors"
+              >
+                <span className="text-xs text-slate-900 font-semibold whitespace-nowrap">
+                  Urutkan: {activeSortLabel}
+                </span>
+                <ChevronDown
+                  className={`w-3.5 h-3.5 text-slate-400 transition-transform ${
+                    sortOpen ? 'rotate-180' : ''
+                  }`}
+                />
+              </button>
+
+              {sortOpen && (
+                <ul
+                  role="listbox"
+                  aria-label="Urutkan alat"
+                  className="absolute right-0 top-[calc(100%+6px)] z-50 w-[168px] box-border flex flex-col gap-0.5 p-1.5 bg-white ring-1 ring-slate-200 rounded-[10px] shadow-lg shadow-slate-900/10"
+                >
+                  {SORT_OPTIONS.map((option) => {
+                    const isSelected = sortBy === option.value
+
+                    return (
+                      <li key={option.value}>
+                        <button
+                          type="button"
+                          role="option"
+                          aria-selected={isSelected}
+                          onClick={() => {
+                            setSortBy(option.value)
+                            setSortOpen(false)
+                          }}
+                          className={`box-border w-full flex flex-row gap-2 py-2 px-2.5 justify-between items-center rounded-lg cursor-pointer border-0 transition-colors ${
+                            isSelected
+                              ? 'bg-blue-50 text-blue-700 font-bold'
+                              : 'bg-white text-slate-600 hover:bg-slate-50 font-medium'
+                          }`}
+                        >
+                          <span className="text-xs whitespace-nowrap">{option.label}</span>
+                          {isSelected && <Check className="w-3.5 h-3.5 shrink-0" />}
+                        </button>
+                      </li>
+                    )
+                  })}
+                </ul>
+              )}
             </div>
           </div>
 
-          {/* Product Cards Grid */}
-          {filteredProducts.length === 0 ? (
+          {/* Status pemuatan / error */}
+          {loading && (
+            <div className="w-full bg-white rounded-2xl border border-slate-200 p-12 flex flex-col gap-3 items-center justify-center text-slate-500">
+              <Loader2 className="w-6 h-6 text-blue-600 animate-spin" />
+              <p className="text-sm">Memuat katalog alat dari server…</p>
+            </div>
+          )}
+
+          {!loading && error && (
+            <div className="w-full bg-amber-50 border border-amber-200 rounded-2xl p-8 flex flex-col gap-3 items-center justify-center text-amber-800">
+              <TriangleAlert className="w-6 h-6 text-amber-600" />
+              <p className="text-sm font-semibold">Katalog alat gagal dimuat</p>
+              <p className="text-xs text-center">{error}</p>
+              <p className="text-[11px] text-amber-700/80 text-center">
+                Pastikan backend berjalan di http://localhost:3000
+              </p>
+            </div>
+          )}
+
+          {!loading && !error && sortedProducts.length === 0 ? (
             <div className="w-full bg-white rounded-2xl border border-slate-200 p-12 text-center text-slate-500">
               <p className="text-sm">Tidak ada alat yang cocok dengan filter yang dipilih.</p>
               <button
                 type="button"
-                onClick={() => {
-                  setSelectedCategory('Semua Alat')
-                  setPowerMatch(false)
-                  setMaxPrice(500000)
-                }}
+                onClick={resetFilters}
                 className="mt-3 text-xs text-blue-600 font-semibold hover:underline"
               >
                 Reset Semua Filter
               </button>
             </div>
           ) : (
-            <div className="box-border w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-              {filteredProducts.map((product) => (
-                <ProductCard
-                  key={product.id}
-                  {...product}
-                  onClick={() => onSelectProduct && onSelectProduct(product)}
-                  onSelectDate={() => onSelectProduct && onSelectProduct(product)}
-                />
-              ))}
-            </div>
+            !loading && !error && (
+              <div className="box-border w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                {sortedProducts.map((product) => (
+                  <ProductCard
+                    key={product.id}
+                    {...product}
+                    onClick={() => onSelectProduct && onSelectProduct(product)}
+                    onSelectDate={() => onSelectProduct && onSelectProduct(product)}
+                  />
+                ))}
+              </div>
+            )
           )}
         </section>
       </main>

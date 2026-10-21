@@ -31,6 +31,19 @@ enum VerificationStatus {
   DITOLAK
 }
 
+/**
+ * Status siklus hidup alat yang disewakan.
+ *
+ * - TERSEDIA   : alat siap disewa dan tampil di katalog penyewa
+ * - DISEWA     : sedang disewa penyewa lain (disembunyikan dari katalog)
+ * - MAINTENANCE: sedang diservis / rawat (disembunyikan dari katalog)
+ */
+enum EquipmentStatus {
+  TERSEDIA
+  DISEWA
+  MAINTENANCE
+}
+
 model User {
   id        String   @id @default(uuid())
   email     String   @unique
@@ -58,16 +71,29 @@ model User {
 
 model Equipment {
   id          String   @id @default(uuid())
+  ownerId     String
   name        String
   category    String
+  description String   @db.Text
   pricePerDay Int
+  deposit     Int
   powerWatt   Int
+  weightKg    Float
+  dimensions  String
+  // Jeda(rawat) yang harus disisihkan setelah alat kembali dari penyewa.
+  maintenanceBufferDays Int    @default(1)
+  location    String
+  // Jarak (km) dari titik acuan penyewa — sementara dipakai untuk badge "Terdekat".
+  distance    Float
+  status      EquipmentStatus @default(TERSEDIA)
+  // Array URL foto alat (JSON array of string).
+  images      Json?
   stock       Int      @default(1)
-  ownerId     String
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
   owner User @relation(fields: [ownerId], references: [id])
 
   @@index([ownerId])
+  @@index([status])
 }

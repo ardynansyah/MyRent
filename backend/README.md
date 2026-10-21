@@ -38,6 +38,8 @@ di `http://localhost:3000/openapi.yaml`. Daftar endpoint tersedia di `GET /`.
 | PATCH | `/api/rentals/:id` | Update sebagian field |
 | DELETE | `/api/rentals/:id` | Hapus unit |
 | GET | `/api/categories` | Kategori + jumlah unit |
+| GET | `/api/equipments` | Katalog alat tersedia (status `TERSEDIA`) + info pemilik — filter `category`, `search`, `ownerId` |
+| GET | `/api/equipments/:id` | Detail satu alat |
 | GET | `/api/stats` | Ringkasan dashboard |
 
 ## Alur verifikasi KYC
@@ -64,10 +66,16 @@ Admin tolak             →  PATCH .../reject    → DITOLAK
 cd backend
 npx prisma migrate dev      # terapkan migrasi (membuat file + menerapkan ke DB)
 npx prisma generate         # regenerate Prisma Client
-npm run seed                # admin default + 2 contoh pengajuan demo
+npm run seed                # akun admin + akun PEMILIK dummy + katalog alat contoh
 ```
 
 Koneksi MySQL diambil dari `DATABASE_URL` (lihat `.env`).
+
+Seeder membuat:
+
+- 2 akun admin (`admin@myrent.com`, `rani.admin@gmail.com`)
+- 1 akun **PEMILIK** dummy (`pemilik@myrent.com` / `Pemilik#Sewa2026`) sebagai pemilik katalog
+- 6 unit alat milik akun tersebut (5 `TERSEDIA` + 1 `DISEWA` sebagai kontrol filter)
 
 ## Struktur
 
@@ -80,13 +88,13 @@ src/
   store/rentals.js      # penyimpanan in-memory (ganti dengan DB di sini)
   lib/                  # konstanta, error, validasi, kyc, submissionCode
   middleware/           # request id, logger, error handler, adminAuth (JWT admin)
-  routes/               # health, auth, admin, rentals, categories, stats
+  routes/               # health, auth, admin, rentals, equipments, categories, stats
 prisma/
-  schema.prisma         # User (+ status verifikasi & kycData), Equipment
-  seed.js               # akun admin + contoh pengajuan
+  schema.prisma         # User (+ status verifikasi & kycData), Equipment (katalog alat)
+  seed.js               # akun admin + akun pemilik + katalog alat contoh
 test/api.test.js        # test kontrak end-to-end
 ```
 
-Catatan: penyimpanan masih in-memory (data kembali ke seed setiap restart).
-Semua akses data lewat `src/store/rentals.js`, sehingga migrasi ke database
-(SQLite/Postgres/Mongo) hanya mengganti file tersebut tanpa mengubah route.
+Catatan: endpoint `/api/rentals` masih memakai penyimpanan in-memory (data kembali
+ke seed setiap restart) lewat `src/store/rentals.js`. Endpoint katalog
+`/api/equipments` sudah memakai MySQL via Prisma.

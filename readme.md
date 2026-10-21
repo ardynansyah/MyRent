@@ -53,6 +53,8 @@ jadi cukup jalankan backend dan frontend berdampingan.
 | PATCH | `/api/rentals/:id` | Update unit |
 | DELETE | `/api/rentals/:id` | Hapus unit |
 | GET | `/api/categories` | Kategori + jumlah unit |
+| GET | `/api/equipments` | Katalog alat tersedia (status `TERSEDIA`) + info pemilik |
+| GET | `/api/equipments/:id` | Detail satu alat |
 | GET | `/api/stats` | Ringkasan dashboard |
 
 ## Alur Registrasi & Verifikasi Admin

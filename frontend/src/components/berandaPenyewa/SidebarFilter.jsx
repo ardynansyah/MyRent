@@ -1,40 +1,65 @@
 import React, { useState } from 'react'
 import { Check } from 'lucide-react'
+import { diffDays } from '../../lib/dateHelpers'
+
+// Opsi batas security deposit. Nilai `null` berarti tanpa batas.
+const DEPOSIT_OPTIONS = [
+  { label: '< 300rb', value: 300000 },
+  { label: '< 1jt', value: 1000000 },
+  { label: 'Semua', value: 'semua' }
+]
+
+const DEFAULT_FILTERS = {
+  dateRange: { start: null, end: null },
+  maxDeposit: 'semua'
+}
 
 export default function SidebarFilter({
-  startDate = '12 Jun 2025',
-  endDate = '15 Jun 2025',
+  // Filter bersama dengan parent (BerandaSewa). `onFiltersChange` harus berupa
+  // setter React (`setFilters`) supaya bisa menerima updater function.
+  filters = DEFAULT_FILTERS,
+  onFiltersChange,
   powerMatch = true,
   onPowerMatchChange,
-  maxPrice = 250000,
+  powerLimit = null,
+  maxPrice = 500000,
   onMaxPriceChange,
-  depositLimit = '< 1jt',
-  onDepositLimitChange,
   deliveryMethods = { selfPickup: true, courier: true },
   onDeliveryMethodChange,
   onReset,
   onApply
 }) {
-  const [internalPowerMatch, setInternalPowerMatch] = useState(powerMatch)
-  const [internalPrice, setInternalPrice] = useState(maxPrice)
-  const [internalDeposit, setInternalDeposit] = useState(depositLimit)
+  // Metode pengiriman belum dipakai untuk menyaring katalog, jadi masih lokal.
   const [internalDelivery, setInternalDelivery] = useState(deliveryMethods)
 
+  const dateRange = filters.dateRange ?? { start: null, end: null }
+  const maxDeposit = filters.maxDeposit ?? 'semua'
+
   const handleTogglePower = () => {
-    const val = !internalPowerMatch
-    setInternalPowerMatch(val)
-    if (onPowerMatchChange) onPowerMatchChange(val)
+    if (onPowerMatchChange) onPowerMatchChange(!powerMatch)
   }
 
   const handlePriceChange = (e) => {
     const val = Number(e.target.value)
-    setInternalPrice(val)
     if (onMaxPriceChange) onMaxPriceChange(val)
   }
 
-  const handleDepositSelect = (opt) => {
-    setInternalDeposit(opt)
-    if (onDepositLimitChange) onDepositLimitChange(opt)
+  const handleDateChange = (key, value) => {
+    if (!onFiltersChange) return
+
+    onFiltersChange((prev) => ({
+      ...prev,
+      dateRange: {
+        ...(prev.dateRange ?? { start: null, end: null }),
+        [key]: value || null
+      }
+    }))
+  }
+
+  const handleDepositSelect = (value) => {
+    if (!onFiltersChange) return
+
+    onFiltersChange((prev) => ({ ...prev, maxDeposit: value }))
   }
 
   const handleDeliveryToggle = (key) => {
@@ -44,16 +69,25 @@ export default function SidebarFilter({
   }
 
   const handleReset = () => {
-    setInternalPowerMatch(true)
-    setInternalPrice(250000)
-    setInternalDeposit('< 1jt')
     setInternalDelivery({ selfPickup: true, courier: true })
+
+    if (onFiltersChange) {
+      onFiltersChange((prev) => ({
+        ...prev,
+        dateRange: { start: null, end: null },
+        maxDeposit: 'semua'
+      }))
+    }
+
     if (onReset) onReset()
   }
 
   const formatRupiah = (val) => {
     return `Rp ${val.toLocaleString('id-ID')}`
   }
+
+  const rangeDays =
+    dateRange.start && dateRange.end ? diffDays(dateRange.start, dateRange.end) + 1 : 0
 
   return (
     <aside className="box-border w-full lg:w-[264px] shrink-0 h-fit flex flex-col gap-4.5 p-5 justify-start items-start bg-white ring-1 ring-slate-200 rounded-[14px]">
@@ -78,26 +112,33 @@ export default function SidebarFilter({
         <div className="text-xs text-slate-600 font-semibold text-left whitespace-nowrap">
           Rentang Tanggal
         </div>
-        <div className="box-border w-full h-fit shrink-0 flex flex-row gap-2 justify-start items-start">
-          <div className="box-border flex-1 h-fit flex flex-col gap-[3px] py-2 px-2.5 justify-start items-start bg-slate-50 ring-1 ring-slate-200 rounded-lg">
+        <div className="box-border w-full h-fit shrink-0 flex flex-col gap-2 justify-start items-start">
+          <div className="box-border w-full h-fit flex flex-col gap-[3px] py-2 px-2.5 justify-start items-start bg-slate-50 ring-1 ring-slate-200 rounded-lg">
             <span className="text-[11px] text-slate-500 font-medium whitespace-nowrap">
               Mulai
             </span>
-            <span className="text-xs text-slate-900 font-semibold tabular-nums whitespace-nowrap">
-              {startDate}
-            </span>
+            <input
+              type="date"
+              value={dateRange.start || ''}
+              onChange={(e) => handleDateChange('start', e.target.value)}
+              className="box-border w-full bg-transparent border-0 p-0 text-xs text-slate-900 font-semibold tabular-nums outline-none cursor-pointer focus:text-blue-600"
+            />
           </div>
-          <div className="box-border flex-1 h-fit flex flex-col gap-[3px] py-2 px-2.5 justify-start items-start bg-slate-50 ring-1 ring-slate-200 rounded-lg">
+          <div className="box-border w-full h-fit flex flex-col gap-[3px] py-2 px-2.5 justify-start items-start bg-slate-50 ring-1 ring-slate-200 rounded-lg">
             <span className="text-[11px] text-slate-500 font-medium whitespace-nowrap">
               Selesai
             </span>
-            <span className="text-xs text-slate-900 font-semibold tabular-nums whitespace-nowrap">
-              {endDate}
-            </span>
+            <input
+              type="date"
+              value={dateRange.end || ''}
+              min={dateRange.start || undefined}
+              onChange={(e) => handleDateChange('end', e.target.value)}
+              className="box-border w-full bg-transparent border-0 p-0 text-xs text-slate-900 font-semibold tabular-nums outline-none cursor-pointer focus:text-blue-600"
+            />
           </div>
         </div>
         <div className="text-[11px] text-slate-500 font-normal tabular-nums text-left whitespace-nowrap">
-          3 hari sewa · 1 hari buffer
+          {rangeDays > 0 ? `${rangeDays} hari sewa · 1 hari buffer` : 'Pilih tanggal mulai & selesai'}
         </div>
       </div>
 
@@ -110,14 +151,18 @@ export default function SidebarFilter({
             Sesuai listrik usaha saya
           </div>
           <div className="text-[11px] leading-[15px] w-full text-slate-500 font-normal text-left tabular-nums">
-            Maks. 1300 W · hanya alat yang aman
+            {powerLimit
+              ? `Maks. ${powerLimit} W · hanya alat yang aman`
+              : 'Daya listrik usaha belum diisi'}
           </div>
         </div>
         <button
           type="button"
           onClick={handleTogglePower}
+          aria-label="Saring alat sesuai daya listrik usaha"
+          aria-pressed={powerMatch}
           className={`box-border w-9 shrink-0 h-5 flex flex-row p-0.5 items-center rounded-full transition-colors cursor-pointer border-0 ${
-            internalPowerMatch ? 'justify-end bg-blue-600' : 'justify-start bg-slate-300'
+            powerMatch ? 'justify-end bg-blue-600' : 'justify-start bg-slate-300'
           }`}
         >
           <div className="box-border w-4 shrink-0 h-4 bg-white rounded-full shadow-xs"></div>
@@ -132,7 +177,7 @@ export default function SidebarFilter({
           Harga harian maksimal
         </div>
         <div className="text-base text-blue-600 font-bold tabular-nums tracking-tight text-left whitespace-nowrap">
-          {formatRupiah(internalPrice)}
+          {formatRupiah(maxPrice)}
         </div>
 
         {/* Slider */}
@@ -142,7 +187,7 @@ export default function SidebarFilter({
             min={50000}
             max={500000}
             step={25000}
-            value={internalPrice}
+            value={maxPrice}
             onChange={handlePriceChange}
             className="w-full accent-blue-600 cursor-pointer h-1 bg-slate-200 rounded-lg appearance-none"
           />
@@ -161,23 +206,29 @@ export default function SidebarFilter({
           Batas security deposit
         </div>
         <div className="box-border w-full h-fit shrink-0 flex flex-row gap-1.5 justify-start items-start">
-          {['< 300rb', '< 1jt', 'Semua'].map((opt) => {
-            const isSelected = internalDeposit === opt
+          {DEPOSIT_OPTIONS.map((opt) => {
+            const isSelected = maxDeposit === opt.value
             return (
               <button
-                key={opt}
+                key={opt.label}
                 type="button"
-                onClick={() => handleDepositSelect(opt)}
+                aria-pressed={isSelected}
+                onClick={() => handleDepositSelect(opt.value)}
                 className={`box-border flex-1 h-fit flex flex-row py-[7px] px-0 justify-center items-start rounded-lg cursor-pointer transition-all border-0 ${
                   isSelected
                     ? 'bg-blue-50 ring-1 ring-blue-600 text-blue-700 font-bold'
                     : 'bg-white ring-1 ring-slate-200 text-slate-600 hover:bg-slate-50 font-medium'
                 }`}
               >
-                <span className="text-[11px] whitespace-nowrap">{opt}</span>
+                <span className="text-[11px] whitespace-nowrap">{opt.label}</span>
               </button>
             )
           })}
+        </div>
+        <div className="text-[11px] text-slate-500 font-normal tabular-nums text-left whitespace-nowrap">
+          {maxDeposit === 'semua'
+            ? 'Tanpa batas deposit'
+            : `Deposit maksimal ${formatRupiah(maxDeposit)}`}
         </div>
       </div>
 
@@ -236,9 +287,9 @@ export default function SidebarFilter({
       <button
         type="button"
         onClick={() => onApply && onApply({
-          powerMatch: internalPowerMatch,
-          maxPrice: internalPrice,
-          depositLimit: internalDeposit,
+          powerMatch,
+          maxPrice,
+          maxDeposit,
           deliveryMethods: internalDelivery
         })}
         className="box-border w-full h-fit shrink-0 flex flex-row gap-2 py-[11px] px-4 justify-center items-center bg-blue-600 hover:bg-blue-700 active:scale-[0.98] transition-all rounded-[10px] cursor-pointer border-0 mt-1 shadow-xs"

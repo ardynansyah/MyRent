@@ -145,12 +145,14 @@ export default function AuthPage({ onLoginSuccess, onNavigateRegister, onBackToL
       const roleLabel = userRole === 'PEMILIK' ? 'Pemilik Alat' : 'Penyewa UMKM'
       handleNotify(`Berhasil masuk! Mengalihkan ke akun ${roleLabel}...`)
 
+      // Role-Based Routing.
+      // Catatan: bila `onLoginSuccess` tersedia, navigasi dilakukan oleh parent
+      // (App.jsx). Navigasi ganda di sini membuat `/dashboard-pemilik` masuk
+      // history stack dua kali, sehingga tombol Back browser masih bisa
+      // kembali ke dashboard SEDAN PADA setelah logout.
       if (onLoginSuccess) {
         onLoginSuccess(data.user)
-      }
-
-      // Role-Based Routing
-      if (userRole === 'PEMILIK') {
+      } else if (userRole === 'PEMILIK') {
         navigate('/dashboard-pemilik')
       } else {
         navigate('/beranda-sewa')

@@ -1,18 +1,46 @@
-import React, { useState } from 'react'
-import { Search, CalendarDays, Wallet } from 'lucide-react'
+import React, { useEffect, useRef, useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
+import { Search, CalendarDays, Wallet, LogOut, ChevronDown } from 'lucide-react'
+import {
+  getSessionUser,
+  getUserInitials,
+  getUserPowerLimit,
+  logoutUser
+} from '../../lib/userSession'
 
 export default function NavbarPenyewa({
   activeTab = 'jelajahi',
   searchQuery = '',
   onSearchChange,
-  userPower = '1300 W',
   dateRange = '12 – 15 Jun',
   walletBalance = 'Rp 1.250.000',
-  userInitials = 'BS',
   onNavigateTab,
   onNavigateHome
 }) {
+  const navigate = useNavigate()
   const [localSearch, setLocalSearch] = useState(searchQuery)
+  const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const menuRef = useRef(null)
+
+  // Data pengguna dibaca dari localStorage (sesi login penyewa).
+  const user = getSessionUser()
+  const userInitials = getUserInitials(user)
+  const powerLimit = getUserPowerLimit(user)
+  const userPower = powerLimit ? `${powerLimit} W` : 'Daya belum diisi'
+
+  // Tutup menu profil saat klik di luar area menu.
+  useEffect(() => {
+    if (!isMenuOpen) return undefined
+
+    const handlePointerDown = (event) => {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setIsMenuOpen(false)
+      }
+    }
+
+    document.addEventListener('mousedown', handlePointerDown)
+    return () => document.removeEventListener('mousedown', handlePointerDown)
+  }, [isMenuOpen])
 
   const handleSearch = (e) => {
     setLocalSearch(e.target.value)
@@ -21,16 +49,20 @@ export default function NavbarPenyewa({
     }
   }
 
+  const handleLogout = () => {
+    setIsMenuOpen(false)
+    logoutUser(navigate)
+  }
+
   return (
     <header className="box-border w-full h-[68px] shrink-0 flex flex-row gap-4 lg:gap-7 px-4 md:px-8 justify-start items-center bg-white border-b border-slate-200 sticky top-0 z-40 transition-all">
       {/* Wordmark Logo */}
-      <button
-        type="button"
-        onClick={onNavigateHome}
-        className="text-lg text-blue-600 font-extrabold tracking-tight text-left whitespace-nowrap cursor-pointer hover:opacity-90 transition-opacity bg-transparent border-0 p-0"
+      <Link
+        to="/beranda-sewa"
+        className="text-lg text-blue-600 font-extrabold tracking-tight text-left whitespace-nowrap cursor-pointer hover:opacity-90 transition-opacity bg-transparent border-0 p-0 no-underline"
       >
         SewaAlat
-      </button>
+      </Link>
 
       {/* NavLinks */}
       <nav className="box-border w-fit shrink-0 h-fit hidden md:flex flex-row gap-2 lg:gap-5 justify-start items-center">
@@ -81,7 +113,10 @@ export default function NavbarPenyewa({
           placeholder="Cari mesin kopi, oven, mesin kemasan…"
           className="text-[13px] text-slate-900 placeholder:text-slate-400 bg-transparent border-0 outline-none w-full font-normal"
         />
-        <div className="box-border w-fit shrink-0 h-fit flex flex-row gap-0 py-[5px] px-2.5 justify-start items-center bg-blue-50 rounded-full select-none">
+        <div
+          title="Kapasitas daya listrik usaha"
+          className="box-border w-fit shrink-0 h-fit flex flex-row gap-0 py-[5px] px-2.5 justify-start items-center bg-blue-50 rounded-full select-none"
+        >
           <span className="text-[11px] text-blue-700 font-semibold tabular-nums whitespace-nowrap">
             {userPower}
           </span>
@@ -112,14 +147,44 @@ export default function NavbarPenyewa({
           </span>
         </div>
 
-        {/* User Avatar */}
-        <div
-          title="Profil Pengguna"
-          className="box-border w-[34px] shrink-0 h-[34px] flex flex-row justify-center items-center bg-blue-600 rounded-full cursor-pointer hover:scale-105 active:scale-95 transition-transform"
-        >
-          <span className="text-[11px] text-white font-bold whitespace-nowrap">
-            {userInitials}
-          </span>
+        {/* User Avatar + Menu Profil */}
+        <div ref={menuRef} className="relative box-border w-fit shrink-0 h-fit flex flex-row justify-start items-center">
+          <button
+            type="button"
+            onClick={() => setIsMenuOpen((open) => !open)}
+            aria-label="Buka menu profil"
+            aria-expanded={isMenuOpen}
+            className="box-border w-[34px] h-[34px] shrink-0 flex flex-row justify-center items-center gap-1 bg-blue-600 rounded-full cursor-pointer hover:scale-105 active:scale-95 transition-transform border-0"
+          >
+            <span className="text-[11px] text-white font-bold whitespace-nowrap">
+              {userInitials}
+            </span>
+          </button>
+
+          {isMenuOpen && (
+            <div className="absolute right-0 top-[42px] z-50 w-[230px] box-border flex flex-col gap-2 p-3 bg-white ring-1 ring-slate-200 rounded-[12px] shadow-lg">
+              <div className="box-border flex flex-col gap-0.5 justify-start items-start">
+                <span className="text-xs text-slate-900 font-bold truncate w-full">
+                  {user?.fullName || user?.name || 'Penyewa UMKM'}
+                </span>
+                <span className="text-[10px] text-slate-500 truncate w-full">
+                  {user?.email || '-'}
+                </span>
+              </div>
+
+              <div className="box-border w-full h-px bg-slate-200"></div>
+
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="box-border w-full flex flex-row gap-2 py-2 px-2 justify-start items-center bg-transparent hover:bg-red-50 text-red-600 font-semibold text-xs rounded-lg cursor-pointer border-0 transition-colors"
+              >
+                <LogOut className="w-3.5 h-3.5" />
+                <span>Keluar</span>
+                <ChevronDown className="w-3 h-3 ml-auto rotate-[-90deg]" />
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </header>

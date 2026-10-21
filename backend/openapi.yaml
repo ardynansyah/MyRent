@@ -24,6 +24,8 @@ tags:
     description: Portal verifikasi admin (butuh JWT admin)
   - name: Rentals
     description: CRUD unit rental
+  - name: Equipments
+    description: Katalog alat yang disewakan ke penyewa UMKM
   - name: Categories
     description: Kategori unit
   - name: Stats
@@ -288,6 +290,92 @@ paths:
           $ref: '#/components/responses/InvalidId'
         '404':
           $ref: '#/components/responses/RentalNotFound'
+
+  /api/equipments:
+    get:
+      tags: [Equipments]
+      summary: Daftar alat yang tersedia disewa
+      description: |
+        Mengembalikan seluruh alat berstatus `TERSEDIA` beserta informasi pemiliknya.
+
+        Hanya alat berstatus `TERSEDIA` yang dikembalikan — alat `DISEWA` atau `MAINTENANCE`
+        disembunyikan dari katalog. Detail satu alat tetap bisa diakses lewat
+        `GET /api/equipments/{id}`.
+
+        Daftar diurutkan dari jarak terdekat.
+      operationId: listEquipments
+      parameters:
+        - name: category
+          in: query
+          description: Filter kategori alat
+          schema:
+            type: string
+          example: Mesin Kopi
+        - name: search
+          in: query
+          description: Pencarian pada nama, kategori, dan deskripsi
+          schema:
+            type: string
+          example: espresso
+        - name: ownerId
+          in: query
+          description: Filter berdasarkan pemilik alat
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Daftar alat tersedia
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Equipment'
+              example:
+                data:
+                  - id: a1000000-0000-4000-8000-000000000001
+                    name: Espresso Machine La Marzocco GS3
+                    category: Mesin Kopi
+                    pricePerDay: 150000
+                    deposit: 500000
+                    powerWatt: 1300
+                    status: TERSEDIA
+                    images:
+                      - https://images.unsplash.com/photo-1517668808822-9ebb02f2a0e6
+
+  /api/equipments/{id}:
+    get:
+      tags: [Equipments]
+      summary: Detail satu alat
+      operationId: getEquipment
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: UUID alat
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Detail alat
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Equipment'
+        '404':
+          description: Alat tidak ditemukan
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 
   /api/categories:
     get:
@@ -1216,6 +1304,105 @@ components:
           type: integer
           minimum: 0
           example: 3
+
+    Equipment:
+      type: object
+      required:
+        - id
+        - name
+        - category
+        - description
+        - pricePerDay
+        - deposit
+        - powerWatt
+        - weightKg
+        - dimensions
+        - maintenanceBufferDays
+        - location
+        - distance
+        - status
+        - images
+      properties:
+        id:
+          type: string
+          description: UUID alat
+          example: a1000000-0000-4000-8000-000000000001
+        name:
+          type: string
+          example: Espresso Machine La Marzocco GS3
+        category:
+          type: string
+          example: Mesin Kopi
+        description:
+          type: string
+          description: Keterangan lengkap alat
+        pricePerDay:
+          type: integer
+          description: Tarif sewa harian dalam Rupiah
+          example: 150000
+        deposit:
+          type: integer
+          description: Security deposit dalam Rupiah
+          example: 500000
+        powerWatt:
+          type: integer
+          description: Kebutuhan daya listrik alat dalam Watt
+          example: 1300
+        weightKg:
+          type: number
+          description: Berat alat dalam kilogram
+          example: 45
+        dimensions:
+          type: string
+          example: 58 × 49 × 41 cm
+        maintenanceBufferDays:
+          type: integer
+          description: Jeda(rawat) setelah alat dikembalikan
+          example: 1
+        location:
+          type: string
+          example: Kec. Cilandak, Jakarta Selatan
+        distance:
+          type: number
+          description: Jarak (km) dari titik acuan penyewa
+          example: 2.4
+        status:
+          type: string
+          enum: [TERSEDIA, DISEWA, MAINTENANCE]
+          example: TERSEDIA
+        images:
+          type: array
+          items:
+            type: string
+          description: URL foto alat
+        stock:
+          type: integer
+          example: 1
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        owner:
+          type: object
+          nullable: true
+          description: Pemilik alat (disertakan pada response)
+          properties:
+            id:
+              type: string
+            fullName:
+              type: string
+            email:
+              type: string
+            phone:
+              type: string
+            role:
+              type: string
+              enum: [PENYEWA, PEMILIK, ADMIN]
+            verificationStatus:
+              type: string
+              enum: [MENUNGGU, PERLU_PERBAIKAN, DISETUJUI, DITOLAK]
 
     Stats:
       type: object
