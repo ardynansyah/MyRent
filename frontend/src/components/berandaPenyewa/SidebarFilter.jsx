@@ -101,24 +101,21 @@ export default function SidebarFilter({
     const d = String(day).padStart(2, '0')
     const clickedStr = `${viewDate.year}-${m}-${d}`
 
-    // 1. Belum ada tanggal terpilih ATAU sudah lengkap start & end -> set start baru
+    // 1. Belum ada tanggal terpilih ATAU sudah lengkap start & end -> set start baru (klik pertama)
     if (!dateRange.start || (dateRange.start && dateRange.end)) {
       handleRangeChange(clickedStr, null)
       return
     }
 
-    // 2. Klik ulang tanggal yang sama -> batalkan
-    if (clickedStr === dateRange.start) {
-      handleRangeChange(null, null)
-      return
-    }
-
-    // 3. Sudah ada start, sekarang tentukan rentang
+    // 2. Klik kedua: jika sebelum start, tukar; jika sama atau sesudah, jadikan end
     if (clickedStr < dateRange.start) {
       handleRangeChange(clickedStr, dateRange.start)
     } else {
       handleRangeChange(dateRange.start, clickedStr)
     }
+
+    // Otomatis menutup popover saat tanggal kedua (End) sudah dipilih
+    setIsCalendarOpen(false)
   }
 
   const totalDays = daysInMonth(viewDate.year, viewDate.month)
@@ -215,10 +212,10 @@ export default function SidebarFilter({
                 </span>
                 <span className="text-xs font-bold text-slate-800 truncate">
                   {dateRange.start && dateRange.end
-                    ? `${formatShortDate(dateRange.start)} – ${formatShortDate(dateRange.end)}`
+                    ? `${formatShortDate(dateRange.start)} - ${formatShortDate(dateRange.end)}`
                     : dateRange.start
                     ? `${formatShortDate(dateRange.start)} (Pilih selesai)`
-                    : 'Pilih tanggal sewa'}
+                    : 'Pilih rentang tanggal'}
                 </span>
               </div>
             </div>
