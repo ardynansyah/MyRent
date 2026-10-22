@@ -13,10 +13,11 @@ const DEFAULT_CATEGORIES = [
 export default function ChipKategori({
   categories = DEFAULT_CATEGORIES,
   selectedCategory = 'Sesuai Listrik Saya (1300W)',
-  onSelectCategory
+  onSelectCategory,
+  className = ''
 }) {
   return (
-    <div className="box-border w-full h-[58px] shrink-0 flex flex-row gap-2.5 px-4 md:px-8 justify-start items-center bg-white border-b border-slate-200 overflow-x-auto scrollbar-none">
+    <div className={`box-border flex flex-row gap-2 items-center overflow-x-auto scrollbar-none py-1 ${className}`}>
       {categories.map((cat) => {
         const isSelected = selectedCategory === cat
         return (
@@ -24,9 +25,9 @@ export default function ChipKategori({
             key={cat}
             type="button"
             onClick={() => onSelectCategory && onSelectCategory(cat)}
-            className={`box-border w-fit shrink-0 h-fit flex flex-row gap-0 py-[7px] px-3.5 justify-start items-center rounded-full transition-all cursor-pointer border-0 select-none ${
+            className={`box-border w-fit shrink-0 h-fit flex flex-row gap-0 py-1.5 px-3.5 justify-start items-center rounded-full transition-all cursor-pointer border-0 select-none ${
               isSelected
-                ? 'bg-blue-600 text-white shadow-2xs font-medium'
+                ? 'bg-primary text-primary-foreground shadow-xs font-semibold'
                 : 'bg-white ring-1 ring-slate-200 text-slate-600 hover:bg-slate-50 font-medium'
             }`}
           >

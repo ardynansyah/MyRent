@@ -208,14 +208,7 @@ export default function BerandaSewa({
         onNavigateHome={onNavigateHome}
       />
 
-      {/* 2. Chip Filter Bar */}
-      <ChipKategori
-        categories={categories}
-        selectedCategory={selectedCategory}
-        onSelectCategory={setSelectedCategory}
-      />
-
-      {/* 3. Main Content: Sidebar + Product Grid */}
+      {/* 2. Main Content: Sidebar + Product Grid */}
       <main className="box-border w-full max-w-[1440px] mx-auto h-fit flex flex-col lg:flex-row gap-6 py-7 px-4 md:px-8 pb-10 justify-start items-start">
         {/* Left: Filter Sidebar */}
         <SidebarFilter
@@ -235,27 +228,37 @@ export default function BerandaSewa({
         />
 
         {/* Right: Catalog Grid Area */}
-        <section className="box-border flex-1 w-full h-fit flex flex-col gap-5 justify-start items-start">
-          {/* Grid Header */}
-          <div className="box-border w-full h-fit shrink-0 flex flex-row gap-2 justify-between items-center">
-            <div className="box-border w-fit shrink-0 h-fit flex flex-col gap-[3px] justify-start items-start">
-              <h1 className="text-[17px] text-slate-900 font-bold text-left whitespace-nowrap m-0">
-                Alat tersedia untuk <span className="tabular-nums">{dateRangeLabel}</span>
-              </h1>
-              <div className="text-xs text-slate-600 font-normal text-left whitespace-nowrap tabular-nums">
-                {loading ? 'Memuat katalog…' : `${sortedProducts.length} alat · `}
-                {powerMatch && powerLimit ? `semua sesuai daya ${powerLimit} W` : 'semua kapasitas daya'}
-              </div>
+        <section className="box-border flex-1 w-full min-w-0 h-fit flex flex-col gap-4 justify-start items-start">
+          {/* Header Info */}
+          <div className="box-border w-full h-fit flex flex-col gap-[3px] justify-start items-start">
+            <h1 className="text-[17px] text-slate-900 font-bold text-left whitespace-nowrap m-0">
+              Alat tersedia untuk <span className="tabular-nums">{dateRangeLabel}</span>
+            </h1>
+            <div className="text-xs text-slate-600 font-normal text-left whitespace-nowrap tabular-nums">
+              {loading ? 'Memuat katalog…' : `${sortedProducts.length} alat · `}
+              {powerMatch && powerLimit ? `semua sesuai daya ${powerLimit} W` : 'semua kapasitas daya'}
+            </div>
+          </div>
+
+          {/* Kontainer Pembungkus: Chip Kategori (Kiri) & Dropdown Urutkan (Kanan) */}
+          <div className="flex items-center justify-between w-full mb-4 gap-4">
+            {/* Sisi Kiri: Chip Kategori */}
+            <div className="flex-1 min-w-0 overflow-x-auto scrollbar-none">
+              <ChipKategori
+                categories={categories}
+                selectedCategory={selectedCategory}
+                onSelectCategory={setSelectedCategory}
+              />
             </div>
 
-            {/* Sort Dropdown */}
+            {/* Sisi Kanan: Sort Dropdown */}
             <div ref={sortRef} className="relative box-border w-fit shrink-0 h-fit">
               <button
                 type="button"
                 onClick={() => setSortOpen((open) => !open)}
                 aria-haspopup="listbox"
                 aria-expanded={sortOpen}
-                className="box-border w-fit shrink-0 h-fit flex flex-row gap-2 py-2 px-3 justify-start items-center bg-white ring-1 ring-slate-200 rounded-lg cursor-pointer hover:bg-slate-50 transition-colors"
+                className="box-border w-fit shrink-0 h-fit flex flex-row gap-2 py-2 px-3 justify-start items-center bg-white ring-1 ring-slate-200 rounded-lg cursor-pointer hover:bg-slate-50 transition-colors shadow-2xs"
               >
                 <span className="text-xs text-slate-900 font-semibold whitespace-nowrap">
                   Urutkan: {activeSortLabel}
