@@ -1,7 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { Check, ChevronDown, Loader2, TriangleAlert } from 'lucide-react'
 import NavbarPenyewa from '../common/NavbarPenyewa'
-import ChipKategori from './ChipKategori'
 import SidebarFilter from './SidebarFilter'
 import ProductCard from './ProductCard'
 import { listEquipments } from '../../lib/equipmentsApi'
@@ -36,10 +35,13 @@ export default function BerandaSewa({
   const [maxPrice, setMaxPrice] = useState(500000)
   const [powerMatch, setPowerMatch] = useState(true)
 
-  // ── Urutkan (dropdown) ──────────────────────────────────────────────────
+  // ── Urutkan & Kategori (dropdown) ───────────────────────────────────────
   const [sortBy, setSortBy] = useState('terdekat')
   const [sortOpen, setSortOpen] = useState(false)
   const sortRef = useRef(null)
+
+  const [categoryOpen, setCategoryOpen] = useState(false)
+  const categoryRef = useRef(null)
 
   // ── Filter sidebar ──────────────────────────────────────────────────────
   const [filters, setFilters] = useState(createInitialFilters)
@@ -51,18 +53,24 @@ export default function BerandaSewa({
 
   const [selectedCategory, setSelectedCategory] = useState(powerMatchLabel)
 
-  // Tutup dropdown "Urutkan" saat klik di luar atau tekan Escape.
+  // Tutup dropdown Urutkan / Kategori saat klik di luar atau tekan Escape.
   useEffect(() => {
-    if (!sortOpen) return undefined
+    if (!sortOpen && !categoryOpen) return undefined
 
     const handlePointerDown = (event) => {
-      if (sortRef.current && !sortRef.current.contains(event.target)) {
+      if (sortOpen && sortRef.current && !sortRef.current.contains(event.target)) {
         setSortOpen(false)
+      }
+      if (categoryOpen && categoryRef.current && !categoryRef.current.contains(event.target)) {
+        setCategoryOpen(false)
       }
     }
 
     const handleKeyDown = (event) => {
-      if (event.key === 'Escape') setSortOpen(false)
+      if (event.key === 'Escape') {
+        setSortOpen(false)
+        setCategoryOpen(false)
+      }
     }
 
     document.addEventListener('mousedown', handlePointerDown)
@@ -71,7 +79,7 @@ export default function BerandaSewa({
       document.removeEventListener('mousedown', handlePointerDown)
       document.removeEventListener('keydown', handleKeyDown)
     }
-  }, [sortOpen])
+  }, [sortOpen, categoryOpen])
 
   // ── Ambil katalog alat dari backend ─────────────────────────────────────
   useEffect(() => {
@@ -240,15 +248,60 @@ export default function BerandaSewa({
             </div>
           </div>
 
-          {/* Kontainer Pembungkus: Chip Kategori (Kiri) & Dropdown Urutkan (Kanan) */}
+          {/* Kontainer Pembungkus: Dropdown Kategori (Kiri) & Dropdown Urutkan (Kanan) */}
           <div className="flex items-center justify-between w-full mb-4 gap-4">
-            {/* Sisi Kiri: Chip Kategori */}
-            <div className="flex-1 min-w-0 overflow-x-auto scrollbar-none">
-              <ChipKategori
-                categories={categories}
-                selectedCategory={selectedCategory}
-                onSelectCategory={setSelectedCategory}
-              />
+            {/* Sisi Kiri: Dropdown Kategori */}
+            <div ref={categoryRef} className="relative box-border w-fit shrink-0 h-fit">
+              <button
+                type="button"
+                onClick={() => setCategoryOpen((open) => !open)}
+                aria-haspopup="listbox"
+                aria-expanded={categoryOpen}
+                className="box-border w-fit shrink-0 h-fit flex flex-row gap-2 py-2 px-3 justify-start items-center bg-white ring-1 ring-slate-200 rounded-lg cursor-pointer hover:bg-slate-50 transition-colors shadow-2xs"
+              >
+                <span className="text-xs text-slate-900 font-semibold whitespace-nowrap">
+                  Kategori: {selectedCategory}
+                </span>
+                <ChevronDown
+                  className={`w-3.5 h-3.5 text-slate-400 transition-transform ${
+                    categoryOpen ? 'rotate-180' : ''
+                  }`}
+                />
+              </button>
+
+              {categoryOpen && (
+                <ul
+                  role="listbox"
+                  aria-label="Filter kategori"
+                  className="absolute left-0 top-[calc(100%+6px)] z-50 min-w-[220px] max-h-[320px] overflow-y-auto box-border flex flex-col gap-0.5 p-1.5 bg-white ring-1 ring-slate-200 rounded-[10px] shadow-lg shadow-slate-900/10"
+                >
+                  {categories.map((cat) => {
+                    const isSelected = selectedCategory === cat
+
+                    return (
+                      <li key={cat}>
+                        <button
+                          type="button"
+                          role="option"
+                          aria-selected={isSelected}
+                          onClick={() => {
+                            setSelectedCategory(cat)
+                            setCategoryOpen(false)
+                          }}
+                          className={`box-border w-full flex flex-row gap-2 py-2 px-2.5 justify-between items-center rounded-lg cursor-pointer border-0 transition-colors ${
+                            isSelected
+                              ? 'bg-blue-50 text-blue-700 font-bold'
+                              : 'bg-white text-slate-600 hover:bg-slate-50 font-medium'
+                          }`}
+                        >
+                          <span className="text-xs whitespace-nowrap">{cat}</span>
+                          {isSelected && <Check className="w-3.5 h-3.5 shrink-0" />}
+                        </button>
+                      </li>
+                    )
+                  })}
+                </ul>
+              )}
             </div>
 
             {/* Sisi Kanan: Sort Dropdown */}
