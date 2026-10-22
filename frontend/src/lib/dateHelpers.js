@@ -131,3 +131,14 @@ export function formatMonthYear(date) {
 
   return `${MONTH_NAMES[date.getMonth()]} ${date.getFullYear()}`
 }
+
+/**
+ * Jumlah hari dalam satu bulan.
+ *
+ * @param {number} year
+ * @param {number} month (0-indexed, 0 = Januari)
+ * @returns {number}
+ */
+export function daysInMonth(year, month) {
+  return new Date(year, month + 1, 0).getDate()
+}
