@@ -1,5 +1,4 @@
 import React from 'react'
-import { MapPin } from 'lucide-react'
 import { formatRupiah } from '../../lib/equipmentsApi'
 import fallbackImage from '../../assets/beranda/item_1.jpg'
 
@@ -10,10 +9,7 @@ const STATUS_LABEL = {
 }
 
 /**
- * Kartu alat pada katalog beranda penyewa.
- *
- * Seluruh props berasal dari baris tabel `Equipment` (lihat API
- * `GET /api/equipments`) — tidak ada data dummy statis di sini.
+ * Kartu alat pada katalog beranda penyewa bergaya e-commerce modern & minimalis.
  */
 export default function ProductCard({
   id,
@@ -40,93 +36,82 @@ export default function ProductCard({
   }
 
   const image = images?.[0] || fallbackImage
-  const meta = `${powerWatt} Watt · Min. ${maintenanceBufferDays} Hari`
   const statusLabel = STATUS_LABEL[status] || status
+
+  // Gabungan info spesifikasi: Kategori • Daya Listrik • Min Sewa
+  const specs = [
+    category,
+    powerWatt ? `${powerWatt} Watt` : null,
+    maintenanceBufferDays ? `Min. ${maintenanceBufferDays} Hari` : null
+  ]
+    .filter(Boolean)
+    .join(' • ')
 
   return (
     <div
       onClick={handleCardClick}
-      className="group box-border flex-1 min-w-[260px] max-w-full sm:max-w-[340px] h-fit flex flex-col gap-0 justify-start items-start bg-white ring-1 ring-slate-200 rounded-[14px] overflow-hidden hover:ring-blue-600/40 hover:shadow-md transition-all cursor-pointer"
+      className="group bg-card text-card-foreground rounded-2xl border border-border/60 p-3.5 shadow-xs hover:shadow-md transition-all duration-200 flex flex-col justify-between cursor-pointer w-full"
     >
-      {/* Photo with Badges */}
-      <div className="box-border w-full h-[168px] shrink-0 relative bg-slate-100 overflow-hidden">
-        {image ? (
-          <img
-            src={image}
-            alt={name}
-            onError={(e) => {
-              e.currentTarget.src = fallbackImage
-            }}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-          />
-        ) : (
-          <div className="w-full h-full bg-slate-200 flex items-center justify-center text-slate-400 text-xs">
-            Foto Alat
-          </div>
-        )}
+      {/* Gambar Produk: rounded di semua sudut di dalam padding kartu */}
+      <div className="relative w-full h-48 bg-muted rounded-xl overflow-hidden shrink-0">
+        <img
+          src={image}
+          alt={name}
+          onError={(e) => {
+            e.currentTarget.src = fallbackImage
+          }}
+          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+        />
 
-        {/* Status Badge */}
-        <div className="box-border w-fit h-fit absolute left-3 top-3 flex flex-row gap-0 py-[5px] px-2.5 justify-start items-start bg-white rounded-full shadow-2xs z-10">
-          <span className="text-[11px] text-green-700 font-bold whitespace-nowrap">
+        {status && (
+          <span className="absolute top-2.5 left-2.5 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-white/95 backdrop-blur-xs text-slate-700 shadow-xs">
             {statusLabel}
           </span>
-        </div>
-
-        {/* Category Badge */}
-        {category && (
-          <div className="box-border w-fit h-fit absolute right-3 top-3 flex flex-row gap-0 py-[5px] px-2.5 justify-start items-start bg-white/95 backdrop-blur rounded-full shadow-2xs z-10">
-            <span className="text-[11px] text-blue-700 font-semibold whitespace-nowrap">
-              {category}
-            </span>
-          </div>
         )}
 
-        {/* Distance Badge */}
-        <div className="box-border w-fit h-fit absolute left-3 top-[130px] flex flex-row gap-[5px] py-1 px-[9px] justify-start items-center bg-white/95 backdrop-blur rounded-full shadow-2xs z-10">
-          <MapPin className="w-[11px] h-[11px] text-slate-600" />
-          <span className="text-[11px] text-slate-600 font-semibold tabular-nums whitespace-nowrap">
+        {distance > 0 && (
+          <span className="absolute top-2.5 right-2.5 px-2.5 py-1 rounded-full text-[11px] font-medium bg-white/95 backdrop-blur-xs text-slate-600 shadow-xs tabular-nums">
             {Number(distance).toLocaleString('id-ID')} km
           </span>
-        </div>
+        )}
       </div>
 
-      {/* Card Content */}
-      <div className="box-border w-full h-fit shrink-0 flex flex-col gap-[9px] p-4 justify-start items-start">
-        {/* Meta (Watt & Min Rent) */}
-        <div className="text-xs text-blue-600 font-semibold tabular-nums text-left whitespace-nowrap">
-          {meta}
-        </div>
+      {/* Konten Kartu */}
+      <div className="pt-3.5 px-1 pb-1 flex flex-col flex-1 justify-between gap-3.5">
+        <div className="flex flex-col gap-1">
+          {/* Judul Nama Alat */}
+          <h3 className="text-lg font-bold text-foreground line-clamp-1 group-hover:text-primary transition-colors m-0">
+            {name}
+          </h3>
 
-        {/* Name */}
-        <h3 className="text-sm leading-5 w-full text-slate-900 font-bold text-left line-clamp-2 min-h-10 m-0 group-hover:text-blue-600 transition-colors">
-          {name}
-        </h3>
+          {/* Spesifikasi (Subteks) */}
+          <p className="text-sm text-muted-foreground truncate m-0">
+            {specs}
+          </p>
 
-        {/* Price Row */}
-        <div className="box-border w-full h-fit shrink-0 flex flex-row gap-[5px] justify-start items-end">
-          <div className="text-lg text-slate-900 font-extrabold tracking-tight tabular-nums text-left whitespace-nowrap">
-            {formatRupiah(pricePerDay)}
+          {/* Harga */}
+          <div className="mt-1.5">
+            <div className="flex items-baseline gap-1">
+              <span className="text-xl font-extrabold text-foreground tracking-tight tabular-nums">
+                {formatRupiah(pricePerDay)}
+              </span>
+              <span className="text-xs text-muted-foreground font-normal">/hari</span>
+            </div>
+            {deposit > 0 && (
+              <span className="text-[11px] text-muted-foreground/80 block mt-0.5 tabular-nums">
+                Deposit: {formatRupiah(deposit)} (100% kembali)
+              </span>
+            )}
           </div>
-          <div className="text-xs text-slate-500 font-normal text-left whitespace-nowrap pb-0.5">
-            /hari
-          </div>
         </div>
 
-        {/* Deposit Info */}
-        <div className="text-[11px] text-slate-500 font-medium tabular-nums text-left whitespace-nowrap">
-          Deposit: {formatRupiah(deposit)} (100% kembali)
-        </div>
-
-        {/* Divider */}
-        <div className="box-border w-full h-px shrink-0 bg-slate-200 my-1"></div>
-
-        {/* Action Button: Pilih Tanggal Sewa */}
+        {/* Tombol Sewa */}
         <button
           type="button"
           onClick={handleButtonClick}
-          className="box-border w-full h-fit shrink-0 flex flex-row gap-2 py-2.5 px-4 justify-center items-center bg-blue-50 hover:bg-blue-600 text-blue-700 hover:text-white rounded-[10px] transition-all cursor-pointer border-0 font-semibold text-[13px] whitespace-nowrap"
+          className="w-full bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg py-2.5 font-semibold text-sm transition-colors cursor-pointer border-0 shadow-xs active:scale-[0.99] mt-1"
         >
-          Pilih Tanggal Sewa
+          Sewa
         </button>
       </div>
     </div>
