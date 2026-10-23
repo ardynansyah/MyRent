@@ -53,11 +53,29 @@ ordersRouter.get('/', async (req, res, next) => {
         equipment: {
           include: { owner: { select: { id: true, fullName: true, email: true, phone: true, kycData: true } } }
         }
-      },
-      orderBy: { createdAt: 'desc' }
+      }
     })
 
-    return res.json({ data: orders })
+    // Sort di level aplikasi (JavaScript) agar aman dari batas sort_buffer_size MySQL saat ada field JSON besar
+    orders.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+
+    // Jangan kirim base64 photos raksasa di daftar ringkasan pesanan (hemat bandwidth & memory)
+    const sanitized = orders.map((o) => {
+      if (o.returnData && typeof o.returnData === 'object' && o.returnData.photos) {
+        const { photos, ...restReturnData } = o.returnData
+        return {
+          ...o,
+          returnData: {
+            ...restReturnData,
+            hasPhotos: true,
+            photoCount: Object.values(photos || {}).filter(Boolean).length
+          }
+        }
+      }
+      return o
+    })
+
+    return res.json({ data: sanitized })
   } catch (error) {
     next(error)
   }

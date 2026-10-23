@@ -103,7 +103,7 @@ export default function Step4RefundDeposit({ order, returnData }) {
               <div className="space-y-0.5">
                 <div className="flex items-center gap-2">
                   <h3 className="text-xs sm:text-sm font-bold text-slate-900 m-0">
-                    Inspeksi Fisik oleh Pemilik Alat
+                    Konfirmasi Penerimaan &amp; Inspeksi Fisik Pemilik
                   </h3>
                   <span
                     className={`text-[10px] font-semibold px-2 py-0.5 rounded-md ${
@@ -112,12 +112,18 @@ export default function Step4RefundDeposit({ order, returnData }) {
                         : 'bg-amber-50 text-amber-700 ring-1 ring-amber-200'
                     }`}
                   >
-                    {order.status === 'SELESAI' ? 'Disetujui' : 'Sedang Berlangsung'}
+                    {order.status === 'SELESAI' ? 'Inspeksi Disetujui' : 'Menunggu Unit Tiba & Diperiksa'}
                   </span>
                 </div>
-                <p className="text-xs text-slate-500 m-0">
-                  Pemilik alat ({order.equipment?.owner?.fullName || 'Mitra Pemilik'}) memiliki waktu maksimal 2×24 jam kerja untuk memeriksa kelengkapan &amp; fungsi mesin sesuai checklist BAST.
+                <p className="text-xs text-slate-500 m-0 leading-relaxed">
+                  Timer inspeksi fisik 2×24 jam aktif otomatis saat unit terkonfirmasi sampai di gudang pemilik ({order.equipment?.owner?.fullName || 'Mitra Pemilik'}).
                 </p>
+                <div className="p-2.5 bg-blue-50/70 border border-blue-200/80 rounded-xl text-[11px] text-blue-900 mt-1 flex items-start gap-2">
+                  <ShieldCheck className="w-3.5 h-3.5 text-blue-600 shrink-0 mt-0.5" />
+                  <span>
+                    <strong>Proteksi SLA Escrow:</strong> Bila serah terima telah selesai dan pemilik tidak melakukan konfirmasi dalam batas waktu wajar, sistem MyRent akan melakukan verifikasi otomatis (Auto-Confirm) demi melindungi dana penyewa.
+                  </span>
+                </div>
               </div>
             </div>
 

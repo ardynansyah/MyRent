@@ -190,7 +190,8 @@ export default function KembalikanAlatWizard() {
     }
     if (step === 2) {
       if (!agreementChecked) return true
-      if (returnData.checklist?.adaKendala && !returnData.conditionNotes?.trim()) {
+      const hasIssue = returnData.checklist?.fungsiNormal === false || returnData.checklist?.adaKendala === true
+      if (hasIssue && !returnData.conditionNotes?.trim()) {
         return true
       }
       return false

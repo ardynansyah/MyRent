@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { Search, CalendarDays, Wallet, LogOut, ChevronDown } from 'lucide-react'
+import { Search, CalendarDays, Wallet, LogOut, ChevronDown, ChevronRight, MessageSquare } from 'lucide-react'
+import ModalDompet from '../pesananSaya/ModalDompet'
 import {
   getSessionUser,
   getUserInitials,
@@ -20,6 +21,7 @@ export default function NavbarPenyewa({
   const navigate = useNavigate()
   const [localSearch, setLocalSearch] = useState(searchQuery)
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [isWalletModalOpen, setIsWalletModalOpen] = useState(false)
   const menuRef = useRef(null)
 
   // Data pengguna dibaca dari localStorage (sesi login penyewa).
@@ -99,16 +101,17 @@ export default function NavbarPenyewa({
         <button
           type="button"
           onClick={() => {
-            if (onNavigateTab) onNavigateTab('dompet')
+            if (onNavigateTab) onNavigateTab('pesan')
             else navigate('/pesanan-saya')
           }}
-          className={`box-border w-fit shrink-0 h-fit flex flex-col gap-1.5 py-[7px] px-3 justify-start items-center rounded-lg cursor-pointer transition-all border-0 ${
-            activeTab === 'dompet'
+          className={`box-border w-fit shrink-0 h-fit flex flex-row gap-1.5 py-[7px] px-3 justify-start items-center rounded-lg cursor-pointer transition-all border-0 ${
+            activeTab === 'pesan'
               ? 'bg-blue-50 text-blue-700 font-bold'
               : 'bg-transparent text-slate-600 hover:bg-slate-50 font-medium'
           }`}
         >
-          <span className="text-[13px] whitespace-nowrap">Dompet</span>
+          <MessageSquare className="w-3.5 h-3.5" />
+          <span className="text-[13px] whitespace-nowrap">Pesan</span>
         </button>
       </nav>
 
@@ -145,34 +148,29 @@ export default function NavbarPenyewa({
           </span>
         </div>
 
-        {/* Wallet Balance */}
-        <div
-          title="Saldo Dompet MyRent"
-          className="box-border w-fit shrink-0 h-fit flex flex-row gap-2 py-[9px] px-3 justify-start items-center bg-blue-50 rounded-[10px] cursor-pointer hover:bg-blue-100/70 transition-colors"
-        >
-          <Wallet className="w-[15px] h-[15px] text-blue-700" />
-          <span className="text-xs text-blue-700 font-bold tabular-nums whitespace-nowrap">
-            {walletBalance}
-          </span>
-        </div>
-
-        {/* User Avatar + Menu Profil */}
+        {/* User Profile Button with Integrated Wallet Indicator */}
         <div ref={menuRef} className="relative box-border w-fit shrink-0 h-fit flex flex-row justify-start items-center">
           <button
             type="button"
             onClick={() => setIsMenuOpen((open) => !open)}
-            aria-label="Buka menu profil"
+            aria-label="Buka menu profil dan dompet"
             aria-expanded={isMenuOpen}
-            className="box-border w-[34px] h-[34px] shrink-0 flex flex-row justify-center items-center gap-1 bg-blue-600 rounded-full cursor-pointer hover:scale-105 active:scale-95 transition-transform border-0"
+            className="box-border flex flex-row items-center gap-2 py-1 px-1.5 sm:px-2 rounded-full bg-slate-100/90 hover:bg-slate-200/80 ring-1 ring-slate-200/90 cursor-pointer transition-all border-0 select-none shadow-2xs"
           >
-            <span className="text-[11px] text-white font-bold whitespace-nowrap">
+            <div className="w-[30px] h-[30px] rounded-full bg-blue-600 text-white font-extrabold flex items-center justify-center text-[11px] shadow-2xs">
               {userInitials}
-            </span>
+            </div>
+            <div className="hidden sm:flex flex-col text-left leading-none pr-1">
+              <span className="text-[9px] text-slate-500 font-bold uppercase tracking-wider">Dompet</span>
+              <span className="text-xs text-blue-700 font-extrabold tabular-nums mt-0.5">{walletBalance}</span>
+            </div>
+            <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
           </button>
 
           {isMenuOpen && (
-            <div className="absolute right-0 top-[42px] z-50 w-[230px] box-border flex flex-col gap-2 p-3 bg-white ring-1 ring-slate-200 rounded-[12px] shadow-lg">
-              <div className="box-border flex flex-col gap-0.5 justify-start items-start">
+            <div className="absolute right-0 top-[46px] z-50 w-[260px] box-border flex flex-col gap-2 p-3 bg-white ring-1 ring-slate-200 rounded-[14px] shadow-xl animate-in fade-in zoom-in-95 duration-100">
+              {/* User Info Header */}
+              <div className="box-border flex flex-col gap-0.5 p-1 justify-start items-start">
                 <span className="text-xs text-slate-900 font-bold truncate w-full">
                   {user?.fullName || user?.name || 'Penyewa UMKM'}
                 </span>
@@ -181,21 +179,50 @@ export default function NavbarPenyewa({
                 </span>
               </div>
 
-              <div className="box-border w-full h-px bg-slate-200"></div>
+              <div className="box-border w-full h-px bg-slate-100"></div>
 
+              {/* Dompet Card Trigger */}
+              <button
+                type="button"
+                onClick={() => {
+                  setIsMenuOpen(false)
+                  setIsWalletModalOpen(true)
+                }}
+                className="w-full flex items-center justify-between p-2.5 bg-gradient-to-r from-blue-50 to-indigo-50/70 hover:from-blue-100/80 hover:to-indigo-100/80 text-slate-900 rounded-xl transition-all border border-blue-100 cursor-pointer text-left shadow-2xs"
+              >
+                <div className="flex items-center gap-2.5">
+                  <div className="w-7 h-7 rounded-lg bg-blue-600 text-white flex items-center justify-center shadow-2xs shrink-0">
+                    <Wallet className="w-3.5 h-3.5" />
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-xs font-bold text-slate-900 leading-tight">Dompet &amp; Escrow</span>
+                    <span className="text-[10px] text-blue-700 font-extrabold">{walletBalance}</span>
+                  </div>
+                </div>
+                <ChevronRight className="w-3.5 h-3.5 text-blue-600 shrink-0" />
+              </button>
+
+              <div className="box-border w-full h-px bg-slate-100"></div>
+
+              {/* Logout Button */}
               <button
                 type="button"
                 onClick={handleLogout}
-                className="box-border w-full flex flex-row gap-2 py-2 px-2 justify-start items-center bg-transparent hover:bg-red-50 text-red-600 font-semibold text-xs rounded-lg cursor-pointer border-0 transition-colors"
+                className="box-border w-full flex flex-row gap-2 py-2 px-2.5 justify-start items-center bg-transparent hover:bg-red-50 text-red-600 font-semibold text-xs rounded-lg cursor-pointer border-0 transition-colors"
               >
                 <LogOut className="w-3.5 h-3.5" />
-                <span>Keluar</span>
-                <ChevronDown className="w-3 h-3 ml-auto rotate-[-90deg]" />
+                <span>Keluar Akun</span>
               </button>
             </div>
           )}
         </div>
       </div>
+
+      {/* Global Wallet Modal */}
+      <ModalDompet
+        isOpen={isWalletModalOpen}
+        onClose={() => setIsWalletModalOpen(false)}
+      />
     </header>
   )
 }

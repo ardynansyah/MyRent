@@ -20,7 +20,7 @@ export default function Step2KondisiAlat({
     bodiUtuh: true,
     komponenLengkap: true,
     kebersihanOk: true,
-    adaKendala: false
+    fungsiNormal: true
   }
 
   // 2. Aksesoris yang dikembalikan
@@ -42,19 +42,23 @@ export default function Step2KondisiAlat({
 
   const notes = returnData.conditionNotes || ''
 
-  // Hitung jumlah checklist yang sesuai
+  // Hitung jumlah checklist yang sesuai (setiap centang bernilai 1)
   const conditionScore = useMemo(() => {
     let score = 0
     if (checklist.mesinMenyala) score += 1
     if (checklist.bodiUtuh) score += 1
     if (checklist.komponenLengkap) score += 1
     if (checklist.kebersihanOk) score += 1
-    if (!checklist.adaKendala) score += 1
+    const isFungsiOk = checklist.fungsiNormal ?? (checklist.adaKendala === false)
+    if (isFungsiOk) score += 1
     return score
   }, [checklist])
 
   const toggleChecklist = (key) => {
     const updated = { ...checklist, [key]: !checklist[key] }
+    if (key === 'fungsiNormal') {
+      updated.adaKendala = !updated.fungsiNormal
+    }
     onChange({
       ...returnData,
       checklist: updated
@@ -210,49 +214,68 @@ export default function Step2KondisiAlat({
             </span>
           </div>
 
-          {/* Item 5: Kendala teknis */}
-          <div
-            onClick={() => toggleChecklist('adaKendala')}
-            className="flex items-center justify-between p-3 bg-slate-50 hover:bg-slate-100/70 rounded-xl cursor-pointer transition-colors"
-          >
-            <div className="flex items-center gap-3">
+          {/* Item 5: Kendala teknis / fungsi operasional */}
+          {(() => {
+            const isFungsiOk = checklist.fungsiNormal ?? (checklist.adaKendala === false)
+            return (
               <div
-                className={`w-5 h-5 rounded-md flex items-center justify-center transition-colors ${
-                  checklist.adaKendala ? 'bg-amber-500 text-white' : 'bg-white ring-1 ring-slate-300'
-                }`}
+                onClick={() => {
+                  const nextVal = !isFungsiOk
+                  onChange({
+                    ...returnData,
+                    checklist: {
+                      ...checklist,
+                      fungsiNormal: nextVal,
+                      adaKendala: !nextVal
+                    }
+                  })
+                }}
+                className="flex items-center justify-between p-3 bg-slate-50 hover:bg-slate-100/70 rounded-xl cursor-pointer transition-colors"
               >
-                {checklist.adaKendala && <Check className="w-3.5 h-3.5" />}
+                <div className="flex items-center gap-3">
+                  <div
+                    className={`w-5 h-5 rounded-md flex items-center justify-center transition-colors ${
+                      isFungsiOk ? 'bg-blue-600 text-white' : 'bg-white ring-1 ring-slate-300'
+                    }`}
+                  >
+                    {isFungsiOk && <Check className="w-3.5 h-3.5" />}
+                  </div>
+                  <span className="font-medium text-slate-800">
+                    Fungsi operasional normal tanpa kendala teknis
+                  </span>
+                </div>
+                <span
+                  className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                    isFungsiOk
+                      ? 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200'
+                      : 'bg-amber-100 text-amber-800 ring-1 ring-amber-300'
+                  }`}
+                >
+                  {isFungsiOk ? 'Normal' : 'Ada Kendala'}
+                </span>
               </div>
-              <span className="font-medium text-slate-800">Ada kendala teknis selama pemakaian</span>
-            </div>
-            <span
-              className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                checklist.adaKendala
-                  ? 'bg-amber-100 text-amber-800 ring-1 ring-amber-300'
-                  : 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200'
-              }`}
-            >
-              {checklist.adaKendala ? 'Ada Catatan' : 'Tidak Ada'}
-            </span>
-          </div>
+            )
+          })()}
         </div>
 
         {/* Notes Input */}
         <div className="flex flex-col gap-1.5 pt-2">
           <label className="font-bold text-slate-700">
-            Catatan Kondisi {checklist.adaKendala ? '(Wajib Diisi)' : '(Opsional)'}
+            Catatan Kondisi {(checklist.fungsiNormal === false || checklist.adaKendala) ? '(Wajib Diisi karena ada kendala)' : '(Opsional)'}
           </label>
           <textarea
             value={notes}
             onChange={(e) => onChange({ ...returnData, conditionNotes: e.target.value })}
             placeholder={
-              checklist.adaKendala
+              (checklist.fungsiNormal === false || checklist.adaKendala)
                 ? 'Jelaskan kendala teknis atau indikasi kerusakan yang dialami...'
                 : 'cth. Unit berfungsi normal, filter sudah kami cuci bersih.'
             }
             rows={2}
             className={`w-full p-2.5 bg-slate-50 border rounded-xl text-xs outline-none focus:ring-2 focus:ring-blue-600 ${
-              checklist.adaKendala && !notes.trim() ? 'border-amber-400 bg-amber-50/30' : 'border-slate-200'
+              (checklist.fungsiNormal === false || checklist.adaKendala) && !notes.trim()
+                ? 'border-amber-400 bg-amber-50/30'
+                : 'border-slate-200'
             }`}
           />
         </div>
