@@ -7,6 +7,7 @@ import RegisterPemilikAlat from './components/registerPemilikAlat/RegisterPemili
 import BerandaSewa from './components/berandaPenyewa/BerandaSewa'
 import DetailAlat from './components/detailAlat/DetailAlat'
 import PesananSaya from './pages/PesananSaya'
+import KembalikanAlatWizard from './components/kembalikanAlat/KembalikanAlatWizard'
 import AdminAuthWrapper from './components/adminAuth/AdminAuthWrapper'
 import AdminDashboardPlaceholder from './components/adminAuth/AdminDashboardPlaceholder'
 import AdminProtectedRoute from './components/adminAuth/AdminProtectedRoute'
@@ -265,6 +266,14 @@ export default function App() {
           element={
             <UserProtectedRoute>
               <PesananSaya />
+            </UserProtectedRoute>
+          }
+        />
+        <Route
+          path="/pesanan-saya/:id/kembalikan"
+          element={
+            <UserProtectedRoute>
+              <KembalikanAlatWizard />
             </UserProtectedRoute>
           }
         />
