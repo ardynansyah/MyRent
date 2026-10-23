@@ -17,6 +17,7 @@ import ModalLacakPengiriman from '../components/pesananSaya/ModalLacakPengiriman
 import ModalDetailPengajuan from '../components/pesananSaya/ModalDetailPengajuan'
 import ModalBatalPesanan from '../components/pesananSaya/ModalBatalPesanan'
 import ModalDompet from '../components/pesananSaya/ModalDompet'
+import ModalKontrakSewa from '../components/checkout/ModalKontrakSewa'
 import {
   listOrders,
   cancelOrder,
@@ -24,6 +25,7 @@ import {
   extendOrder
 } from '../lib/ordersApi'
 import { getSessionUser } from '../lib/userSession'
+import { formatLongDate, normalizeDate } from '../lib/dateHelpers'
 
 export default function PesananSaya() {
   const navigate = useNavigate()
@@ -47,6 +49,7 @@ export default function PesananSaya() {
   const [isDetailOpen, setIsDetailOpen] = useState(false)
   const [isCancelOpen, setIsCancelOpen] = useState(false)
   const [isWalletOpen, setIsWalletOpen] = useState(false)
+  const [isKontrakOpen, setIsKontrakOpen] = useState(false)
 
   const showToast = (message) => {
     setToast(message)
@@ -81,21 +84,24 @@ export default function PesananSaya() {
   // Hitung jumlah tiap kategori status
   const counts = useMemo(() => {
     const total = orders.length
-    const menunggu = orders.filter((o) => o.status === 'MENUNGGU_KONFIRMASI').length
+    const menungguBayar = orders.filter((o) => o.status === 'MENUNGGU_PEMBAYARAN').length
+    const menunggu = orders.filter((o) => o.status === 'MENUNGGU_KONFIRMASI').length + menungguBayar
     const sedangDisewa = orders.filter(
       (o) => o.status === 'DIKIRIM' || o.status === 'SEWA_AKTIF' || o.status === 'INSPEKSI'
     ).length
     const selesai = orders.filter((o) => o.status === 'SELESAI').length
     const dibatalkan = orders.filter((o) => o.status === 'DIBATALKAN').length
 
-    return { total, menunggu, sedangDisewa, selesai, dibatalkan }
+    return { total, menunggu, menungguBayar, sedangDisewa, selesai, dibatalkan }
   }, [orders])
 
   // Filter list pesanan berdasarkan tab aktif dan search query
   const filteredOrders = useMemo(() => {
     return orders.filter((order) => {
       // 1. Tab filter
-      if (activeTab === 'Menunggu' && order.status !== 'MENUNGGU_KONFIRMASI') {
+      if (activeTab === 'Menunggu' &&
+        order.status !== 'MENUNGGU_KONFIRMASI' &&
+        order.status !== 'MENUNGGU_PEMBAYARAN') {
         return false
       }
       if (
@@ -379,6 +385,10 @@ export default function PesananSaya() {
                   setSelectedOrder(ord)
                   setIsTrackOpen(true)
                 }}
+                onViewContract={(ord) => {
+                  setSelectedOrder(ord)
+                  setIsKontrakOpen(true)
+                }}
               />
             ))}
           </div>
@@ -437,6 +447,28 @@ export default function PesananSaya() {
         isOpen={isWalletOpen}
         onClose={() => setIsWalletOpen(false)}
       />
+
+      {/* Modal Lihat Kontrak Sewa */}
+      {isKontrakOpen && selectedOrder && (
+        <ModalKontrakSewa
+          isOpen={isKontrakOpen}
+          onClose={() => { setIsKontrakOpen(false); setSelectedOrder(null) }}
+          alreadyAgreed={true}
+          contractData={{
+            ownerName: selectedOrder.equipment?.owner?.fullName || 'Pemilik Alat',
+            renterName: selectedOrder.user?.fullName || 'Penyewa',
+            businessName: selectedOrder.user?.kycData?.businessName || selectedOrder.user?.fullName || 'UMKM',
+            equipmentName: selectedOrder.equipment?.name || 'Unit Alat',
+            startDate: selectedOrder.startDate ? formatLongDate(normalizeDate(selectedOrder.startDate)) : '-',
+            endDate: selectedOrder.endDate ? formatLongDate(normalizeDate(selectedOrder.endDate)) : '-',
+            rentalDays: selectedOrder.rentalDays || 0,
+            totalPaid: selectedOrder.totalPaid || 0,
+            depositAmount: selectedOrder.depositAmount || 0,
+            pricePerDay: selectedOrder.equipment?.pricePerDay || 0,
+            agreedAt: selectedOrder.contractAgreedAt
+          }}
+        />
+      )}
     </div>
   )
 }

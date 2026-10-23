@@ -22,7 +22,8 @@ export default function PesananCard({
   onConfirmDelivery,
   onCancel,
   onViewDetail,
-  onTrack
+  onTrack,
+  onViewContract
 }) {
   const navigate = useNavigate()
   const equipment = order.equipment || {}
@@ -65,6 +66,12 @@ export default function PesananCard({
 
   const getStatusBadge = () => {
     switch (status) {
+      case 'MENUNGGU_PEMBAYARAN':
+        return (
+          <span className="px-2.5 py-1 text-[11px] font-semibold rounded-full bg-amber-50 text-amber-700 ring-1 ring-amber-200">
+            Menunggu Pembayaran
+          </span>
+        )
       case 'MENUNGGU_KONFIRMASI':
         return (
           <span className="px-2.5 py-1 text-[11px] font-semibold rounded-full bg-blue-50 text-blue-700 ring-1 ring-blue-200">
@@ -171,6 +178,20 @@ export default function PesananCard({
       </div>
 
       {/* 3. Conditional Alert / Countdown Banner */}
+      {status === 'MENUNGGU_PEMBAYARAN' && (
+        <div className="flex items-center gap-3 p-3 bg-amber-50/70 border border-amber-200/60 rounded-xl">
+          <Clock className="w-4 h-4 text-amber-700 shrink-0" />
+          <div className="flex-1 min-w-0">
+            <div className="text-xs font-bold text-amber-900">
+              Menunggu pembayaran escrow
+            </div>
+            <div className="text-[10px] text-amber-800">
+              Selesaikan pembayaran sebelum batas waktu agar pesanan tidak dibatalkan otomatis.
+            </div>
+          </div>
+        </div>
+      )}
+
       {status === 'SEWA_AKTIF' && (
         <div className="flex items-center gap-3 p-3 bg-amber-50/70 border border-amber-200/60 rounded-xl">
           <AlarmClock className="w-4 h-4 text-amber-700 shrink-0" />
@@ -248,6 +269,39 @@ export default function PesananCard({
           >
             Hubungi Pemilik
           </button>
+
+          {/* Tombol Lihat Kontrak Sewa jika sudah disetujui */}
+          {order.contractAgreedAt && (
+            <button
+              type="button"
+              onClick={() => onViewContract?.(order)}
+              className="py-2 px-3 text-xs font-semibold text-slate-700 bg-white hover:bg-slate-50 ring-1 ring-slate-200 rounded-xl transition-all flex items-center gap-1.5"
+            >
+              <FileText className="w-3.5 h-3.5 text-slate-500" />
+              <span>Kontrak Sewa</span>
+            </button>
+          )}
+
+          {/* Status: MENUNGGU_PEMBAYARAN */}
+          {status === 'MENUNGGU_PEMBAYARAN' && (
+            <>
+              <button
+                type="button"
+                onClick={() => onCancel(order)}
+                className="py-2 px-3 text-xs font-semibold text-slate-600 hover:text-red-600 hover:bg-red-50 ring-1 ring-slate-200 rounded-xl transition-all"
+              >
+                Batalkan
+              </button>
+              <button
+                type="button"
+                onClick={() => navigate(`/checkout/pembayaran/${order.id}`)}
+                className="py-2 px-3.5 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition-all shadow-xs flex items-center gap-1.5 cursor-pointer"
+              >
+                <span>Lanjutkan Pembayaran</span>
+                <ChevronRight className="w-3.5 h-3.5" />
+              </button>
+            </>
+          )}
 
           {/* Status: MENUNGGU_KONFIRMASI */}
           {status === 'MENUNGGU_KONFIRMASI' && (

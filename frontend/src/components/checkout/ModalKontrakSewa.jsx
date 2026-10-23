@@ -132,14 +132,23 @@ export default function ModalKontrakSewa({ isOpen, onClose, onAgree, alreadyAgre
         {/* Footer: Persetujuan */}
         <div className="px-6 py-4 border-t border-slate-200 bg-slate-50 rounded-b-2xl shrink-0">
           {agreed || alreadyAgreed ? (
-            <div className="flex items-center gap-3 p-3.5 bg-emerald-50 ring-1 ring-emerald-300 rounded-xl">
-              <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
-              <div>
-                <div className="text-[13px] font-bold text-emerald-800">Kontrak Disetujui ✓</div>
-                <div className="text-[11px] text-emerald-600">
-                  Disetujui pada: {d.agreedAt ? new Date(d.agreedAt).toLocaleString('id-ID') : new Date().toLocaleString('id-ID')}
+            <div className="flex items-center justify-between gap-3 p-3.5 bg-emerald-50 ring-1 ring-emerald-300 rounded-xl">
+              <div className="flex items-center gap-3">
+                <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
+                <div>
+                  <div className="text-[13px] font-bold text-emerald-800">Kontrak Disetujui ✓</div>
+                  <div className="text-[11px] text-emerald-600">
+                    Disetujui pada: {d.agreedAt ? new Date(d.agreedAt).toLocaleString('id-ID') : new Date().toLocaleString('id-ID')}
+                  </div>
                 </div>
               </div>
+              <button
+                type="button"
+                onClick={onClose}
+                className="py-1.5 px-3.5 bg-white hover:bg-slate-100 text-slate-700 text-xs font-semibold rounded-lg ring-1 ring-slate-200 transition-colors cursor-pointer"
+              >
+                Tutup
+              </button>
             </div>
           ) : (
             <>
