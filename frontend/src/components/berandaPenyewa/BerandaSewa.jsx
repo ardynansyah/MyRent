@@ -5,7 +5,7 @@ import SidebarFilter from './SidebarFilter'
 import ProductCard from './ProductCard'
 import { listEquipments } from '../../lib/equipmentsApi'
 import { getSessionUser, getUserPowerLimit } from '../../lib/userSession'
-import { formatShortDate } from '../../lib/dateHelpers'
+import { formatShortDate, isEquipmentAvailableInRange } from '../../lib/dateHelpers'
 
 const ALL_CATEGORY = 'Semua Alat'
 const NEAREST_CATEGORY = 'Terdekat'
@@ -193,9 +193,33 @@ export default function BerandaSewa({
         return false
       }
 
+      // Validasi ketat rentang tanggal sewa:
+      // Looping ketersediaan untuk setiap hari di antara start dan end.
+      // Jika salah satu hari berstatus 'terisi' atau 'buffer', alat dikeluarkan.
+      if (filters.dateRange?.start || filters.dateRange?.end) {
+        const isAvailable = isEquipmentAvailableInRange(
+          item,
+          filters.dateRange.start,
+          filters.dateRange.end
+        )
+        if (!isAvailable) {
+          return false
+        }
+      }
+
       return true
     })
-  }, [equipments, searchQuery, selectedCategory, powerMatch, powerLimit, powerMatchLabel, maxPrice, maxDeposit])
+  }, [
+    equipments,
+    searchQuery,
+    selectedCategory,
+    powerMatch,
+    powerLimit,
+    powerMatchLabel,
+    maxPrice,
+    maxDeposit,
+    filters.dateRange
+  ])
 
   // Sorting hasil filter sesuai pilihan dropdown "Urutkan".
   const sortedProducts = useMemo(() => {

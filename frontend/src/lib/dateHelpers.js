@@ -142,3 +142,102 @@ export function formatMonthYear(date) {
 export function daysInMonth(year, month) {
   return new Date(year, month + 1, 0).getDate()
 }
+
+/**
+ * Status ketersediaan default untuk demo aplikasi (Juni 2025).
+ * 'terisi'   → sedang disewa (tidak bisa dipilih)
+ * 'buffer'   → jeda rawat / perawatan
+ * 'tersedia' → bebas disewa
+ */
+export const DEFAULT_DAYS_STATUS = {
+  1: 'terisi',
+  2: 'terisi',
+  3: 'terisi',
+  4: 'terisi',
+  5: 'terisi',
+  6: 'terisi',
+  7: 'terisi',
+  8: 'terisi',
+  9: 'terisi',
+  10: 'buffer',
+  11: 'tersedia',
+  16: 'buffer',
+  17: 'tersedia',
+  18: 'tersedia',
+  19: 'tersedia',
+  20: 'tersedia',
+  21: 'tersedia',
+  22: 'tersedia',
+  23: 'tersedia',
+  24: 'tersedia',
+  25: 'tersedia',
+  26: 'tersedia',
+  27: 'tersedia',
+  28: 'tersedia',
+  29: 'tersedia',
+  30: 'tersedia'
+}
+
+/**
+ * Dapatkan status ketersediaan alat pada suatu tanggal.
+ *
+ * @param {object} [equipment]
+ * @param {Date|string|number} date
+ * @returns {'tersedia'|'terisi'|'buffer'}
+ */
+export function getEquipmentDayStatus(equipment, date) {
+  const d = normalizeDate(date)
+  if (!d) return 'tersedia'
+
+  const schedule = equipment?.dayStatus || equipment?.availability || DEFAULT_DAYS_STATUS
+
+  // 1. Cek kunci string ISO 'YYYY-MM-DD'
+  const year = d.getFullYear()
+  const month = String(d.getMonth() + 1).padStart(2, '0')
+  const dayNum = d.getDate()
+  const dayStr = String(dayNum).padStart(2, '0')
+  const isoKey = `${year}-${month}-${dayStr}`
+
+  if (schedule[isoKey] !== undefined) {
+    return schedule[isoKey]
+  }
+
+  // 2. Cek angka hari tanggal (1..31) jika jadwal menggunakan pemetaan nomor hari
+  if (schedule[dayNum] !== undefined) {
+    return schedule[dayNum]
+  }
+
+  return 'tersedia'
+}
+
+/**
+ * Validasi ketat ketersediaan alat untuk setiap hari di dalam rentang tanggal.
+ * Mengembalikan false jika SALAH SATU HARI saja berstatus 'terisi' atau 'buffer'.
+ *
+ * @param {object} [equipment]
+ * @param {Date|string} startDate
+ * @param {Date|string} endDate
+ * @returns {boolean} true jika seluruh hari tersedia, false jika ada yang terisi/buffer
+ */
+export function isEquipmentAvailableInRange(equipment, startDate, endDate) {
+  const start = normalizeDate(startDate)
+  const end = normalizeDate(endDate) || start
+
+  if (!start) return true
+
+  const fromTime = Math.min(start.getTime(), end.getTime())
+  const toTime = Math.max(start.getTime(), end.getTime())
+
+  const current = new Date(fromTime)
+  const finish = new Date(toTime)
+
+  while (current <= finish) {
+    const status = getEquipmentDayStatus(equipment, current)
+    if (status === 'terisi' || status === 'buffer') {
+      return false
+    }
+    current.setDate(current.getDate() + 1)
+  }
+
+  return true
+}
