@@ -103,7 +103,8 @@ model Equipment {
 /**
  * Status siklus hidup pesanan sewa.
  *
- * - MENUNGGU_KONFIRMASI : penyewa sudah ajukan, menunggu pemilik setuju
+ * - MENUNGGU_PEMBAYARAN : pesanan dibuat di Step 2, menunggu pembayaran di Step 3
+ * - MENUNGGU_KONFIRMASI : pembayaran escrow diterima, menunggu pemilik setuju
  * - DIKIRIM             : pemilik telah menyetujui dan alat sedang dikirim
  * - SEWA_AKTIF          : alat sudah diterima penyewa (BAST awal OK)
  * - INSPEKSI            : penyewa sudah submit BAST akhir, menunggu inspeksi pemilik
@@ -112,6 +113,7 @@ model Equipment {
  * - DIBATALKAN          : pesanan dibatalkan
  */
 enum OrderStatus {
+  MENUNGGU_PEMBAYARAN
   MENUNGGU_KONFIRMASI
   DIKIRIM
   SEWA_AKTIF
@@ -139,7 +141,26 @@ model Order {
   damageFee      Int         @default(0)
   totalPaid      Int
 
-  status         OrderStatus @default(MENUNGGU_KONFIRMASI)
+  status         OrderStatus @default(MENUNGGU_PEMBAYARAN)
+
+  // ── Checkout metadata ─────────────────────────────────────────────────────
+  // Array layanan tambahan: [{id, label, price}]
+  addons         Json?
+  addonsCost     Int         @default(0)
+  // Kode promo yang dipakai penyewa
+  promoCode      String?
+  discountAmount Int         @default(0)
+  // Catatan bebas untuk pemilik alat
+  renterNotes    String?     @db.Text
+  // Waktu penyewa menyetujui kontrak sewa digital di Step 2
+  contractAgreedAt DateTime?
+
+  // ── Payment metadata ─────────────────────────────────────────────────────
+  // 'QRIS' | 'VA_BCA' | 'EWALLET' | 'CARD'
+  paymentMethod  String?
+  paidAt         DateTime?
+  // Batas waktu pembayaran (24 jam dari createdAt)
+  paymentDeadline DateTime?
 
   // Data pengembalian Step 1-4 (jadwal, checklist, foto, tanda tangan, BAST).
   returnData     Json?

@@ -39,8 +39,16 @@ function generateInvoiceNumber() {
   const now = new Date()
   const yy = String(now.getFullYear()).slice(-2)
   const mm = String(now.getMonth() + 1).padStart(2, '0')
-  const seq = String(Math.floor(Math.random() * 900) + 100)
+  const seq = String(Math.floor(Math.random() * 9000) + 1000)
   return `INV-${yy}${mm}-${seq}`
+}
+
+// ─── Kode Promo yang Valid ─────────────────────────────────────────────────────
+const PROMO_CODES = {
+  UMKMAJU: { type: 'FIXED', amount: 50000, description: 'Potongan Rp 50.000 untuk UMKM baru' },
+  SEWAHEMAT: { type: 'PERCENT', amount: 10, description: 'Diskon 10% total sewa' },
+  MYRENT10: { type: 'PERCENT', amount: 10, description: 'Diskon 10% khusus MyRent' },
+  COBA50: { type: 'FIXED', amount: 50000, description: 'Gratis ongkir + potongan Rp 50.000' }
 }
 
 // ─── GET /api/orders ──────────────────────────────────────────────────────────
@@ -118,13 +126,57 @@ ordersRouter.get('/:id', async (req, res, next) => {
   }
 })
 
+// ─── POST /api/orders/validate-promo ─────────────────────────────────────────
+// Validasi kode promo dan kembalikan detail diskon.
+ordersRouter.post('/validate-promo', async (req, res, next) => {
+  try {
+    const { code, subtotal = 0 } = req.body ?? {}
+
+    if (!code) {
+      return res.status(400).json({
+        error: { code: 'MISSING_CODE', message: 'Kode promo wajib diisi' }
+      })
+    }
+
+    const promo = PROMO_CODES[String(code).toUpperCase().trim()]
+    if (!promo) {
+      return res.status(404).json({
+        error: { code: 'PROMO_NOT_FOUND', message: 'Kode promo tidak valid atau sudah kadaluarsa' }
+      })
+    }
+
+    let discountAmount = 0
+    if (promo.type === 'FIXED') {
+      discountAmount = promo.amount
+    } else if (promo.type === 'PERCENT') {
+      discountAmount = Math.round((Number(subtotal) * promo.amount) / 100)
+    }
+
+    return res.json({
+      data: {
+        code: String(code).toUpperCase().trim(),
+        type: promo.type,
+        amount: promo.amount,
+        discountAmount,
+        description: promo.description,
+        valid: true
+      }
+    })
+  } catch (error) {
+    next(error)
+  }
+})
+
 // ─── POST /api/orders ─────────────────────────────────────────────────────────
-// Buat pesanan baru (dari halaman Detail Alat → "Ajukan Sewa Sekarang").
+// Buat pesanan baru dari Checkout Step 2.
+// Pesanan dibuat dengan status MENUNGGU_PEMBAYARAN agar step 3 bisa dilanjutkan.
 ordersRouter.post('/', async (req, res, next) => {
   try {
     const {
       equipmentId, startDate, endDate, rentalDays,
-      deliveryMethod, rentalCost, shippingCost, depositAmount, totalPaid
+      deliveryMethod, rentalCost, shippingCost, depositAmount, totalPaid,
+      // Checkout extended fields
+      addons, addonsCost, promoCode, discountAmount, renterNotes, contractAgreedAt
     } = req.body ?? {}
 
     if (!equipmentId || !startDate || !endDate || !rentalDays) {
@@ -142,6 +194,8 @@ ordersRouter.post('/', async (req, res, next) => {
     }
 
     const invoiceNumber = generateInvoiceNumber()
+    // Deadline pembayaran: 24 jam dari sekarang
+    const paymentDeadline = new Date(Date.now() + 24 * 60 * 60 * 1000)
 
     const order = await prisma.order.create({
       data: {
@@ -156,7 +210,15 @@ ordersRouter.post('/', async (req, res, next) => {
         shippingCost: Number(shippingCost) || 0,
         depositAmount: Number(depositAmount) || 0,
         totalPaid: Number(totalPaid) || 0,
-        status: 'MENUNGGU_KONFIRMASI'
+        status: 'MENUNGGU_PEMBAYARAN',
+        // Checkout metadata
+        addons: addons || [],
+        addonsCost: Number(addonsCost) || 0,
+        promoCode: promoCode || null,
+        discountAmount: Number(discountAmount) || 0,
+        renterNotes: renterNotes || null,
+        contractAgreedAt: contractAgreedAt ? new Date(contractAgreedAt) : null,
+        paymentDeadline
       },
       include: {
         equipment: {
@@ -171,8 +233,57 @@ ordersRouter.post('/', async (req, res, next) => {
   }
 })
 
+// ─── PATCH /api/orders/:id/mock-pay ──────────────────────────────────────────
+// Mock Payment: ubah status MENUNGGU_PEMBAYARAN → MENUNGGU_KONFIRMASI.
+// Catat paymentMethod dan paidAt.
+ordersRouter.patch('/:id/mock-pay', async (req, res, next) => {
+  try {
+    const { paymentMethod = 'QRIS' } = req.body ?? {}
+
+    const order = await prisma.order.findFirst({
+      where: { id: req.params.id, userId: req.userId }
+    })
+
+    if (!order) {
+      return res.status(404).json({
+        error: { code: 'ORDER_NOT_FOUND', message: 'Pesanan tidak ditemukan' }
+      })
+    }
+
+    if (order.status !== 'MENUNGGU_PEMBAYARAN') {
+      return res.status(400).json({
+        error: {
+          code: 'INVALID_STATUS',
+          message: `Pesanan berstatus ${order.status}, tidak bisa diproses ulang pembayarannya`
+        }
+      })
+    }
+
+    const updated = await prisma.order.update({
+      where: { id: order.id },
+      data: {
+        status: 'MENUNGGU_KONFIRMASI',
+        paymentMethod: String(paymentMethod),
+        paidAt: new Date()
+      },
+      include: {
+        equipment: {
+          include: { owner: { select: { id: true, fullName: true, email: true, phone: true } } }
+        }
+      }
+    })
+
+    return res.json({
+      data: updated,
+      message: 'Pembayaran berhasil diterima escrow. Menunggu konfirmasi pemilik alat.'
+    })
+  } catch (error) {
+    next(error)
+  }
+})
+
 // ─── PATCH /api/orders/:id/cancel ─────────────────────────────────────────────
-// Batalkan pesanan yang masih MENUNGGU_KONFIRMASI.
+// Batalkan pesanan yang masih MENUNGGU_KONFIRMASI atau MENUNGGU_PEMBAYARAN.
 ordersRouter.patch('/:id/cancel', async (req, res, next) => {
   try {
     const order = await prisma.order.findFirst({
@@ -185,9 +296,10 @@ ordersRouter.patch('/:id/cancel', async (req, res, next) => {
       })
     }
 
-    if (order.status !== 'MENUNGGU_KONFIRMASI') {
+    const cancellableStatuses = ['MENUNGGU_PEMBAYARAN', 'MENUNGGU_KONFIRMASI']
+    if (!cancellableStatuses.includes(order.status)) {
       return res.status(400).json({
-        error: { code: 'INVALID_STATUS', message: 'Hanya pesanan berstatus Menunggu Konfirmasi yang bisa dibatalkan' }
+        error: { code: 'INVALID_STATUS', message: 'Hanya pesanan berstatus Menunggu Pembayaran atau Menunggu Konfirmasi yang bisa dibatalkan' }
       })
     }
 
