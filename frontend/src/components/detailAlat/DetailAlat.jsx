@@ -8,7 +8,6 @@ import WarningBanner from './WarningBanner'
 import AvailabilityCalendar from './AvailabilityCalendar'
 import CheckoutPanel from './CheckoutPanel'
 import { formatRupiah, getEquipment } from '../../lib/equipmentsApi'
-import { createOrder } from '../../lib/ordersApi'
 import { getSessionUser, getUserInitials, getUserPowerLimit } from '../../lib/userSession'
 import { diffDays, formatLongDate, isEquipmentAvailableInRange, normalizeDate } from '../../lib/dateHelpers'
 
@@ -392,8 +391,8 @@ export default function DetailAlat({
               startDateText={startDateFormatted}
               endDateText={endDateFormatted}
               ownerAddress={`${equipment.location} (${Number(equipment.distance).toLocaleString('id-ID')} km)`}
-              onAjukanSewa={async (checkoutData) => {
-                // Tanggal belum lengkap → jangan kirim pengajuan.
+              onAjukanSewa={(checkoutData) => {
+                // Tanggal belum lengkap → jangan lanjutkan.
                 const isReady = (selectionStart && selectionEnd) || isSingleDayValid
                 if (!isReady) {
                   setDateWarning(true)
@@ -406,26 +405,15 @@ export default function DetailAlat({
                   return
                 }
 
-                try {
-                  const payload = {
+                // Navigasi ke Checkout Wizard (Step 1) dengan membawa state pilihan
+                navigate(`/checkout/${equipment.id}`, {
+                  state: {
                     equipmentId: equipment.id,
-                    startDate: selectionStart,
-                    endDate: selectionEnd || selectionStart,
-                    rentalDays: rentalDays,
-                    deliveryMethod: checkoutData.selectedDelivery === 'pickup' ? 'PICKUP' : 'COURIER',
-                    rentalCost: equipment.pricePerDay * rentalDays,
-                    shippingCost: checkoutData.selectedDelivery === 'courier' ? 45000 : 0,
-                    depositAmount: equipment.deposit,
-                    totalPaid: checkoutData.totalPayment
+                    selectionStart: selectionStart?.toISOString().slice(0, 10),
+                    selectionEnd: (selectionEnd || selectionStart)?.toISOString().slice(0, 10),
+                    deliveryMethod: checkoutData?.selectedDelivery === 'courier' ? 'COURIER' : 'PICKUP'
                   }
-
-                  await createOrder(payload)
-                  navigate('/pesanan-saya', {
-                    state: { successMessage: `Pengajuan sewa untuk ${equipment.name} berhasil dibuat!` }
-                  })
-                } catch (err) {
-                  alert(err.message || 'Gagal mengajukan sewa alat')
-                }
+                })
               }}
             />
 

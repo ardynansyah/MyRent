@@ -160,3 +160,30 @@ export async function completeInspection(id, { damageFee = 0, ownerNotes = '', a
   return body
 }
 
+/**
+ * Validasi kode promo.
+ */
+export async function validatePromo(code, subtotal = 0) {
+  const res = await fetch(`${API_BASE}/orders/validate-promo`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...authHeaders() },
+    body: JSON.stringify({ code, subtotal })
+  })
+  const body = await res.json().catch(() => ({}))
+  if (!res.ok) throw new Error(body?.error?.message || 'Kode promo tidak valid')
+  return body?.data
+}
+
+/**
+ * Mock Payment: ubah status MENUNGGU_PEMBAYARAN → MENUNGGU_KONFIRMASI.
+ */
+export async function mockPay(id, paymentMethod = 'QRIS') {
+  const res = await fetch(`${API_BASE}/orders/${id}/mock-pay`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...authHeaders() },
+    body: JSON.stringify({ paymentMethod })
+  })
+  const body = await res.json().catch(() => ({}))
+  if (!res.ok) throw new Error(body?.error?.message || 'Gagal memproses pembayaran')
+  return body
+}

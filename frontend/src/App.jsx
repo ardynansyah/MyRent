@@ -14,6 +14,8 @@ import AdminProtectedRoute from './components/adminAuth/AdminProtectedRoute'
 import AdminDetailPengajuan from './components/adminDashboard/AdminDetailPengajuan'
 import UserProtectedRoute from './components/common/UserProtectedRoute'
 import PemilikProtectedRoute from './components/common/PemilikProtectedRoute'
+import CheckoutWizard from './components/checkout/CheckoutWizard'
+import CheckoutStep3 from './components/checkout/CheckoutStep3'
 import { logoutUser } from './lib/userSession'
 import {
   Building2,
@@ -259,6 +261,34 @@ export default function App() {
 
         {/* Tanpa ID alat tidak ada detail yang bisa ditampilkan → kembali ke katalog. */}
         <Route path="/detail-alat" element={<Navigate to="/beranda-sewa" replace />} />
+
+        {/* ── Checkout Wizard (3 Langkah) ─────────────────────────────────
+            Step 1 & 2 berbagi state wizard di URL nested.
+            Step 3 menggunakan orderId setelah order dibuat di Step 2. */}
+        <Route
+          path="/checkout/:equipmentId"
+          element={
+            <UserProtectedRoute>
+              <CheckoutWizard />
+            </UserProtectedRoute>
+          }
+        />
+        <Route
+          path="/checkout/:equipmentId/kontrak"
+          element={
+            <UserProtectedRoute>
+              <CheckoutWizard />
+            </UserProtectedRoute>
+          }
+        />
+        <Route
+          path="/checkout/pembayaran/:orderId"
+          element={
+            <UserProtectedRoute>
+              <CheckoutStep3 />
+            </UserProtectedRoute>
+          }
+        />
 
         {/* Halaman Pesanan Saya & Riwayat Sewa Penyewa */}
         <Route
