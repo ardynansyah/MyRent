@@ -67,6 +67,7 @@ model User {
   updatedAt DateTime @updatedAt
 
   equipments Equipment[]
+  orders     Order[]
 }
 
 model Equipment {
@@ -92,8 +93,65 @@ model Equipment {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  owner User @relation(fields: [ownerId], references: [id])
+  owner  User    @relation(fields: [ownerId], references: [id])
+  orders Order[]
 
   @@index([ownerId])
+  @@index([status])
+}
+
+/**
+ * Status siklus hidup pesanan sewa.
+ *
+ * - MENUNGGU_KONFIRMASI : penyewa sudah ajukan, menunggu pemilik setuju
+ * - DIKIRIM             : pemilik telah menyetujui dan alat sedang dikirim
+ * - SEWA_AKTIF          : alat sudah diterima penyewa (BAST awal OK)
+ * - INSPEKSI            : penyewa sudah submit BAST akhir, menunggu inspeksi pemilik
+ * - SELESAI             : sewa selesai, deposit dikembalikan
+ * - DISPUTE             : ada klaim / sengketa
+ * - DIBATALKAN          : pesanan dibatalkan
+ */
+enum OrderStatus {
+  MENUNGGU_KONFIRMASI
+  DIKIRIM
+  SEWA_AKTIF
+  INSPEKSI
+  SELESAI
+  DISPUTE
+  DIBATALKAN
+}
+
+model Order {
+  id             String      @id @default(uuid())
+  invoiceNumber  String      @unique
+  userId         String
+  equipmentId    String
+
+  startDate      DateTime
+  endDate        DateTime
+  rentalDays     Int
+  deliveryMethod String      // 'PICKUP' | 'COURIER'
+
+  rentalCost     Int
+  shippingCost   Int
+  depositAmount  Int
+  lateFee        Int         @default(0)
+  damageFee      Int         @default(0)
+  totalPaid      Int
+
+  status         OrderStatus @default(MENUNGGU_KONFIRMASI)
+
+  // Data pengembalian Step 1-4 (jadwal, checklist, foto, tanda tangan, BAST).
+  returnData     Json?
+  disputeNote    String?     @db.Text
+
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+
+  user           User        @relation(fields: [userId], references: [id])
+  equipment      Equipment   @relation(fields: [equipmentId], references: [id])
+
+  @@index([userId])
+  @@index([equipmentId])
   @@index([status])
 }

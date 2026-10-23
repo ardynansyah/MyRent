@@ -55,7 +55,16 @@ function presentUser(user) {
       // Daya listrik usaha dalam watt (null bila belum diisi di form registrasi).
       dayaListrik: resolvePowerLimit(kycData),
       powerCapacity: kycData.powerCapacity ?? null,
-      customPower: kycData.customPower ?? null
+      customPower: kycData.customPower ?? null,
+      // Data tambahan untuk halaman Pesanan Saya & wizard Kembalikan Alat.
+      businessName: kycData.businessName ?? null,
+      address: kycData.address ?? null,
+      city: kycData.city ?? null,
+      district: kycData.district ?? null,
+      landmark: kycData.landmark ?? null,
+      bankName: kycData.bankName ?? null,
+      bankAccountNumber: kycData.bankAccountNumber ?? null,
+      bankAccountName: kycData.bankAccountName ?? null
     },
     createdAt: user.createdAt
   }

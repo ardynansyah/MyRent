@@ -237,16 +237,20 @@ async function main() {
       verificationStatus: 'DISETUJUI',
       submissionCode: 'VR-1002',
       kycData: {
-        businessName: 'Budi Santoso',
+        businessName: 'Warung Kopi Nusantara',
         businessSector: 'Kuliner & Kopi',
         city: 'Jakarta Selatan',
         district: 'Kec. Tebet',
         address: 'Jl. Tebet Barat Dalam No. 8, Jakarta Selatan',
+        landmark: 'Sebelah Alfamart, depan gang kecil',
         startYear: '2021',
         powerCapacity: '1300 W',
         customPower: '',
         isManualPower: false,
-        dayaListrik: 1300
+        dayaListrik: 1300,
+        bankName: 'Bank BCA',
+        bankAccountNumber: '8720345612',
+        bankAccountName: 'Budi Santoso'
       }
     },
     create: {
@@ -259,16 +263,20 @@ async function main() {
       verificationStatus: 'DISETUJUI',
       submissionCode: 'VR-1002',
       kycData: {
-        businessName: 'Budi Santoso',
+        businessName: 'Warung Kopi Nusantara',
         businessSector: 'Kuliner & Kopi',
         city: 'Jakarta Selatan',
         district: 'Kec. Tebet',
         address: 'Jl. Tebet Barat Dalam No. 8, Jakarta Selatan',
+        landmark: 'Sebelah Alfamart, depan gang kecil',
         startYear: '2021',
         powerCapacity: '1300 W',
         customPower: '',
         isManualPower: false,
-        dayaListrik: 1300
+        dayaListrik: 1300,
+        bankName: 'Bank BCA',
+        bankAccountNumber: '8720345612',
+        bankAccountName: 'Budi Santoso'
       }
     }
   })
@@ -300,6 +308,95 @@ async function main() {
     })
   }
 
+  // 6. Data Order awal untuk penyewa — variasi status agar seluruh tab Pesanan
+  //    Saya langsung memiliki data nyata dari MySQL.
+  const now = new Date()
+  const ORDER_SEEDS = [
+    {
+      id: 'b2000000-0000-4000-8000-000000000001',
+      invoiceNumber: 'INV-2406-018',
+      userId: PENYEWA_ID,
+      equipmentId: 'a1000000-0000-4000-8000-000000000001',
+      startDate: new Date(now.getTime() - 2 * 86400000),
+      endDate: new Date(now.getTime() + 5 * 86400000),
+      rentalDays: 7,
+      deliveryMethod: 'COURIER',
+      rentalCost: 1050000,
+      shippingCost: 45000,
+      depositAmount: 500000,
+      totalPaid: 1595000,
+      status: 'SEWA_AKTIF'
+    },
+    {
+      id: 'b2000000-0000-4000-8000-000000000002',
+      invoiceNumber: 'INV-2406-021',
+      userId: PENYEWA_ID,
+      equipmentId: 'a1000000-0000-4000-8000-000000000002',
+      startDate: new Date(now.getTime() + 3 * 86400000),
+      endDate: new Date(now.getTime() + 7 * 86400000),
+      rentalDays: 4,
+      deliveryMethod: 'PICKUP',
+      rentalCost: 840000,
+      shippingCost: 0,
+      depositAmount: 750000,
+      totalPaid: 1590000,
+      status: 'MENUNGGU_KONFIRMASI'
+    },
+    {
+      id: 'b2000000-0000-4000-8000-000000000003',
+      invoiceNumber: 'INV-2406-024',
+      userId: PENYEWA_ID,
+      equipmentId: 'a1000000-0000-4000-8000-000000000003',
+      startDate: new Date(now.getTime() + 1 * 86400000),
+      endDate: new Date(now.getTime() + 4 * 86400000),
+      rentalDays: 3,
+      deliveryMethod: 'COURIER',
+      rentalCost: 285000,
+      shippingCost: 35000,
+      depositAmount: 300000,
+      totalPaid: 620000,
+      status: 'DIKIRIM'
+    },
+    {
+      id: 'b2000000-0000-4000-8000-000000000004',
+      invoiceNumber: 'INV-2406-030',
+      userId: PENYEWA_ID,
+      equipmentId: 'a1000000-0000-4000-8000-000000000004',
+      startDate: new Date(now.getTime() - 10 * 86400000),
+      endDate: new Date(now.getTime() - 3 * 86400000),
+      rentalDays: 7,
+      deliveryMethod: 'COURIER',
+      rentalCost: 525000,
+      shippingCost: 40000,
+      depositAmount: 400000,
+      totalPaid: 965000,
+      status: 'DISPUTE',
+      disputeNote: 'Penyewa melaporkan kerusakan pada pedal elektronik saat penggunaan hari ke-5.'
+    }
+  ]
+
+  for (const order of ORDER_SEEDS) {
+    await prisma.order.upsert({
+      where: { id: order.id },
+      update: {
+        invoiceNumber: order.invoiceNumber,
+        userId: order.userId,
+        equipmentId: order.equipmentId,
+        startDate: order.startDate,
+        endDate: order.endDate,
+        rentalDays: order.rentalDays,
+        deliveryMethod: order.deliveryMethod,
+        rentalCost: order.rentalCost,
+        shippingCost: order.shippingCost,
+        depositAmount: order.depositAmount,
+        totalPaid: order.totalPaid,
+        status: order.status,
+        disputeNote: order.disputeNote ?? null
+      },
+      create: order
+    })
+  }
+
   console.log('✅ Database Seeder Berhasil:')
   console.log(`  - Admin Utama   : ${defaultAdmin.email} (Role: ${defaultAdmin.role})`)
   console.log(`  - Admin Template: ${templateAdmin.email} (Role: ${templateAdmin.role})`)
@@ -309,6 +406,7 @@ async function main() {
   console.log(`  - Password Pemilik: ${PEMILIK_PASSWORD}`)
   console.log(`  - Password Penyewa: ${PENYEWA_PASSWORD}`)
   console.log(`  - Equipment      : ${EQUIPMENTS.length} unit (${EQUIPMENTS.filter((e) => e.status === 'TERSEDIA').length} TERSEDIA)`)
+  console.log(`  - Orders         : ${ORDER_SEEDS.length} pesanan demo`)
 }
 
 main()
@@ -319,3 +417,4 @@ main()
   .finally(async () => {
     await prisma.$disconnect()
   })
+

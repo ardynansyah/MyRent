@@ -12,6 +12,7 @@ import { statsRouter } from './routes/stats.js'
 import { authRouter } from './routes/auth.js'
 import { adminRouter } from './routes/admin.js'
 import { equipmentsRouter } from './routes/equipments.js'
+import { ordersRouter } from './routes/orders.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
@@ -35,6 +36,14 @@ const ENDPOINTS = [
   'GET /api/equipments',
   'GET /api/equipments/:id',
   'GET /api/categories',
+  'GET /api/orders',
+  'GET /api/orders/:id',
+  'POST /api/orders',
+  'PATCH /api/orders/:id/cancel',
+  'PATCH /api/orders/:id/confirm-delivery',
+  'PATCH /api/orders/:id/extend',
+  'PATCH /api/orders/:id/return-draft',
+  'POST /api/orders/:id/return-submit',
   'GET /api/stats',
   'GET /openapi.yaml'
 ]
@@ -65,6 +74,7 @@ export function createApp() {
   app.use('/api/rentals', rentalsRouter)
   app.use('/api/equipments', equipmentsRouter)
   app.use('/api/categories', categoriesRouter)
+  app.use('/api/orders', ordersRouter)
   app.use('/api/stats', statsRouter)
 
 
