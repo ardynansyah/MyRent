@@ -41,8 +41,8 @@ export default function SidebarFilter({
   const dateRange = filters.dateRange ?? { start: null, end: null }
   const maxDeposit = filters.maxDeposit ?? 'semua'
 
-  // Popover kalender mini
-  const [isCalendarOpen, setIsCalendarOpen] = useState(false)
+  // Popover kalender mini: 'start' (Tanggal Sewa) | 'end' (Tanggal Akhir Sewa) | null
+  const [activePicker, setActivePicker] = useState(null)
   const calendarRef = useRef(null)
 
   // Inisialisasi tampilan bulan & tahun kalender
@@ -54,16 +54,16 @@ export default function SidebarFilter({
 
   // Tutup dropdown saat klik di luar atau tekan Escape
   useEffect(() => {
-    if (!isCalendarOpen) return undefined
+    if (!activePicker) return undefined
 
     const handlePointerDown = (e) => {
       if (calendarRef.current && !calendarRef.current.contains(e.target)) {
-        setIsCalendarOpen(false)
+        setActivePicker(null)
       }
     }
 
     const handleKeyDown = (e) => {
-      if (e.key === 'Escape') setIsCalendarOpen(false)
+      if (e.key === 'Escape') setActivePicker(null)
     }
 
     document.addEventListener('mousedown', handlePointerDown)
@@ -72,7 +72,7 @@ export default function SidebarFilter({
       document.removeEventListener('mousedown', handlePointerDown)
       document.removeEventListener('keydown', handleKeyDown)
     }
-  }, [isCalendarOpen])
+  }, [activePicker])
 
   const handlePrevMonth = () => {
     setViewDate((prev) => {
@@ -101,21 +101,47 @@ export default function SidebarFilter({
     const d = String(day).padStart(2, '0')
     const clickedStr = `${viewDate.year}-${m}-${d}`
 
-    // 1. Belum ada tanggal terpilih ATAU sudah lengkap start & end -> set start baru (klik pertama)
-    if (!dateRange.start || (dateRange.start && dateRange.end)) {
-      handleRangeChange(clickedStr, null)
+    if (activePicker === 'start') {
+      // Jika sudah ada end dan tanggal mulai baru melebihi end, kosongkan end
+      if (dateRange.end && clickedStr > dateRange.end) {
+        handleRangeChange(clickedStr, null)
+      } else {
+        handleRangeChange(clickedStr, dateRange.end)
+      }
+
+      // Jika belum ada tanggal akhir, otomatis lanjutkan memilih tanggal akhir sewa
+      if (!dateRange.end) {
+        setActivePicker('end')
+      } else {
+        setActivePicker(null)
+      }
       return
     }
 
-    // 2. Klik kedua: jika sebelum start, tukar; jika sama atau sesudah, jadikan end
+    if (activePicker === 'end') {
+      // Jika ada tanggal mulai dan tanggal akhir yang dipilih sebelum tanggal mulai, tukar
+      if (dateRange.start && clickedStr < dateRange.start) {
+        handleRangeChange(clickedStr, dateRange.start)
+      } else {
+        handleRangeChange(dateRange.start, clickedStr)
+      }
+      setActivePicker(null)
+      return
+    }
+
+    // Fallback jika dibuka tanpa target spesifik
+    if (!dateRange.start || (dateRange.start && dateRange.end)) {
+      handleRangeChange(clickedStr, null)
+      setActivePicker('end')
+      return
+    }
+
     if (clickedStr < dateRange.start) {
       handleRangeChange(clickedStr, dateRange.start)
     } else {
       handleRangeChange(dateRange.start, clickedStr)
     }
-
-    // Otomatis menutup popover saat tanggal kedua (End) sudah dipilih
-    setIsCalendarOpen(false)
+    setActivePicker(null)
   }
 
   const totalDays = daysInMonth(viewDate.year, viewDate.month)
@@ -147,6 +173,7 @@ export default function SidebarFilter({
 
   const handleReset = () => {
     setInternalDelivery({ selfPickup: true, courier: true })
+    setActivePicker(null)
 
     if (onFiltersChange) {
       onFiltersChange((prev) => ({
@@ -190,14 +217,25 @@ export default function SidebarFilter({
           Rentang Tanggal
         </div>
 
-        {/* Trigger Popover Button */}
-        <div className="relative w-full" ref={calendarRef}>
+        {/* Trigger Popover Buttons & Modal */}
+        <div className="relative w-full flex flex-col gap-2" ref={calendarRef}>
+          {/* 1. Tanggal Sewa (Mulai) */}
           <button
             type="button"
-            onClick={() => setIsCalendarOpen((prev) => !prev)}
-            aria-expanded={isCalendarOpen}
+            onClick={() => {
+              if (activePicker === 'start') {
+                setActivePicker(null)
+              } else {
+                setActivePicker('start')
+                if (dateRange.start) {
+                  const d = normalizeDate(dateRange.start)
+                  if (d) setViewDate({ year: d.getFullYear(), month: d.getMonth() })
+                }
+              }
+            }}
+            aria-expanded={activePicker === 'start'}
             className={`box-border w-full flex items-center justify-between p-2.5 bg-slate-50 hover:bg-slate-100 ring-1 rounded-xl transition-all cursor-pointer text-left ${
-              isCalendarOpen
+              activePicker === 'start'
                 ? 'ring-2 ring-primary bg-white shadow-xs'
                 : 'ring-slate-200'
             }`}
@@ -211,40 +249,126 @@ export default function SidebarFilter({
                   Tanggal Sewa
                 </span>
                 <span className="text-xs font-bold text-slate-800 truncate">
-                  {dateRange.start && dateRange.end
-                    ? `${formatShortDate(dateRange.start)} - ${formatShortDate(dateRange.end)}`
-                    : dateRange.start
-                    ? `${formatShortDate(dateRange.start)} (Pilih selesai)`
-                    : 'Pilih rentang tanggal'}
+                  {dateRange.start ? formatShortDate(dateRange.start) : 'Pilih tanggal sewa'}
                 </span>
               </div>
             </div>
             <div className="flex items-center gap-1 shrink-0">
-              {(dateRange.start || dateRange.end) && (
+              {dateRange.start && (
                 <span
                   role="button"
                   tabIndex={0}
                   onClick={(e) => {
                     e.stopPropagation()
-                    handleRangeChange(null, null)
+                    handleRangeChange(null, dateRange.end)
                   }}
                   className="p-1 text-slate-400 hover:text-slate-600 hover:bg-slate-200 rounded-full transition-colors cursor-pointer"
-                  title="Hapus tanggal"
+                  title="Hapus tanggal sewa"
                 >
                   <X className="w-3.5 h-3.5" />
                 </span>
               )}
               <ChevronDown
                 className={`w-4 h-4 text-slate-400 transition-transform ${
-                  isCalendarOpen ? 'rotate-180' : ''
+                  activePicker === 'start' ? 'rotate-180 text-primary' : ''
+                }`}
+              />
+            </div>
+          </button>
+
+          {/* 2. Tanggal Akhir Sewa */}
+          <button
+            type="button"
+            onClick={() => {
+              if (activePicker === 'end') {
+                setActivePicker(null)
+              } else {
+                setActivePicker('end')
+                const target = dateRange.end || dateRange.start
+                if (target) {
+                  const d = normalizeDate(target)
+                  if (d) setViewDate({ year: d.getFullYear(), month: d.getMonth() })
+                }
+              }
+            }}
+            aria-expanded={activePicker === 'end'}
+            className={`box-border w-full flex items-center justify-between p-2.5 bg-slate-50 hover:bg-slate-100 ring-1 rounded-xl transition-all cursor-pointer text-left ${
+              activePicker === 'end'
+                ? 'ring-2 ring-primary bg-white shadow-xs'
+                : 'ring-slate-200'
+            }`}
+          >
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div className="w-8 h-8 rounded-lg bg-blue-50 text-primary flex items-center justify-center shrink-0">
+                <CalendarIcon className="w-4 h-4" />
+              </div>
+              <div className="flex flex-col min-w-0">
+                <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
+                  Tanggal Akhir Sewa
+                </span>
+                <span className="text-xs font-bold text-slate-800 truncate">
+                  {dateRange.end ? formatShortDate(dateRange.end) : 'Pilih tanggal akhir sewa'}
+                </span>
+              </div>
+            </div>
+            <div className="flex items-center gap-1 shrink-0">
+              {dateRange.end && (
+                <span
+                  role="button"
+                  tabIndex={0}
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    handleRangeChange(dateRange.start, null)
+                  }}
+                  className="p-1 text-slate-400 hover:text-slate-600 hover:bg-slate-200 rounded-full transition-colors cursor-pointer"
+                  title="Hapus tanggal akhir sewa"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </span>
+              )}
+              <ChevronDown
+                className={`w-4 h-4 text-slate-400 transition-transform ${
+                  activePicker === 'end' ? 'rotate-180 text-primary' : ''
                 }`}
               />
             </div>
           </button>
 
           {/* Absolute Div (Dropdown Modal Kalender Mini) */}
-          {isCalendarOpen && (
+          {activePicker && (
             <div className="absolute left-0 top-[calc(100%+8px)] z-50 w-[270px] -left-1 sm:left-0 bg-white rounded-2xl shadow-xl shadow-slate-900/10 ring-1 ring-slate-200 p-3.5 flex flex-col gap-2.5">
+              {/* Header Switcher Tabs: Tanggal Sewa vs Tanggal Akhir Sewa */}
+              <div className="grid grid-cols-2 gap-1.5 p-1 bg-slate-100 rounded-lg">
+                <button
+                  type="button"
+                  onClick={() => setActivePicker('start')}
+                  className={`py-1 px-2 rounded-md transition-all text-left border-0 cursor-pointer ${
+                    activePicker === 'start'
+                      ? 'bg-white text-blue-700 shadow-2xs font-bold'
+                      : 'text-slate-500 hover:text-slate-800 bg-transparent font-medium'
+                  }`}
+                >
+                  <div className="text-[9px] uppercase tracking-wider text-slate-400">Tgl Sewa</div>
+                  <div className="text-xs truncate">
+                    {dateRange.start ? formatShortDate(dateRange.start) : 'Pilih...'}
+                  </div>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActivePicker('end')}
+                  className={`py-1 px-2 rounded-md transition-all text-left border-0 cursor-pointer ${
+                    activePicker === 'end'
+                      ? 'bg-white text-blue-700 shadow-2xs font-bold'
+                      : 'text-slate-500 hover:text-slate-800 bg-transparent font-medium'
+                  }`}
+                >
+                  <div className="text-[9px] uppercase tracking-wider text-slate-400">Tgl Akhir</div>
+                  <div className="text-xs truncate">
+                    {dateRange.end ? formatShortDate(dateRange.end) : 'Pilih...'}
+                  </div>
+                </button>
+              </div>
+
               {/* Header Kalender Mini */}
               <div className="flex items-center justify-between pb-2 border-b border-slate-100">
                 <span className="text-xs font-bold text-slate-900">
@@ -331,7 +455,7 @@ export default function SidebarFilter({
                 </button>
                 <button
                   type="button"
-                  onClick={() => setIsCalendarOpen(false)}
+                  onClick={() => setActivePicker(null)}
                   className="text-primary hover:text-primary/80 font-bold cursor-pointer border-0 bg-transparent p-0"
                 >
                   Selesai
@@ -345,9 +469,11 @@ export default function SidebarFilter({
         <div className="text-[11px] text-slate-500 font-normal tabular-nums text-left whitespace-nowrap">
           {rangeDays > 0
             ? `${rangeDays} hari sewa · 1 hari buffer`
-            : dateRange.start
-            ? 'Pilih tanggal selesai'
-            : 'Pilih tanggal mulai & selesai'}
+            : dateRange.start && !dateRange.end
+            ? 'Pilih tanggal akhir sewa'
+            : !dateRange.start && dateRange.end
+            ? 'Pilih tanggal sewa'
+            : 'Pilih tanggal sewa & akhir sewa'}
         </div>
       </div>
 
@@ -499,6 +625,7 @@ export default function SidebarFilter({
           powerMatch,
           maxPrice,
           maxDeposit,
+          dateRange,
           deliveryMethods: internalDelivery
         })}
         className="box-border w-full h-fit shrink-0 flex flex-row gap-2 py-[11px] px-4 justify-center items-center bg-blue-600 hover:bg-blue-700 active:scale-[0.98] transition-all rounded-[10px] cursor-pointer border-0 mt-1 shadow-xs"

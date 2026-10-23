@@ -18,10 +18,33 @@ const SORT_OPTIONS = [
 ]
 
 // Filter sidebar: rentang tanggal + batas security deposit.
-const createInitialFilters = () => ({
+const FILTER_STORAGE_KEY = 'myrent_beranda_filters'
+const DEFAULT_FILTERS = {
   dateRange: { start: null, end: null },
   maxDeposit: 'semua'
-})
+}
+
+const createInitialFilters = () => {
+  try {
+    const saved = sessionStorage.getItem(FILTER_STORAGE_KEY)
+    if (saved) {
+      const parsed = JSON.parse(saved)
+      if (parsed && typeof parsed === 'object') {
+        return {
+          dateRange: {
+            start: parsed.dateRange?.start ?? null,
+            end: parsed.dateRange?.end ?? null
+          },
+          maxDeposit: parsed.maxDeposit ?? 'semua'
+        }
+      }
+    }
+  } catch {
+    // Abaikan jika parsing gagal, gunakan nilai awal default
+  }
+
+  return DEFAULT_FILTERS
+}
 
 export default function BerandaSewa({
   onSelectProduct,
@@ -45,6 +68,14 @@ export default function BerandaSewa({
 
   // ── Filter sidebar ──────────────────────────────────────────────────────
   const [filters, setFilters] = useState(createInitialFilters)
+
+  useEffect(() => {
+    try {
+      sessionStorage.setItem(FILTER_STORAGE_KEY, JSON.stringify(filters))
+    } catch {
+      // Abaikan bila storage penuh atau diblokir
+    }
+  }, [filters])
 
   // Kapasitas daya listrik usaha penyewa (dari sesi login).
   const user = getSessionUser()
@@ -201,7 +232,12 @@ export default function BerandaSewa({
     setSearchQuery('')
     setMaxPrice(500000)
     setPowerMatch(false)
-    setFilters(createInitialFilters())
+    try {
+      sessionStorage.removeItem(FILTER_STORAGE_KEY)
+    } catch {
+      // Abaikan jika gagal
+    }
+    setFilters(DEFAULT_FILTERS)
   }
 
   return (
@@ -231,7 +267,11 @@ export default function BerandaSewa({
           onApply={(next) => {
             setPowerMatch(next.powerMatch)
             setMaxPrice(next.maxPrice)
-            setFilters((prev) => ({ ...prev, maxDeposit: next.maxDeposit }))
+            setFilters((prev) => ({
+              ...prev,
+              maxDeposit: next.maxDeposit,
+              dateRange: next.dateRange || prev.dateRange
+            }))
           }}
         />
 
@@ -396,8 +436,8 @@ export default function BerandaSewa({
                   <ProductCard
                     key={product.id}
                     {...product}
-                    onClick={() => onSelectProduct && onSelectProduct(product)}
-                    onSelectDate={() => onSelectProduct && onSelectProduct(product)}
+                    onClick={() => onSelectProduct && onSelectProduct(product, filters.dateRange)}
+                    onSelectDate={() => onSelectProduct && onSelectProduct(product, filters.dateRange)}
                   />
                 ))}
               </div>

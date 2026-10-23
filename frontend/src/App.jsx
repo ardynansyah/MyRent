@@ -233,8 +233,8 @@ export default function App() {
           element={
             <UserProtectedRoute>
               <BerandaSewa
-                onSelectProduct={(product) => {
-                  navigate(`/detail-alat/${product.id}`)
+                onSelectProduct={(product, dateRange) => {
+                  navigate(`/detail-alat/${product.id}`, { state: { dateRange } })
                 }}
                 onNavigateHome={() => navigate('/')}
               />
