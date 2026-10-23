@@ -241,3 +241,14 @@ export function isEquipmentAvailableInRange(equipment, startDate, endDate) {
 
   return true
 }
+
+/**
+ * Format angka mata uang rupiah (contoh: 450.000).
+ *
+ * @param {number|string} value
+ * @returns {string}
+ */
+export function formatRupiah(value) {
+  const num = Number(value) || 0
+  return num.toLocaleString('id-ID')
+}

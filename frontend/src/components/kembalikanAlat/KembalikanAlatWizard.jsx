@@ -12,8 +12,10 @@ import {
 import NavbarPenyewa from '../common/NavbarPenyewa'
 import Step1JadwalKembali from './Step1JadwalKembali'
 import Step2KondisiAlat from './Step2KondisiAlat'
+import Step3FotoBAST from './Step3FotoBAST'
+import Step4RefundDeposit from './Step4RefundDeposit'
 import ReturnSidebarSummary from './ReturnSidebarSummary'
-import { getOrder, saveReturnDraft } from '../../lib/ordersApi'
+import { getOrder, saveReturnDraft, submitReturn } from '../../lib/ordersApi'
 import { formatLongDate, normalizeDate } from '../../lib/dateHelpers'
 import { getSessionUser } from '../../lib/userSession'
 
@@ -32,8 +34,11 @@ export default function KembalikanAlatWizard() {
   // Maximum step reached (allows going back to previous steps)
   const [maxStepReached, setMaxStepReached] = useState(1)
 
-  // Step 2 declaration checkbox
+  // Step 2 & 3 declaration checkbox
   const [agreementChecked, setAgreementChecked] = useState(false)
+
+  // Submitting final return
+  const [submitting, setSubmitting] = useState(false)
 
   // Live countdown timer
   const [timeLeft, setTimeLeft] = useState('')
@@ -191,19 +196,47 @@ export default function KembalikanAlatWizard() {
       return false
     }
     if (step === 3) {
+      if (!agreementChecked) return true
       const p = returnData.photos || {}
       const has4Photos = !!(p.front && p.side && p.panel && p.back)
       const hasSignature = !!returnData.signature
-      return !(has4Photos && hasSignature)
+      return !(has4Photos && hasSignature) || submitting
     }
     return false
   }
 
-  const handleNextStep = () => {
+  const handleNextStep = async () => {
     if (isNextDisabled()) return
+
+    if (step === 3) {
+      try {
+        setSubmitting(true)
+        const updatedOrder = await submitReturn(order.id, returnData)
+        if (updatedOrder) {
+          setOrder(updatedOrder)
+        }
+        // Bersihkan draf localStorage setelah sukses kirim BAST
+        try {
+          localStorage.removeItem(`myrent_return_draft_${order.id}`)
+        } catch {
+          // ignore
+        }
+        setStep(4)
+        setMaxStepReached(4)
+        setAgreementChecked(false)
+        window.scrollTo({ top: 0, behavior: 'smooth' })
+      } catch (err) {
+        alert(err.message || 'Gagal mengirim BAST Akhir')
+      } finally {
+        setSubmitting(false)
+      }
+      return
+    }
+
     const next = Math.min(4, step + 1)
     setStep(next)
     setMaxStepReached((prev) => Math.max(prev, next))
+    setAgreementChecked(false)
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
@@ -371,17 +404,19 @@ export default function KembalikanAlatWizard() {
             />
           )}
 
-          {/* Placeholders for Step 3 & Step 4 (will be fully implemented in Task 4) */}
           {step === 3 && (
-            <div id="step-3-container" className="flex-1 min-w-0">
-              {/* Dynamic import / subcomponent loaded in Task 4 */}
-            </div>
+            <Step3FotoBAST
+              order={order}
+              returnData={returnData}
+              onChange={setReturnData}
+            />
           )}
 
           {step === 4 && (
-            <div id="step-4-container" className="flex-1 min-w-0">
-              {/* Dynamic import / subcomponent loaded in Task 4 */}
-            </div>
+            <Step4RefundDeposit
+              order={order}
+              returnData={returnData}
+            />
           )}
 
           {/* Right Summary Sidebar (Shared across steps 1 - 3) */}
@@ -392,6 +427,7 @@ export default function KembalikanAlatWizard() {
               returnData={returnData}
               onNext={handleNextStep}
               isNextDisabled={isNextDisabled()}
+              submitting={submitting}
               nextLabel={
                 step === 1
                   ? 'Lanjut: Cek Kondisi Alat →'

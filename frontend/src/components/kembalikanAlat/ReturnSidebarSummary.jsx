@@ -7,7 +7,8 @@ import {
   Store,
   CheckCircle2,
   AlertTriangle,
-  ArrowRight
+  ArrowRight,
+  Loader2
 } from 'lucide-react'
 import { formatShortDate, formatLongDate } from '../../lib/dateHelpers'
 
@@ -19,7 +20,8 @@ export default function ReturnSidebarSummary({
   isNextDisabled,
   nextLabel,
   agreementChecked,
-  onAgreementChange
+  onAgreementChange,
+  submitting
 }) {
   const equipment = order.equipment || {}
   const formatRupiah = (val) => `Rp ${(val || 0).toLocaleString('id-ID')}`
@@ -125,8 +127,8 @@ export default function ReturnSidebarSummary({
           </div>
         </div>
 
-        {/* Step 2 specific checkbox */}
-        {step === 2 && (
+        {/* Step 2 & 3 declaration checkbox */}
+        {(step === 2 || step === 3) && (
           <label className="flex items-start gap-2.5 p-3 bg-slate-50 hover:bg-slate-100/80 rounded-xl cursor-pointer transition-colors border border-slate-200">
             <input
               type="checkbox"
@@ -135,7 +137,9 @@ export default function ReturnSidebarSummary({
               className="mt-0.5 rounded text-blue-600 focus:ring-blue-500 w-4 h-4 cursor-pointer"
             />
             <span className="text-[11px] text-slate-600 leading-snug">
-              Saya menyatakan kondisi alat sesuai checklist dan siap diperiksa bersama saat serah terima.
+              {step === 2
+                ? 'Saya menyatakan kondisi alat sesuai checklist dan siap diperiksa bersama saat serah terima.'
+                : 'Saya menyatakan kondisi alat sesuai checklist dan menyetujui BAST akhir ini.'}
             </span>
           </label>
         )}
@@ -144,15 +148,24 @@ export default function ReturnSidebarSummary({
         <button
           type="button"
           onClick={onNext}
-          disabled={isNextDisabled}
+          disabled={isNextDisabled || submitting}
           className={`w-full py-3 px-4 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-xs ${
-            isNextDisabled
+            isNextDisabled || submitting
               ? 'bg-slate-200 text-slate-400 cursor-not-allowed shadow-none'
               : 'bg-blue-600 hover:bg-blue-700 text-white cursor-pointer active:scale-[0.98]'
           }`}
         >
-          <span>{nextLabel || 'Lanjut'}</span>
-          <ArrowRight className="w-4 h-4" />
+          {submitting ? (
+            <>
+              <Loader2 className="w-4 h-4 animate-spin" />
+              <span>Memproses BAST Akhir…</span>
+            </>
+          ) : (
+            <>
+              <span>{nextLabel || 'Lanjut'}</span>
+              <ArrowRight className="w-4 h-4" />
+            </>
+          )}
         </button>
 
         {/* Escrow Guarantee */}
