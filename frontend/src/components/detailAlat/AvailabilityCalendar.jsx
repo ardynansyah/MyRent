@@ -1,39 +1,13 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { ChevronLeft, ChevronRight, Info } from 'lucide-react'
-import { diffDays, formatShortDate, normalizeDate } from '../../lib/dateHelpers'
+import {
+  DEFAULT_DAYS_STATUS,
+  diffDays,
+  formatShortDate,
+  normalizeDate
+} from '../../lib/dateHelpers'
 
-// Status ketersediaan default untuk Juni 2025.
-// 'terisi'   → sedang disewa (tidak bisa dipilih)
-// 'buffer'   → jeda rawat / perawatan
-// 'tersedia' → bebas disewa
-const DEFAULT_DAYS_STATUS = {
-  1: 'terisi',
-  2: 'terisi',
-  3: 'terisi',
-  4: 'terisi',
-  5: 'terisi',
-  6: 'terisi',
-  7: 'terisi',
-  8: 'terisi',
-  9: 'terisi',
-  10: 'buffer',
-  11: 'tersedia',
-  16: 'buffer',
-  17: 'tersedia',
-  18: 'tersedia',
-  19: 'tersedia',
-  20: 'tersedia',
-  21: 'tersedia',
-  22: 'tersedia',
-  23: 'tersedia',
-  24: 'tersedia',
-  25: 'tersedia',
-  26: 'tersedia',
-  27: 'tersedia',
-  28: 'tersedia',
-  29: 'tersedia',
-  30: 'tersedia'
-}
+export { DEFAULT_DAYS_STATUS }
 
 export default function AvailabilityCalendar({
   monthTitle = 'Ketersediaan Juni 2025',
@@ -53,12 +27,51 @@ export default function AvailabilityCalendar({
   const daysArray = Array.from({ length: daysInMonth }, (_, i) => i + 1)
   const minDays = Math.max(1, Number(minRentDays) || 1)
 
+  const toDate = (day) => new Date(year, month, day)
+  const getStatus = (day) => dayStatus[day] || 'tersedia'
+
+  // Validasi bentrok tanggal saat mount / pembaruan props:
+  // Jika rentang auto-fill menabrak jadwal 'terisi' atau 'buffer' (misal tgl 16),
+  // gagalkan seleksi (reset ke null, null) agar kalender tetap bersih.
+  useEffect(() => {
+    if (!selectionStart) return
+
+    const start = normalizeDate(selectionStart)
+    const end = normalizeDate(selectionEnd) || start
+
+    const fromTime = Math.min(start.getTime(), end.getTime())
+    const toTime = Math.max(start.getTime(), end.getTime())
+    const current = new Date(fromTime)
+    const finish = new Date(toTime)
+
+    let isBlocked = false
+    let blockedDay = null
+    let blockedStatus = null
+
+    while (current <= finish) {
+      const day = current.getDate()
+      const s = getStatus(day)
+      if (s === 'terisi' || s === 'buffer') {
+        isBlocked = true
+        blockedDay = day
+        blockedStatus = s
+        break
+      }
+      current.setDate(current.getDate() + 1)
+    }
+
+    if (isBlocked) {
+      onSelectionChange?.(null, null)
+      const statusLabel = blockedStatus === 'terisi' ? 'sudah terisi' : 'buffer perawatan'
+      setNotice(
+        `Rentang tanggal tidak tersedia karena tanggal ${blockedDay} ${statusLabel}. Silakan pilih tanggal lain di kalender.`
+      )
+    }
+  }, [selectionStart, selectionEnd])
+
   // Timestamp tanggal terpilih (menormalkan ke tengah malam lokal).
   const startTime = normalizeDate(selectionStart)?.getTime() ?? null
   const endTime = normalizeDate(selectionEnd)?.getTime() ?? null
-
-  const toDate = (day) => new Date(year, month, day)
-  const getStatus = (day) => dayStatus[day] || 'tersedia'
 
   const isStart = (day) => startTime !== null && toDate(day).getTime() === startTime
   const isEnd = (day) => endTime !== null && toDate(day).getTime() === endTime

@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { useLocation, useParams } from 'react-router-dom'
 import { Info, Loader2, MapPin, ShieldCheck, TriangleAlert } from 'lucide-react'
 import NavbarPenyewa from '../common/NavbarPenyewa'
 import ImageGallery from './ImageGallery'
@@ -9,7 +9,7 @@ import AvailabilityCalendar from './AvailabilityCalendar'
 import CheckoutPanel from './CheckoutPanel'
 import { formatRupiah, getEquipment } from '../../lib/equipmentsApi'
 import { getSessionUser, getUserInitials, getUserPowerLimit } from '../../lib/userSession'
-import { diffDays, formatLongDate } from '../../lib/dateHelpers'
+import { diffDays, formatLongDate, isEquipmentAvailableInRange, normalizeDate } from '../../lib/dateHelpers'
 
 const STATUS_LABEL = {
   TERSEDIA: 'Tersedia',
@@ -27,14 +27,57 @@ export default function DetailAlat({
   onAjukanSewa
 }) {
   const { id } = useParams()
+  const location = useLocation()
+
+  // Ambil kandidat tanggal dari navigasi (state) atau sessionStorage filter beranda
+  const getCandidateDateRange = () => {
+    const fromState = location?.state?.dateRange
+    if (fromState?.start || fromState?.end) {
+      return fromState
+    }
+    try {
+      const saved = sessionStorage.getItem('myrent_beranda_filters')
+      if (saved) {
+        const parsed = JSON.parse(saved)
+        if (parsed?.dateRange?.start || parsed?.dateRange?.end) {
+          return parsed.dateRange
+        }
+      }
+    } catch {
+      // Abaikan jika parse gagal
+    }
+    return null
+  }
+
+  // Validasi ketersediaan jadwal SEBELUM auto-fill kalender
+  const getValidatedInitialRange = (equipmentData = null) => {
+    const candidate = getCandidateDateRange()
+    if (!candidate?.start && !candidate?.end) {
+      return { start: null, end: null }
+    }
+
+    const start = normalizeDate(candidate.start || candidate.end)
+    const end = normalizeDate(candidate.end || candidate.start)
+
+    // JIKA rentang tanggal menabrak hari terisi atau buffer (mis. tgl 16),
+    // GAGALKAN auto-fill dan set rentang menjadi null (kalender tetap kosong).
+    if (!isEquipmentAvailableInRange(equipmentData, start, end)) {
+      return { start: null, end: null }
+    }
+
+    return {
+      start,
+      end: candidate.end ? end : null
+    }
+  }
 
   const [equipment, setEquipment] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
   // ── Seleksi tanggal sewa (dikendalikan dari AvailabilityCalendar) ──────
-  const [selectionStart, setSelectionStart] = useState(null)
-  const [selectionEnd, setSelectionEnd] = useState(null)
+  const [selectionStart, setSelectionStart] = useState(() => getValidatedInitialRange(null).start)
+  const [selectionEnd, setSelectionEnd] = useState(() => getValidatedInitialRange(null).end)
   const [dateWarning, setDateWarning] = useState(false)
   const [showPowerModal, setShowPowerModal] = useState(false)
 
@@ -52,7 +95,23 @@ export default function DetailAlat({
 
       try {
         const data = await getEquipment(id)
-        if (isActive) setEquipment(data)
+        if (isActive) {
+          setEquipment(data)
+          // Validasi ulang ketersediaan tanggal terhadap data detail alat
+          setSelectionStart((currentStart) => {
+            if (!currentStart) return null
+            const isAvailable = isEquipmentAvailableInRange(
+              data,
+              currentStart,
+              selectionEnd || currentStart
+            )
+            if (!isAvailable) {
+              setSelectionEnd(null)
+              return null
+            }
+            return currentStart
+          })
+        }
       } catch (err) {
         if (isActive) {
           setEquipment(null)
