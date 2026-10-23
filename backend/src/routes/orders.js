@@ -336,9 +336,17 @@ ordersRouter.post('/:id/return-submit', async (req, res, next) => {
       lateFee = Number(returnData.lateFee)
     }
 
+    // Generate kode PIN serah terima unik 6-digit jika belum ada
+    const generateHandoverPin = () => String(Math.floor(100000 + Math.random() * 900000))
+    const handoverPin = returnData?.handoverPin || generateHandoverPin()
+
     const finalReturnData = {
       ...returnData,
-      bastSubmittedAt: now.toISOString()
+      handoverPin,
+      bastSubmittedAt: now.toISOString(),
+      handedOverAt: returnData?.handedOverAt || null,
+      unitReceivedAt: returnData?.unitReceivedAt || null,
+      inspectionDeadline: returnData?.inspectionDeadline || null
     }
 
     const updated = await prisma.order.update({
@@ -351,6 +359,166 @@ ordersRouter.post('/:id/return-submit', async (req, res, next) => {
     })
 
     return res.json({ data: updated })
+  } catch (error) {
+    next(error)
+  }
+})
+
+// ─── PATCH /api/orders/:id/mark-handed-over ──────────────────────────────────
+// Dipanggil oleh Penyewa saat unit fisik telah diserahkan ke kurir atau toko.
+ordersRouter.patch('/:id/mark-handed-over', async (req, res, next) => {
+  try {
+    const order = await prisma.order.findFirst({
+      where: { id: req.params.id, userId: req.userId }
+    })
+
+    if (!order) {
+      return res.status(404).json({
+        error: { code: 'ORDER_NOT_FOUND', message: 'Pesanan tidak ditemukan' }
+      })
+    }
+
+    if (order.status !== 'INSPEKSI') {
+      return res.status(400).json({
+        error: { code: 'INVALID_STATUS', message: 'Hanya pesanan tahap inspeksi yang bisa ditandai telah diserahkan' }
+      })
+    }
+
+    const now = new Date()
+    const currentReturnData = (order.returnData && typeof order.returnData === 'object') ? order.returnData : {}
+    const updatedReturnData = {
+      ...currentReturnData,
+      handedOverAt: now.toISOString()
+    }
+
+    const updated = await prisma.order.update({
+      where: { id: order.id },
+      data: { returnData: updatedReturnData }
+    })
+
+    return res.json({
+      data: updated,
+      message: 'Status penyerahan fisik berhasil dicatat. Pemilik akan segera mengonfirmasi penerimaan.'
+    })
+  } catch (error) {
+    next(error)
+  }
+})
+
+// ─── PATCH /api/orders/:id/confirm-return-receipt ────────────────────────────
+// Dipanggil oleh Pemilik Alat (pada Dashboard Pemilik) untuk mengonfirmasi penerimaan fisik unit
+// menggunakan Kode PIN Serah Terima 6-digit dari penyewa.
+ordersRouter.patch('/:id/confirm-return-receipt', async (req, res, next) => {
+  try {
+    const { handoverPin } = req.body ?? {}
+
+    const order = await prisma.order.findUnique({
+      where: { id: req.params.id },
+      include: { equipment: true }
+    })
+
+    if (!order) {
+      return res.status(404).json({
+        error: { code: 'ORDER_NOT_FOUND', message: 'Pesanan tidak ditemukan' }
+      })
+    }
+
+    // Pastikan yang memanggil adalah pemilik alat terkait atau admin
+    if (order.equipment.ownerId !== req.userId && req.userRole !== 'ADMIN') {
+      return res.status(403).json({
+        error: { code: 'FORBIDDEN', message: 'Hanya pemilik alat yang berhak mengonfirmasi serah terima fisik unit' }
+      })
+    }
+
+    if (order.status !== 'INSPEKSI') {
+      return res.status(400).json({
+        error: { code: 'INVALID_STATUS', message: 'Pesanan belum dalam status inspeksi/pengembalian' }
+      })
+    }
+
+    const expectedPin = order.returnData?.handoverPin
+    if (!handoverPin || String(handoverPin).trim() !== String(expectedPin).trim()) {
+      return res.status(400).json({
+        error: {
+          code: 'INVALID_HANDOVER_PIN',
+          message: 'Kode PIN serah terima salah atau tidak sesuai. Masukkan PIN 6-digit yang tertera di aplikasi penyewa.'
+        }
+      })
+    }
+
+    const receivedAt = new Date()
+    // Timer batas inspeksi 2x24 jam (48 jam) resmi dimulai dari saat fisik diterima
+    const inspectionDeadline = new Date(receivedAt.getTime() + 2 * 24 * 60 * 60 * 1000)
+
+    const currentReturnData = (order.returnData && typeof order.returnData === 'object') ? order.returnData : {}
+    const updatedReturnData = {
+      ...currentReturnData,
+      unitReceivedAt: receivedAt.toISOString(),
+      inspectionDeadline: inspectionDeadline.toISOString()
+    }
+
+    const updated = await prisma.order.update({
+      where: { id: order.id },
+      data: { returnData: updatedReturnData }
+    })
+
+    return res.json({
+      data: updated,
+      message: 'Fisik unit berhasil dikonfirmasi diterima. Masa inspeksi 2×24 jam telah dimulai.'
+    })
+  } catch (error) {
+    next(error)
+  }
+})
+
+// ─── PATCH /api/orders/:id/complete-inspection ───────────────────────────────
+// Dipanggil oleh Pemilik Alat setelah selesai melakukan inspeksi fisik
+// untuk menyetujui pelepasan refund deposit (mengubah status ke SELESAI).
+ordersRouter.patch('/:id/complete-inspection', async (req, res, next) => {
+  try {
+    const { damageFee = 0, ownerNotes = '', approveRefund = true } = req.body ?? {}
+
+    const order = await prisma.order.findUnique({
+      where: { id: req.params.id },
+      include: { equipment: true }
+    })
+
+    if (!order) {
+      return res.status(404).json({
+        error: { code: 'ORDER_NOT_FOUND', message: 'Pesanan tidak ditemukan' }
+      })
+    }
+
+    if (order.equipment.ownerId !== req.userId && req.userRole !== 'ADMIN') {
+      return res.status(403).json({
+        error: { code: 'FORBIDDEN', message: 'Hanya pemilik alat yang berhak menyelesaikan inspeksi' }
+      })
+    }
+
+    const now = new Date()
+    const currentReturnData = (order.returnData && typeof order.returnData === 'object') ? order.returnData : {}
+    const updatedReturnData = {
+      ...currentReturnData,
+      inspectedAt: now.toISOString(),
+      ownerNotes,
+      damageFeeClaimed: Number(damageFee) || 0
+    }
+
+    const updated = await prisma.order.update({
+      where: { id: order.id },
+      data: {
+        status: approveRefund ? 'SELESAI' : 'DISPUTE',
+        damageFee: Number(damageFee) || 0,
+        returnData: updatedReturnData
+      }
+    })
+
+    return res.json({
+      data: updated,
+      message: approveRefund
+        ? 'Inspeksi fisik disetujui. Dana deposit telah diteruskan ke dompet penyewa.'
+        : 'Klaim diajukan ke status dispute untuk mediasi admin.'
+    })
   } catch (error) {
     next(error)
   }

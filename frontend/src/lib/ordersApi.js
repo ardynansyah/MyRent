@@ -118,3 +118,45 @@ export async function submitReturn(id, returnData) {
   if (!res.ok) throw new Error(body?.error?.message || 'Gagal mengirim BAST Akhir')
   return body?.data
 }
+
+/**
+ * Tandai unit fisik telah diserahkan oleh penyewa (Penyewa side).
+ */
+export async function markOrderHandedOver(id) {
+  const res = await fetch(`${API_BASE}/orders/${id}/mark-handed-over`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...authHeaders() }
+  })
+  const body = await res.json().catch(() => ({}))
+  if (!res.ok) throw new Error(body?.error?.message || 'Gagal menandai penyerahan unit')
+  return body?.data
+}
+
+/**
+ * Konfirmasi penerimaan fisik unit oleh Pemilik menggunakan PIN 6-digit (Owner side).
+ */
+export async function confirmReturnReceipt(id, handoverPin) {
+  const res = await fetch(`${API_BASE}/orders/${id}/confirm-return-receipt`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...authHeaders() },
+    body: JSON.stringify({ handoverPin })
+  })
+  const body = await res.json().catch(() => ({}))
+  if (!res.ok) throw new Error(body?.error?.message || 'Gagal mengonfirmasi penerimaan fisik unit')
+  return body
+}
+
+/**
+ * Selesaikan inspeksi fisik dan lepas refund deposit (Owner side).
+ */
+export async function completeInspection(id, { damageFee = 0, ownerNotes = '', approveRefund = true } = {}) {
+  const res = await fetch(`${API_BASE}/orders/${id}/complete-inspection`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...authHeaders() },
+    body: JSON.stringify({ damageFee, ownerNotes, approveRefund })
+  })
+  const body = await res.json().catch(() => ({}))
+  if (!res.ok) throw new Error(body?.error?.message || 'Gagal menyelesaikan inspeksi unit')
+  return body
+}
+
