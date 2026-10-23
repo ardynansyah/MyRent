@@ -6,6 +6,7 @@ import RegisterPenyewaAlat from './components/registerPenyewaAlat'
 import RegisterPemilikAlat from './components/registerPemilikAlat/RegisterPemilikAlat'
 import BerandaSewa from './components/berandaPenyewa/BerandaSewa'
 import DetailAlat from './components/detailAlat/DetailAlat'
+import PesananSaya from './pages/PesananSaya'
 import AdminAuthWrapper from './components/adminAuth/AdminAuthWrapper'
 import AdminDashboardPlaceholder from './components/adminAuth/AdminDashboardPlaceholder'
 import AdminProtectedRoute from './components/adminAuth/AdminProtectedRoute'
@@ -257,6 +258,17 @@ export default function App() {
 
         {/* Tanpa ID alat tidak ada detail yang bisa ditampilkan → kembali ke katalog. */}
         <Route path="/detail-alat" element={<Navigate to="/beranda-sewa" replace />} />
+
+        {/* Halaman Pesanan Saya & Riwayat Sewa Penyewa */}
+        <Route
+          path="/pesanan-saya"
+          element={
+            <UserProtectedRoute>
+              <PesananSaya />
+            </UserProtectedRoute>
+          }
+        />
+        <Route path="/dompet" element={<Navigate to="/pesanan-saya" replace />} />
 
         {/* Dashboard Pemilik Placeholder
             Dilindungi `PemilikProtectedRoute`: setelah logout, halaman ini

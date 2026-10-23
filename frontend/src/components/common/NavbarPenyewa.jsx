@@ -68,7 +68,10 @@ export default function NavbarPenyewa({
       <nav className="box-border w-fit shrink-0 h-fit hidden md:flex flex-row gap-2 lg:gap-5 justify-start items-center">
         <button
           type="button"
-          onClick={() => onNavigateTab && onNavigateTab('jelajahi')}
+          onClick={() => {
+            if (onNavigateTab) onNavigateTab('jelajahi')
+            else navigate('/beranda-sewa')
+          }}
           className={`box-border w-fit shrink-0 h-fit flex flex-col gap-1.5 py-[7px] px-3 justify-start items-center rounded-lg cursor-pointer transition-all border-0 ${
             activeTab === 'jelajahi'
               ? 'bg-blue-50 text-blue-700 font-bold'
@@ -80,7 +83,10 @@ export default function NavbarPenyewa({
 
         <button
           type="button"
-          onClick={() => onNavigateTab && onNavigateTab('pesanan')}
+          onClick={() => {
+            if (onNavigateTab) onNavigateTab('pesanan')
+            else navigate('/pesanan-saya')
+          }}
           className={`box-border w-fit shrink-0 h-fit flex flex-col gap-1.5 py-[7px] px-3 justify-start items-center rounded-lg cursor-pointer transition-all border-0 ${
             activeTab === 'pesanan'
               ? 'bg-blue-50 text-blue-700 font-bold'
@@ -92,7 +98,10 @@ export default function NavbarPenyewa({
 
         <button
           type="button"
-          onClick={() => onNavigateTab && onNavigateTab('dompet')}
+          onClick={() => {
+            if (onNavigateTab) onNavigateTab('dompet')
+            else navigate('/pesanan-saya')
+          }}
           className={`box-border w-fit shrink-0 h-fit flex flex-col gap-1.5 py-[7px] px-3 justify-start items-center rounded-lg cursor-pointer transition-all border-0 ${
             activeTab === 'dompet'
               ? 'bg-blue-50 text-blue-700 font-bold'

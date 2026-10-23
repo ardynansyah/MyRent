@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react'
-import { useLocation, useParams } from 'react-router-dom'
+import { useLocation, useParams, useNavigate } from 'react-router-dom'
 import { Info, Loader2, MapPin, ShieldCheck, TriangleAlert } from 'lucide-react'
 import NavbarPenyewa from '../common/NavbarPenyewa'
 import ImageGallery from './ImageGallery'
@@ -8,6 +8,7 @@ import WarningBanner from './WarningBanner'
 import AvailabilityCalendar from './AvailabilityCalendar'
 import CheckoutPanel from './CheckoutPanel'
 import { formatRupiah, getEquipment } from '../../lib/equipmentsApi'
+import { createOrder } from '../../lib/ordersApi'
 import { getSessionUser, getUserInitials, getUserPowerLimit } from '../../lib/userSession'
 import { diffDays, formatLongDate, isEquipmentAvailableInRange, normalizeDate } from '../../lib/dateHelpers'
 
@@ -28,6 +29,7 @@ export default function DetailAlat({
 }) {
   const { id } = useParams()
   const location = useLocation()
+  const navigate = useNavigate()
 
   // Ambil kandidat tanggal dari navigasi (state) atau sessionStorage filter beranda
   const getCandidateDateRange = () => {
@@ -390,7 +392,7 @@ export default function DetailAlat({
               startDateText={startDateFormatted}
               endDateText={endDateFormatted}
               ownerAddress={`${equipment.location} (${Number(equipment.distance).toLocaleString('id-ID')} km)`}
-              onAjukanSewa={(checkoutData) => {
+              onAjukanSewa={async (checkoutData) => {
                 // Tanggal belum lengkap → jangan kirim pengajuan.
                 const isReady = (selectionStart && selectionEnd) || isSingleDayValid
                 if (!isReady) {
@@ -399,9 +401,30 @@ export default function DetailAlat({
                 }
 
                 setDateWarning(false)
-                if (onAjukanSewa) onAjukanSewa(checkoutData)
-                else {
-                  alert(`Pengajuan sewa berhasil dibuat untuk ${equipment.name}!`)
+                if (onAjukanSewa) {
+                  onAjukanSewa(checkoutData)
+                  return
+                }
+
+                try {
+                  const payload = {
+                    equipmentId: equipment.id,
+                    startDate: selectionStart,
+                    endDate: selectionEnd || selectionStart,
+                    rentalDays: rentalDays,
+                    deliveryMethod: checkoutData.selectedDelivery === 'pickup' ? 'PICKUP' : 'COURIER',
+                    rentalCost: equipment.pricePerDay * rentalDays,
+                    shippingCost: checkoutData.selectedDelivery === 'courier' ? 45000 : 0,
+                    depositAmount: equipment.deposit,
+                    totalPaid: checkoutData.totalPayment
+                  }
+
+                  await createOrder(payload)
+                  navigate('/pesanan-saya', {
+                    state: { successMessage: `Pengajuan sewa untuk ${equipment.name} berhasil dibuat!` }
+                  })
+                } catch (err) {
+                  alert(err.message || 'Gagal mengajukan sewa alat')
                 }
               }}
             />
