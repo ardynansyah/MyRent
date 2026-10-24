@@ -276,45 +276,24 @@ export default function BerandaSewa({
         onNavigateHome={onNavigateHome}
       />
 
-      {/* 2. Main Content: Sidebar + Product Grid */}
-      <main className="box-border w-full max-w-[1600px] mx-auto px-4 md:px-12 lg:px-20 h-fit flex flex-col lg:flex-row gap-6 py-7 pb-10 justify-start items-start">
-        {/* Left: Filter Sidebar */}
-        <SidebarFilter
-          filters={filters}
-          onFiltersChange={setFilters}
-          powerMatch={powerMatch}
-          onPowerMatchChange={setPowerMatch}
-          powerLimit={powerLimit}
-          maxPrice={maxPrice}
-          onMaxPriceChange={setMaxPrice}
-          onReset={resetFilters}
-          onApply={(next) => {
-            setPowerMatch(next.powerMatch)
-            setMaxPrice(next.maxPrice)
-            setFilters((prev) => ({
-              ...prev,
-              maxDeposit: next.maxDeposit,
-              dateRange: next.dateRange || prev.dateRange
-            }))
-          }}
-        />
-
-        {/* Right: Catalog Grid Area */}
-        <section className="box-border flex-1 w-full min-w-0 h-fit flex flex-col gap-4 justify-start items-start">
-          {/* Header Info */}
-          <div className="box-border w-full h-fit flex flex-col gap-[3px] justify-start items-start">
-            <h1 className="text-[17px] text-slate-900 font-bold text-left whitespace-nowrap m-0">
+      {/* 2. Main Content */}
+      <main className="box-border w-full max-w-[1600px] mx-auto px-4 md:px-12 lg:px-20 py-7 pb-10 flex flex-col justify-start items-start">
+        {/* Header Halaman (Judul, Jumlah Alat, & Filter/Urutkan) */}
+        <div className="box-border w-full flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-6 lg:mb-8">
+          {/* Sisi Kiri: Teks Judul & Jumlah Alat (Rata Kiri, Sejajar Tepi Kiri Sidebar) */}
+          <div className="box-border flex flex-col gap-1 justify-start items-start text-left">
+            <h1 className="text-lg sm:text-xl lg:text-2xl text-slate-900 font-bold text-left tracking-tight m-0">
               Alat tersedia untuk <span className="tabular-nums">{dateRangeLabel}</span>
             </h1>
-            <div className="text-xs text-slate-600 font-normal text-left whitespace-nowrap tabular-nums">
+            <div className="text-xs sm:text-sm text-slate-600 font-normal text-left tabular-nums">
               {loading ? 'Memuat katalog…' : `${sortedProducts.length} alat · `}
               {powerMatch && powerLimit ? `semua sesuai daya ${powerLimit} W` : 'semua kapasitas daya'}
             </div>
           </div>
 
-          {/* Kontainer Pembungkus: Dropdown Kategori (Kiri) & Dropdown Urutkan (Kanan) */}
-          <div className="flex items-center justify-between w-full mb-4 gap-4">
-            {/* Sisi Kiri: Dropdown Kategori */}
+          {/* Sisi Kanan: Kontainer Dropdown Filter Kategori & Urutkan */}
+          <div className="flex items-center gap-3 shrink-0 flex-wrap">
+            {/* Dropdown Kategori */}
             <div ref={categoryRef} className="relative box-border w-fit shrink-0 h-fit">
               <button
                 type="button"
@@ -368,7 +347,7 @@ export default function BerandaSewa({
               )}
             </div>
 
-            {/* Sisi Kanan: Sort Dropdown */}
+            {/* Dropdown Urutkan */}
             <div ref={sortRef} className="relative box-border w-fit shrink-0 h-fit">
               <button
                 type="button"
@@ -422,52 +401,81 @@ export default function BerandaSewa({
               )}
             </div>
           </div>
+        </div>
 
-          {/* Status pemuatan / error */}
-          {loading && (
-            <div className="w-full bg-white rounded-2xl border border-slate-200 p-12 flex flex-col gap-3 items-center justify-center text-slate-500">
-              <Loader2 className="w-6 h-6 text-blue-600 animate-spin" />
-              <p className="text-sm">Memuat katalog alat dari server…</p>
-            </div>
-          )}
+        {/* Wrapper Utama: Penjajaran Sidebar dan Grid Produk */}
+        <div className="box-border w-full flex flex-col lg:flex-row gap-8 justify-start items-start">
+          {/* Sisi Kiri: Filter Sidebar */}
+          <div className="w-full lg:w-1/4 shrink-0">
+            <SidebarFilter
+              filters={filters}
+              onFiltersChange={setFilters}
+              powerMatch={powerMatch}
+              onPowerMatchChange={setPowerMatch}
+              powerLimit={powerLimit}
+              maxPrice={maxPrice}
+              onMaxPriceChange={setMaxPrice}
+              onReset={resetFilters}
+              onApply={(next) => {
+                setPowerMatch(next.powerMatch)
+                setMaxPrice(next.maxPrice)
+                setFilters((prev) => ({
+                  ...prev,
+                  maxDeposit: next.maxDeposit,
+                  dateRange: next.dateRange || prev.dateRange
+                }))
+              }}
+            />
+          </div>
 
-          {!loading && error && (
-            <div className="w-full bg-amber-50 border border-amber-200 rounded-2xl p-8 flex flex-col gap-3 items-center justify-center text-amber-800">
-              <TriangleAlert className="w-6 h-6 text-amber-600" />
-              <p className="text-sm font-semibold">Katalog alat gagal dimuat</p>
-              <p className="text-xs text-center">{error}</p>
-              <p className="text-[11px] text-amber-700/80 text-center">
-                Pastikan backend berjalan di http://localhost:3000
-              </p>
-            </div>
-          )}
-
-          {!loading && !error && sortedProducts.length === 0 ? (
-            <div className="w-full bg-white rounded-2xl border border-slate-200 p-12 text-center text-slate-500">
-              <p className="text-sm">Tidak ada alat yang cocok dengan filter yang dipilih.</p>
-              <button
-                type="button"
-                onClick={resetFilters}
-                className="mt-3 text-xs text-blue-600 font-semibold hover:underline"
-              >
-                Reset Semua Filter
-              </button>
-            </div>
-          ) : (
-            !loading && !error && (
-              <div className="box-border w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-                {sortedProducts.map((product) => (
-                  <ProductCard
-                    key={product.id}
-                    {...product}
-                    onClick={() => onSelectProduct && onSelectProduct(product, filters.dateRange)}
-                    onSelectDate={() => onSelectProduct && onSelectProduct(product, filters.dateRange)}
-                  />
-                ))}
+          {/* Sisi Kanan: Catalog Grid Area */}
+          <section className="box-border w-full lg:w-3/4 flex-1 min-w-0 h-fit flex flex-col gap-6 justify-start items-start">
+            {/* Status pemuatan / error */}
+            {loading && (
+              <div className="w-full bg-white rounded-2xl border border-slate-200 p-12 flex flex-col gap-3 items-center justify-center text-slate-500">
+                <Loader2 className="w-6 h-6 text-blue-600 animate-spin" />
+                <p className="text-sm">Memuat katalog alat dari server…</p>
               </div>
-            )
-          )}
-        </section>
+            )}
+
+            {!loading && error && (
+              <div className="w-full bg-amber-50 border border-amber-200 rounded-2xl p-8 flex flex-col gap-3 items-center justify-center text-amber-800">
+                <TriangleAlert className="w-6 h-6 text-amber-600" />
+                <p className="text-sm font-semibold">Katalog alat gagal dimuat</p>
+                <p className="text-xs text-center">{error}</p>
+                <p className="text-[11px] text-amber-700/80 text-center">
+                  Pastikan backend berjalan di http://localhost:3000
+                </p>
+              </div>
+            )}
+
+            {!loading && !error && sortedProducts.length === 0 ? (
+              <div className="w-full bg-white rounded-2xl border border-slate-200 p-12 text-center text-slate-500">
+                <p className="text-sm">Tidak ada alat yang cocok dengan filter yang dipilih.</p>
+                <button
+                  type="button"
+                  onClick={resetFilters}
+                  className="mt-3 text-xs text-blue-600 font-semibold hover:underline"
+                >
+                  Reset Semua Filter
+                </button>
+              </div>
+            ) : (
+              !loading && !error && (
+                <div className="box-border w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                  {sortedProducts.map((product) => (
+                    <ProductCard
+                      key={product.id}
+                      {...product}
+                      onClick={() => onSelectProduct && onSelectProduct(product, filters.dateRange)}
+                      onSelectDate={() => onSelectProduct && onSelectProduct(product, filters.dateRange)}
+                    />
+                  ))}
+                </div>
+              )
+            )}
+          </section>
+        </div>
       </main>
     </div>
   )
