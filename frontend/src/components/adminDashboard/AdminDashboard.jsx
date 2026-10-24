@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { Search, ChevronRight, Inbox, ArrowLeft, Layers, RefreshCw, AlertCircle } from 'lucide-react'
 import AdminSidebar from './AdminSidebar'
 import StatusBadge from './StatusBadge'
@@ -10,6 +10,13 @@ import {
   STATUS_MENUNGGU,
   TAB_PENGAJUAN
 } from './adminDashboardData'
+
+// Komponen section admin
+import MediasiKlaim from '../admin/MediasiKlaim'
+import ManajemenPengguna from '../admin/ManajemenPengguna'
+import TransaksiAdmin from '../admin/TransaksiAdmin'
+import PengaturanAdmin from '../admin/PengaturanAdmin'
+import ModerasiAlat from '../admin/ModerasiAlat'
 
 /**
  * Dashboard Admin HQ — tabel daftar pengajuan (tab Semua / Menunggu / Perlu
@@ -22,6 +29,9 @@ import {
  */
 export default function AdminDashboard({ onLogout }) {
   const navigate = useNavigate()
+  const [searchParams, setSearchParams] = useSearchParams()
+  const activeMenu = searchParams.get('tab') || 'verifikasi'
+
   const [tab, setTab] = useState('SEMUA')
   const [keyword, setKeyword] = useState('')
   const [pengajuan, setPengajuan] = useState([])
@@ -34,6 +44,19 @@ export default function AdminDashboard({ onLogout }) {
       return
     }
     logoutAdmin(navigate)
+  }
+
+  const handleNavigateMenu = (menuKey) => {
+    setSearchParams({ tab: menuKey })
+  }
+
+  const BREADCRUMB_TITLES = {
+    verifikasi: 'Verifikasi Akun',
+    mediasi: 'Mediasi Klaim',
+    alat: 'Moderasi Alat',
+    pengguna: 'Semua Pengguna',
+    transaksi: 'Transaksi',
+    pengaturan: 'Pengaturan'
   }
 
   const loadPengajuan = useCallback(async () => {
@@ -84,8 +107,9 @@ export default function AdminDashboard({ onLogout }) {
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-row items-stretch">
       <AdminSidebar
-        activeKey="verifikasi"
-        counts={{ verifikasi: jumlahAntrean, mediasi: 2 }}
+        activeKey={activeMenu}
+        onNavigate={handleNavigateMenu}
+        counts={{ verifikasi: jumlahAntrean, mediasi: 2, alat: 4 }}
         onLogout={handleLogout}
       />
 
@@ -101,13 +125,27 @@ export default function AdminDashboard({ onLogout }) {
             <Layers className="w-5 h-5 text-blue-600" />
             MyRent HQ
           </button>
-          <button
-            type="button"
-            onClick={handleLogout}
-            className="rounded-lg border border-red-200 bg-red-50 px-3 py-1.5 text-[11px] font-bold text-red-700 cursor-pointer"
-          >
-            Keluar Sesi
-          </button>
+          <div className="flex items-center gap-2">
+            <select
+              value={activeMenu}
+              onChange={(e) => handleNavigateMenu(e.target.value)}
+              className="text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 text-slate-800"
+            >
+              <option value="verifikasi">Verifikasi Akun</option>
+              <option value="mediasi">Mediasi Klaim</option>
+              <option value="alat">Moderasi Alat</option>
+              <option value="pengguna">Semua Pengguna</option>
+              <option value="transaksi">Transaksi</option>
+              <option value="pengaturan">Pengaturan</option>
+            </select>
+            <button
+              type="button"
+              onClick={handleLogout}
+              className="rounded-lg border border-red-200 bg-red-50 px-3 py-1.5 text-[11px] font-bold text-red-700 cursor-pointer"
+            >
+              Keluar
+            </button>
+          </div>
         </header>
 
         <main className="flex-1 w-full max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-8 flex flex-col gap-6">
@@ -115,10 +153,14 @@ export default function AdminDashboard({ onLogout }) {
           <div className="flex items-center gap-2">
             <span className="text-xs text-slate-400">Portal Admin</span>
             <span className="text-xs text-slate-400">/</span>
-            <span className="text-xs font-semibold text-slate-900">Verifikasi akun</span>
+            <span className="text-xs font-semibold text-slate-900">
+              {BREADCRUMB_TITLES[activeMenu] || 'Verifikasi Akun'}
+            </span>
           </div>
 
-          {/* Judul + pencarian */}
+          {activeMenu === 'verifikasi' && (
+            <>
+              {/* Judul + pencarian */}
           <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-5">
             <div className="flex flex-col gap-1.5">
               <h1 className="text-[28px] font-extrabold tracking-[-0.6px] leading-tight text-slate-900">
@@ -290,6 +332,14 @@ export default function AdminDashboard({ onLogout }) {
               </>
             )}
           </div>
+        </>
+      )}
+
+          {activeMenu === 'mediasi' && <MediasiKlaim onNavigateTab={handleNavigateMenu} />}
+          {activeMenu === 'alat' && <ModerasiAlat onNavigateTab={handleNavigateMenu} />}
+          {activeMenu === 'pengguna' && <ManajemenPengguna onNavigateTab={handleNavigateMenu} />}
+          {activeMenu === 'transaksi' && <TransaksiAdmin onNavigateTab={handleNavigateMenu} />}
+          {activeMenu === 'pengaturan' && <PengaturanAdmin onNavigateTab={handleNavigateMenu} />}
         </main>
       </div>
     </div>

@@ -6,7 +6,8 @@ import {
   Receipt,
   Settings,
   LogOut,
-  Layers
+  Layers,
+  Package
 } from 'lucide-react'
 import { getAdminUser } from '../adminAuth/adminSession'
 
@@ -18,6 +19,7 @@ import { getAdminUser } from '../adminAuth/adminSession'
 const MENU = [
   { key: 'verifikasi', label: 'Verifikasi Akun', icon: ShieldCheck, badgeKey: 'verifikasi' },
   { key: 'mediasi', label: 'Mediasi Klaim', icon: Scale, badgeKey: 'mediasi' },
+  { key: 'alat', label: 'Moderasi Alat', icon: Package, badgeKey: 'alat' },
   { key: 'pengguna', label: 'Semua Pengguna', icon: Users },
   { key: 'transaksi', label: 'Transaksi', icon: Receipt },
   { key: 'pengaturan', label: 'Pengaturan', icon: Settings }
