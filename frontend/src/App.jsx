@@ -346,7 +346,6 @@ export default function App() {
             </AdminProtectedRoute>
           }
         />
-        <Route path="/admin" element={<Navigate to="/portal-internal-hq/dashboard" replace />} />
 
         {/* Fallback jika route tidak ditemukan */}
         <Route path="*" element={<Navigate to="/" replace />} />
