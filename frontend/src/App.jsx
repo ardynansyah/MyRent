@@ -16,6 +16,7 @@ import UserProtectedRoute from './components/common/UserProtectedRoute'
 import PemilikProtectedRoute from './components/common/PemilikProtectedRoute'
 import CheckoutWizard from './components/checkout/CheckoutWizard'
 import CheckoutStep3 from './components/checkout/CheckoutStep3'
+import OwnerDashboard from './pages/OwnerDashboard'
 import { logoutUser } from './lib/userSession'
 import {
   Building2,
@@ -316,9 +317,7 @@ export default function App() {
           path="/dashboard-pemilik"
           element={
             <PemilikProtectedRoute>
-              <DashboardPemilikPlaceholder
-                onLogout={() => setCurrentUser(null)}
-              />
+              <OwnerDashboard />
             </PemilikProtectedRoute>
           }
         />

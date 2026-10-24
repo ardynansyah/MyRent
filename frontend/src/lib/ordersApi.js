@@ -14,10 +14,17 @@ function authHeaders() {
 }
 
 /**
- * Ambil seluruh pesanan milik user yang login.
+ * Ambil seluruh pesanan milik user yang login (opsional query filter).
  */
-export async function listOrders() {
-  const res = await fetch(`${API_BASE}/orders`, {
+export async function listOrders(params = {}) {
+  const query = new URLSearchParams()
+  for (const [key, value] of Object.entries(params)) {
+    if (value !== undefined && value !== null && value !== '') {
+      query.set(key, String(value))
+    }
+  }
+  const suffix = query.toString() ? `?${query.toString()}` : ''
+  const res = await fetch(`${API_BASE}/orders${suffix}`, {
     headers: { ...authHeaders() }
   })
   const body = await res.json().catch(() => ({}))
@@ -186,4 +193,30 @@ export async function mockPay(id, paymentMethod = 'QRIS') {
   const body = await res.json().catch(() => ({}))
   if (!res.ok) throw new Error(body?.error?.message || 'Gagal memproses pembayaran')
   return body
+}
+
+/**
+ * Terima pesanan masuk oleh pemilik alat (MENUNGGU_KONFIRMASI → DIKIRIM).
+ */
+export async function acceptOrder(id) {
+  const res = await fetch(`${API_BASE}/orders/${id}/accept`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...authHeaders() }
+  })
+  const body = await res.json().catch(() => ({}))
+  if (!res.ok) throw new Error(body?.error?.message || 'Gagal menerima pesanan')
+  return body?.data
+}
+
+/**
+ * Tolak pesanan masuk oleh pemilik alat (MENUNGGU_KONFIRMASI → DIBATALKAN).
+ */
+export async function rejectOrder(id) {
+  const res = await fetch(`${API_BASE}/orders/${id}/reject`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...authHeaders() }
+  })
+  const body = await res.json().catch(() => ({}))
+  if (!res.ok) throw new Error(body?.error?.message || 'Gagal menolak pesanan')
+  return body?.data
 }

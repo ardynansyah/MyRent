@@ -1,3 +1,5 @@
+import { getUserToken } from './userSession'
+
 /**
  * Client HTTP untuk katalog alat (MyRent API).
  *
@@ -53,6 +55,33 @@ export async function getEquipment(id) {
 }
 
 /**
+ * Tambah alat baru ke katalog (Owner side).
+ *
+ * @param {object} data - data alat baru
+ * @returns {Promise<object>}
+ */
+export async function createEquipment(data) {
+  const token = getUserToken()
+  const headers = {
+    'Content-Type': 'application/json',
+    ...(token ? { Authorization: `Bearer ${token}` } : {})
+  }
+
+  const response = await fetch(`${API_BASE}/equipments`, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify(data)
+  })
+
+  const body = await response.json().catch(() => ({}))
+  if (!response.ok) {
+    throw new Error(body?.error?.message || 'Gagal menambahkan alat')
+  }
+
+  return body?.data
+}
+
+/**
  * Format angka Rupiah ke gaya tampilan lokal.
  * @param {number|string} value
  * @returns {string}
@@ -62,3 +91,4 @@ export function formatRupiah(value) {
   if (!Number.isFinite(number)) return 'Rp 0'
   return `Rp ${number.toLocaleString('id-ID')}`
 }
+

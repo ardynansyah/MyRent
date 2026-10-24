@@ -52,15 +52,25 @@ const PROMO_CODES = {
 }
 
 // ─── GET /api/orders ──────────────────────────────────────────────────────────
-// Daftar pesanan milik user yang sedang login.
+// Daftar pesanan milik user yang sedang login (sebagai penyewa atau pemilik).
 ordersRouter.get('/', async (req, res, next) => {
   try {
+    const isOwner = req.userRole === 'PEMILIK' || req.query.as === 'owner' || req.query.role === 'owner'
+    const where = isOwner
+      ? { equipment: { ownerId: req.userId } }
+      : { userId: req.userId }
+
+    if (req.query.status) {
+      where.status = String(req.query.status)
+    }
+
     const orders = await prisma.order.findMany({
-      where: { userId: req.userId },
+      where,
       include: {
         equipment: {
           include: { owner: { select: { id: true, fullName: true, email: true, phone: true, kycData: true } } }
-        }
+        },
+        user: { select: { id: true, fullName: true, email: true, phone: true, kycData: true } }
       }
     })
 
@@ -276,6 +286,102 @@ ordersRouter.patch('/:id/mock-pay', async (req, res, next) => {
     return res.json({
       data: updated,
       message: 'Pembayaran berhasil diterima escrow. Menunggu konfirmasi pemilik alat.'
+    })
+  } catch (error) {
+    next(error)
+  }
+})
+
+// ─── PATCH /api/orders/:id/accept ─────────────────────────────────────────────
+// Pemilik menyetujui pesanan masuk (MENUNGGU_KONFIRMASI → DIKIRIM).
+ordersRouter.patch('/:id/accept', async (req, res, next) => {
+  try {
+    const order = await prisma.order.findUnique({
+      where: { id: req.params.id },
+      include: { equipment: true }
+    })
+
+    if (!order) {
+      return res.status(404).json({
+        error: { code: 'ORDER_NOT_FOUND', message: 'Pesanan tidak ditemukan' }
+      })
+    }
+
+    if (order.equipment.ownerId !== req.userId && req.userRole !== 'ADMIN') {
+      return res.status(403).json({
+        error: { code: 'FORBIDDEN', message: 'Hanya pemilik alat yang berhak menyetujui pesanan' }
+      })
+    }
+
+    if (order.status !== 'MENUNGGU_KONFIRMASI') {
+      return res.status(400).json({
+        error: { code: 'INVALID_STATUS', message: 'Hanya pesanan berstatus Menunggu Konfirmasi yang bisa diterima' }
+      })
+    }
+
+    const updated = await prisma.order.update({
+      where: { id: order.id },
+      data: { status: 'DIKIRIM' },
+      include: {
+        equipment: true,
+        user: { select: { id: true, fullName: true, email: true, phone: true, kycData: true } }
+      }
+    })
+
+    // Update status alat menjadi DISEWA
+    await prisma.equipment.update({
+      where: { id: order.equipmentId },
+      data: { status: 'DISEWA' }
+    }).catch(() => {})
+
+    return res.json({
+      data: updated,
+      message: 'Pesanan berhasil diterima dan status diubah menjadi Dikirim.'
+    })
+  } catch (error) {
+    next(error)
+  }
+})
+
+// ─── PATCH /api/orders/:id/reject ─────────────────────────────────────────────
+// Pemilik menolak pesanan masuk (MENUNGGU_KONFIRMASI → DIBATALKAN).
+ordersRouter.patch('/:id/reject', async (req, res, next) => {
+  try {
+    const order = await prisma.order.findUnique({
+      where: { id: req.params.id },
+      include: { equipment: true }
+    })
+
+    if (!order) {
+      return res.status(404).json({
+        error: { code: 'ORDER_NOT_FOUND', message: 'Pesanan tidak ditemukan' }
+      })
+    }
+
+    if (order.equipment.ownerId !== req.userId && req.userRole !== 'ADMIN') {
+      return res.status(403).json({
+        error: { code: 'FORBIDDEN', message: 'Hanya pemilik alat yang berhak menolak pesanan' }
+      })
+    }
+
+    if (order.status !== 'MENUNGGU_KONFIRMASI') {
+      return res.status(400).json({
+        error: { code: 'INVALID_STATUS', message: 'Hanya pesanan berstatus Menunggu Konfirmasi yang bisa ditolak' }
+      })
+    }
+
+    const updated = await prisma.order.update({
+      where: { id: order.id },
+      data: { status: 'DIBATALKAN' },
+      include: {
+        equipment: true,
+        user: { select: { id: true, fullName: true, email: true, phone: true, kycData: true } }
+      }
+    })
+
+    return res.json({
+      data: updated,
+      message: 'Pesanan telah ditolak dan dibatalkan.'
     })
   } catch (error) {
     next(error)

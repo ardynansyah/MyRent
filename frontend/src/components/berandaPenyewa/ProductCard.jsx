@@ -61,7 +61,7 @@ export default function ProductCard({
 
         {/* Pita Kategori */}
         <div className="box-border w-fit h-fit absolute left-[12px] top-[12px] flex flex-row gap-0 p-[5px_9px] justify-start items-start bg-white/90 backdrop-blur-xs rounded-[999px] z-10 border border-gray-200/80 shadow-xs">
-          <span className="text-[9.5px]/[normal] box-border text-gray-700 font-['Geist_Mono',system-ui,sans-serif] font-medium tracking-[0.8px] text-left uppercase whitespace-nowrap">
+          <span className="text-[9.5px]/[normal] box-border text-gray-700 font-medium tracking-[0.8px] text-left uppercase whitespace-nowrap">
             {displayCategory}
           </span>
         </div>
@@ -73,7 +73,7 @@ export default function ProductCard({
           {/* Judul: Nama Alat */}
           <h3
             title={name}
-            className="text-[17px]/[20px] box-border w-full text-gray-900 font-['Funnel_Sans',system-ui,sans-serif] font-semibold text-left line-clamp-1 m-0"
+            className="text-[17px]/[20px] box-border w-full text-gray-900 font-semibold text-left line-clamp-1 m-0"
           >
             {name || 'Tanpa Nama'}
           </h3>
@@ -91,7 +91,7 @@ export default function ProductCard({
                 fill="currentColor"
               />
             </svg>
-            <div className="text-[11px]/[normal] box-border text-gray-500 font-['Geist_Mono',system-ui,sans-serif] font-normal text-left whitespace-nowrap">
+            <div className="text-[11px]/[normal] box-border text-gray-500 font-normal text-left whitespace-nowrap">
               {displayWatt}
             </div>
           </div>
@@ -102,18 +102,18 @@ export default function ProductCard({
           {/* Baris 2: Spesifikasi (Minimal Sewa & Deposit) */}
           <div className="box-border w-full h-fit shrink-0 flex flex-row gap-0 py-[12px] justify-between items-center">
             <div className="box-border w-fit shrink-0 h-fit flex flex-col gap-[3px] justify-start items-start">
-              <div className="text-[10.5px]/[normal] box-border text-gray-500 font-['Funnel_Sans',system-ui,sans-serif] font-normal text-left whitespace-nowrap">
+              <div className="text-[10.5px]/[normal] box-border text-gray-500 font-normal text-left whitespace-nowrap">
                 Minimal
               </div>
-              <div className="text-[12.5px]/[normal] box-border text-gray-800 font-['Geist_Mono',system-ui,sans-serif] font-medium text-left whitespace-nowrap">
+              <div className="text-[12.5px]/[normal] box-border text-gray-800 font-medium text-left whitespace-nowrap">
                 {minHari} hari
               </div>
             </div>
             <div className="box-border w-fit shrink-0 h-fit flex flex-col gap-[3px] justify-start items-end text-right">
-              <div className="text-[10.5px]/[normal] box-border text-gray-500 font-['Funnel_Sans',system-ui,sans-serif] font-normal text-right whitespace-nowrap">
+              <div className="text-[10.5px]/[normal] box-border text-gray-500 font-normal text-right whitespace-nowrap">
                 Deposit
               </div>
-              <div className="text-[12.5px]/[normal] box-border text-gray-800 font-['Geist_Mono',system-ui,sans-serif] font-medium text-right whitespace-nowrap tabular-nums">
+              <div className="text-[12.5px]/[normal] box-border text-gray-800 font-medium text-right whitespace-nowrap tabular-nums">
                 {formatRupiah(deposit)}
               </div>
             </div>
@@ -126,10 +126,10 @@ export default function ProductCard({
         {/* Baris 3: Footer Kiri (Harga) & Tombol Sewa */}
         <div className="box-border w-full h-fit shrink-0 flex flex-row gap-0 pt-[13px] justify-between items-center">
           <div className="box-border w-fit shrink-0 h-fit flex flex-row gap-[5px] justify-start items-center">
-            <div className="text-[19px]/[normal] box-border text-gray-900 font-['Geist_Mono',system-ui,sans-serif] font-semibold text-left whitespace-nowrap tabular-nums">
+            <div className="text-[19px]/[normal] box-border text-gray-900 font-semibold text-left whitespace-nowrap tabular-nums">
               {formatRupiah(pricePerDay)}
             </div>
-            <div className="text-[11px]/[normal] box-border text-gray-500 font-['Funnel_Sans',system-ui,sans-serif] font-normal text-left whitespace-nowrap">
+            <div className="text-[11px]/[normal] box-border text-gray-500 font-normal text-left whitespace-nowrap">
               / hari
             </div>
           </div>
@@ -138,7 +138,7 @@ export default function ProductCard({
             onClick={handleButtonClick}
             className="box-border w-fit shrink-0 h-fit flex flex-row gap-[6px] px-[16px] py-[10px] justify-start items-center bg-blue-600 hover:bg-blue-700 active:scale-[0.96] rounded-[999px] cursor-pointer border-0 transition-all duration-200 shadow-xs"
           >
-            <span className="text-[12.5px]/[normal] box-border text-white font-['Funnel_Sans',system-ui,sans-serif] font-semibold text-left whitespace-nowrap">
+            <span className="text-[12.5px]/[normal] box-border text-white font-semibold text-left whitespace-nowrap">
               Sewa
             </span>
             <svg

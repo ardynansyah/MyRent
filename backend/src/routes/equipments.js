@@ -1,6 +1,8 @@
 import { Router } from 'express'
+import jwt from 'jsonwebtoken'
 import { prisma } from '../lib/prisma.js'
 import { ApiError } from '../lib/errors.js'
+import { config } from '../config.js'
 
 export const equipmentsRouter = Router()
 
@@ -94,18 +96,24 @@ function buildDayStatusFromOrders(orders, bufferDays = 1) {
 /**
  * GET /api/equipments
  *
- * Daftar alat yang siap disewa (status TERSEDIA) beserta info pemiliknya.
+ * Daftar alat yang siap disewa beserta info pemiliknya.
  * Didukung filter sederhana lewat query string:
  *  - `category`  → filter kategori (case-insensitive)
  *  - `search`    → cari pada nama / kategori / deskripsi
  *  - `ownerId`   → filter berdasarkan pemilik tertentu
+ *  - `status`    → filter status spesifik
+ *  - `allStatus` → jika 'true', kembalikan semua status (TERSEDIA, DISEWA, MAINTENANCE)
  */
 equipmentsRouter.get('/', async (req, res, next) => {
   try {
-    const { category, search, ownerId } = req.query ?? {}
+    const { category, search, ownerId, status, allStatus } = req.query ?? {}
 
-    const where = {
-      status: 'TERSEDIA'
+    const where = {}
+
+    if (status) {
+      where.status = String(status)
+    } else if (allStatus !== 'true' && !ownerId) {
+      where.status = 'TERSEDIA'
     }
 
     if (category) {
@@ -134,6 +142,82 @@ equipmentsRouter.get('/', async (req, res, next) => {
     })
 
     res.json({ data: equipments.map(e => presentEquipment(e)) })
+  } catch (error) {
+    next(error)
+  }
+})
+
+/**
+ * POST /api/equipments
+ *
+ * Tambah alat baru oleh pemilik (autentikasi JWT).
+ */
+equipmentsRouter.post('/', async (req, res, next) => {
+  try {
+    const authHeader = req.headers.authorization
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({
+        error: { code: 'UNAUTHORIZED', message: 'Token otentikasi wajib disertakan' }
+      })
+    }
+
+    let ownerId
+    try {
+      const decoded = jwt.verify(authHeader.split(' ')[1], config.jwtSecret)
+      ownerId = decoded.userId
+    } catch {
+      return res.status(401).json({
+        error: { code: 'INVALID_TOKEN', message: 'Token tidak valid atau kedaluwarsa' }
+      })
+    }
+
+    const {
+      name,
+      category,
+      description = '',
+      pricePerDay,
+      deposit,
+      powerWatt = 0,
+      weightKg = 10,
+      dimensions = '40 × 30 × 30 cm',
+      maintenanceBufferDays = 1,
+      location = 'Jakarta',
+      distance = 2.0,
+      images = []
+    } = req.body ?? {}
+
+    if (!name || !category || !pricePerDay || !deposit) {
+      return res.status(400).json({
+        error: { code: 'VALIDATION_ERROR', message: 'Nama, kategori, tarif sewa, dan deposit wajib diisi' }
+      })
+    }
+
+    const created = await prisma.equipment.create({
+      data: {
+        ownerId,
+        name: String(name).trim(),
+        category: String(category).trim(),
+        description: String(description).trim(),
+        pricePerDay: Number(pricePerDay),
+        deposit: Number(deposit),
+        powerWatt: Number(powerWatt) || 0,
+        weightKg: Number(weightKg) || 10,
+        dimensions: String(dimensions),
+        maintenanceBufferDays: Number(maintenanceBufferDays) || 1,
+        location: String(location),
+        distance: Number(distance) || 2.0,
+        status: 'TERSEDIA',
+        images: Array.isArray(images) && images.length > 0 ? images : [
+          'https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=800&q=80'
+        ]
+      },
+      include: { owner: true }
+    })
+
+    return res.status(201).json({
+      data: presentEquipment(created),
+      message: 'Alat berhasil ditambahkan ke katalog.'
+    })
   } catch (error) {
     next(error)
   }
