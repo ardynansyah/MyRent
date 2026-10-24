@@ -168,7 +168,7 @@ export default function CheckoutStep1({ wizardData, updateWizard, onNext }) {
     setDateWarning(false)
 
     const addons = ADDON_OPTIONS.filter(a => selectedAddons.includes(a.id))
-    updateWizard({
+    const patch = {
       selectionStart: selectionStart?.toISOString().slice(0, 10),
       selectionEnd: selectionEnd?.toISOString().slice(0, 10),
       deliveryMethod,
@@ -180,8 +180,9 @@ export default function CheckoutStep1({ wizardData, updateWizard, onNext }) {
       shippingCost: effectiveShippingCost,
       depositAmount: equipment?.deposit || 0,
       totalPaid: totalPayment
-    })
-    onNext()
+    }
+    updateWizard(patch)
+    onNext(patch)
   }
 
   // KYC info penyewa

@@ -11,11 +11,9 @@
  */
 
 import React, { useState, useEffect, useCallback } from 'react'
-import { useParams, useLocation, useNavigate, Routes, Route } from 'react-router-dom'
+import { useParams, useLocation, useNavigate } from 'react-router-dom'
 import CheckoutStep1 from './CheckoutStep1'
 import CheckoutStep2 from './CheckoutStep2'
-import CheckoutStep3 from './CheckoutStep3'
-import { getEquipment } from '../../lib/equipmentsApi'
 
 export default function CheckoutWizard() {
   const { equipmentId } = useParams()
@@ -31,51 +29,67 @@ export default function CheckoutWizard() {
       selectionStart: fromDetail.selectionStart || null,
       selectionEnd: fromDetail.selectionEnd || null,
       deliveryMethod: fromDetail.deliveryMethod || 'PICKUP',
-      addons: [],
-      addonsCost: 0,
-      promoCode: '',
-      discountAmount: 0,
-      renterNotes: '',
-      contractAgreedAt: null,
+      addons: fromDetail.addons || [],
+      addonsCost: fromDetail.addonsCost || 0,
+      promoCode: fromDetail.promoCode || '',
+      discountAmount: fromDetail.discountAmount || 0,
+      renterNotes: fromDetail.renterNotes || '',
+      contractAgreedAt: fromDetail.contractAgreedAt || null,
+      rentalCost: fromDetail.rentalCost || 0,
+      shippingCost: fromDetail.shippingCost || 0,
+      depositAmount: fromDetail.depositAmount || 0,
       // Step 2 result
-      orderId: null,
-      invoiceNumber: null,
-      totalPaid: 0
+      orderId: fromDetail.orderId || null,
+      invoiceNumber: fromDetail.invoiceNumber || null,
+      totalPaid: fromDetail.totalPaid || 0
     }
   })
+
+  // Sinkronisasi equipmentId jika berubah dari params
+  useEffect(() => {
+    if (equipmentId && wizardData.equipmentId !== equipmentId) {
+      setWizardData(prev => ({ ...prev, equipmentId }))
+    }
+  }, [equipmentId, wizardData.equipmentId])
 
   const updateWizard = useCallback((patch) => {
     setWizardData(prev => ({ ...prev, ...patch }))
   }, [])
 
   // Navigasi step
-  const goToStep2 = () => navigate(`/checkout/${wizardData.equipmentId}/kontrak`, { state: wizardData })
-  const goToStep3 = (orderId) => navigate(`/checkout/pembayaran/${orderId}`, { state: wizardData })
-  const goBackToStep1 = () => navigate(`/checkout/${wizardData.equipmentId}`, { state: wizardData })
+  const goToStep2 = (patch) => {
+    const nextState = patch ? { ...wizardData, ...patch } : wizardData
+    if (patch) {
+      setWizardData(nextState)
+    }
+    const targetId = equipmentId || nextState.equipmentId
+    navigate(`/checkout/${targetId}/kontrak`, { state: nextState })
+  }
 
-  return (
-    <Routes>
-      <Route
-        path="/"
-        element={
-          <CheckoutStep1
-            wizardData={wizardData}
-            updateWizard={updateWizard}
-            onNext={goToStep2}
-          />
-        }
-      />
-      <Route
-        path="/kontrak"
-        element={
-          <CheckoutStep2
-            wizardData={wizardData}
-            updateWizard={updateWizard}
-            onBack={goBackToStep1}
-            onNext={goToStep3}
-          />
-        }
-      />
-    </Routes>
+  const goBackToStep1 = () => {
+    const targetId = equipmentId || wizardData.equipmentId
+    navigate(`/checkout/${targetId}`, { state: wizardData })
+  }
+
+  const goToStep3 = (orderId) => {
+    navigate(`/checkout/pembayaran/${orderId}`, { state: wizardData })
+  }
+
+  // Cek apakah user sedang berada di sub-path /kontrak (Step 2)
+  const isKontrak = location.pathname.replace(/\/+$/, '').endsWith('/kontrak')
+
+  return isKontrak ? (
+    <CheckoutStep2
+      wizardData={wizardData}
+      updateWizard={updateWizard}
+      onBack={goBackToStep1}
+      onNext={goToStep3}
+    />
+  ) : (
+    <CheckoutStep1
+      wizardData={wizardData}
+      updateWizard={updateWizard}
+      onNext={goToStep2}
+    />
   )
 }
