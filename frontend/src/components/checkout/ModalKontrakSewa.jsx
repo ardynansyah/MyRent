@@ -41,10 +41,20 @@ const PASAL = [
   }
 ]
 
-export default function ModalKontrakSewa({ isOpen, onClose, onAgree, alreadyAgreed = false, contractData = {} }) {
+export default function ModalKontrakSewa({
+  isOpen,
+  onClose,
+  onAgree,
+  isAgreed = false,
+  setIsAgreed,
+  alreadyAgreed = false,
+  contractData = {}
+}) {
   const [openPasal, setOpenPasal] = useState(null)
   const [scrolledToBottom, setScrolledToBottom] = useState(false)
-  const [agreed, setAgreed] = useState(alreadyAgreed)
+  const effectiveAgreed = Boolean(isAgreed || alreadyAgreed)
+  const [isChecked, setIsChecked] = useState(false)
+  const checked = effectiveAgreed || isChecked
 
   if (!isOpen) return null
 
@@ -69,8 +79,11 @@ export default function ModalKontrakSewa({ isOpen, onClose, onAgree, alreadyAgre
   }
 
   const handleAgree = () => {
-    setAgreed(true)
-    onAgree && onAgree(new Date().toISOString())
+    if (onAgree) {
+      onAgree(new Date().toISOString())
+    } else if (setIsAgreed) {
+      setIsAgreed(true)
+    }
   }
 
   return (
@@ -131,7 +144,7 @@ export default function ModalKontrakSewa({ isOpen, onClose, onAgree, alreadyAgre
 
         {/* Footer: Persetujuan */}
         <div className="px-6 py-4 border-t border-slate-200 bg-slate-50 rounded-b-2xl shrink-0">
-          {agreed || alreadyAgreed ? (
+          {effectiveAgreed ? (
             <div className="flex items-center justify-between gap-3 p-3.5 bg-emerald-50 ring-1 ring-emerald-300 rounded-xl">
               <div className="flex items-center gap-3">
                 <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
@@ -155,8 +168,8 @@ export default function ModalKontrakSewa({ isOpen, onClose, onAgree, alreadyAgre
               <label className="flex items-start gap-3 cursor-pointer mb-3">
                 <input
                   type="checkbox"
-                  checked={agreed}
-                  onChange={e => setAgreed(e.target.checked)}
+                  checked={checked}
+                  onChange={e => setIsChecked(e.target.checked)}
                   className="mt-0.5 accent-blue-600 w-4 h-4 shrink-0"
                 />
                 <span className="text-[12px] text-slate-700 leading-relaxed">
@@ -165,10 +178,10 @@ export default function ModalKontrakSewa({ isOpen, onClose, onAgree, alreadyAgre
               </label>
               <button
                 onClick={handleAgree}
-                disabled={!agreed}
+                disabled={!checked}
                 className="w-full py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-200 disabled:text-slate-400 text-white font-bold text-[13px] rounded-xl transition-all cursor-pointer"
               >
-                {agreed ? 'Setujui Kontrak Sewa' : 'Centang persetujuan di atas untuk melanjutkan'}
+                {checked ? 'Setujui Kontrak Sewa' : 'Centang persetujuan di atas untuk melanjutkan'}
               </button>
             </>
           )}

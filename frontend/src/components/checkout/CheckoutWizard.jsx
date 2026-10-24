@@ -45,6 +45,7 @@ export default function CheckoutWizard() {
       discountAmount: fromDetail.discountAmount || draft.discountAmount || 0,
       renterNotes: fromDetail.renterNotes || draft.renterNotes || '',
       contractAgreedAt: fromDetail.contractAgreedAt || draft.contractAgreedAt || null,
+      isAgreed: fromDetail.isAgreed || draft.isAgreed || Boolean(fromDetail.contractAgreedAt || draft.contractAgreedAt) || false,
       rentalCost: fromDetail.rentalCost || draft.rentalCost || 0,
       shippingCost: fromDetail.shippingCost || draft.shippingCost || 0,
       depositAmount: fromDetail.depositAmount || draft.depositAmount || 0,

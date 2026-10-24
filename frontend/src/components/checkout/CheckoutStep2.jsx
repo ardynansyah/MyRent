@@ -10,7 +10,7 @@
  */
 
 import React, { useEffect, useState, useMemo } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import {
   Loader2, TriangleAlert, MapPin, Zap, ChevronLeft,
   ScrollText, CheckCircle2, FileText, Clock, AlertCircle
@@ -49,7 +49,9 @@ function WizardSteps({ current }) {
 
 export default function CheckoutStep2({ wizardData, updateWizard, onBack, onNext }) {
   const navigate = useNavigate()
+  const params = useParams()
   const user = getSessionUser()
+  const equipmentId = wizardData.equipmentId || params.equipmentId
 
   const [equipment, setEquipment] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -57,43 +59,90 @@ export default function CheckoutStep2({ wizardData, updateWizard, onBack, onNext
 
   const [renterNotes, setRenterNotes] = useState(() => {
     if (wizardData.renterNotes) return wizardData.renterNotes
-    if (wizardData.equipmentId) {
+    const targetId = wizardData.equipmentId || params.equipmentId
+    if (targetId) {
       try {
-        const raw = sessionStorage.getItem(`checkout_draft_${wizardData.equipmentId}`)
+        const raw = sessionStorage.getItem(`checkout_draft_${targetId}`)
         if (raw) return JSON.parse(raw).renterNotes || ''
       } catch {}
     }
     return ''
   })
   const [showKontrak, setShowKontrak] = useState(false)
-  const [contractAgreedAt, setContractAgreedAt] = useState(wizardData.contractAgreedAt || null)
+
+  // State persetujuan kontrak digital (Lifting State Up - Task 1 & Task 3)
+  const [isAgreed, setIsAgreed] = useState(() => {
+    if (wizardData.isAgreed) return true
+    if (wizardData.contractAgreedAt) return true
+    const targetId = wizardData.equipmentId || params.equipmentId
+    if (targetId) {
+      try {
+        const raw = sessionStorage.getItem(`checkout_draft_${targetId}`)
+        if (raw) {
+          const draft = JSON.parse(raw)
+          if (draft.isAgreed || draft.contractAgreedAt) return true
+        }
+      } catch {}
+    }
+    return false
+  })
+
+  const [contractAgreedAt, setContractAgreedAt] = useState(() => {
+    if (wizardData.contractAgreedAt) return wizardData.contractAgreedAt
+    const targetId = wizardData.equipmentId || params.equipmentId
+    if (targetId) {
+      try {
+        const raw = sessionStorage.getItem(`checkout_draft_${targetId}`)
+        if (raw) {
+          const draft = JSON.parse(raw)
+          return draft.contractAgreedAt || null
+        }
+      } catch {}
+    }
+    return null
+  })
+
   const [contractError, setContractError] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState('')
 
-  // Sinkronisasi renterNotes ke sessionStorage draft
+  // Sinkronisasi renterNotes dan isAgreed ke sessionStorage draft (Task 3)
   useEffect(() => {
-    if (!wizardData.equipmentId) return
+    const targetId = equipmentId
+    if (!targetId) return
     try {
-      const draftKey = `checkout_draft_${wizardData.equipmentId}`
+      const draftKey = `checkout_draft_${targetId}`
       const raw = sessionStorage.getItem(draftKey)
-      if (raw) {
-        const parsed = JSON.parse(raw)
-        parsed.renterNotes = renterNotes
-        sessionStorage.setItem(draftKey, JSON.stringify(parsed))
+      const parsed = raw ? JSON.parse(raw) : {}
+      parsed.renterNotes = renterNotes
+      parsed.isAgreed = isAgreed
+      if (isAgreed) {
+        parsed.contractAgreedAt = contractAgreedAt || parsed.contractAgreedAt || new Date().toISOString()
+      } else {
+        parsed.contractAgreedAt = null
       }
+      sessionStorage.setItem(draftKey, JSON.stringify(parsed))
     } catch {}
-  }, [renterNotes, wizardData.equipmentId])
+  }, [renterNotes, isAgreed, contractAgreedAt, equipmentId])
+
+  // Hapus state peringatan merah (error) secara otomatis saat isAgreed bernilai true (Task 2)
+  useEffect(() => {
+    if (isAgreed) {
+      setContractError(false)
+      setSubmitError('')
+    }
+  }, [isAgreed])
 
   useEffect(() => {
-    if (!wizardData.equipmentId) { setError('ID alat tidak ditemukan'); setLoading(false); return }
+    const targetId = equipmentId
+    if (!targetId) { setError('ID alat tidak ditemukan'); setLoading(false); return }
     let active = true
-    getEquipment(wizardData.equipmentId)
+    getEquipment(targetId)
       .then(data => { if (active) setEquipment(data) })
       .catch(err => { if (active) setError(err.message || 'Gagal memuat data alat') })
       .finally(() => { if (active) setLoading(false) })
     return () => { active = false }
-  }, [wizardData.equipmentId])
+  }, [equipmentId])
 
   const kycData = user?.kycData || {}
   const renterName = user?.fullName || 'Penyewa'
@@ -117,17 +166,20 @@ export default function CheckoutStep2({ wizardData, updateWizard, onBack, onNext
   }), [equipment, wizardData, renterName, businessName, contractAgreedAt])
 
   const handleAgreeContract = (timestamp) => {
-    setContractAgreedAt(timestamp)
+    const agreedTime = typeof timestamp === 'string' ? timestamp : new Date().toISOString()
+    setIsAgreed(true)
+    setContractAgreedAt(agreedTime)
     setContractError(false)
+    setSubmitError('')
     setShowKontrak(false)
-    updateWizard({ contractAgreedAt: timestamp })
+    updateWizard({ isAgreed: true, contractAgreedAt: agreedTime })
   }
 
   const handleBayarSekarang = async () => {
-    // Validasi kontrak wajib disetujui
-    if (!contractAgreedAt) {
+    // Validasi kontrak wajib disetujui (Task 2)
+    if (!isAgreed) {
       setContractError(true)
-      setShowKontrak(true)
+      setSubmitError('Setujui kontrak sewa terlebih dahulu')
       return
     }
 
@@ -135,10 +187,12 @@ export default function CheckoutStep2({ wizardData, updateWizard, onBack, onNext
     setSubmitError('')
 
     try {
-      updateWizard({ renterNotes })
+      updateWizard({ renterNotes, isAgreed: true })
+
+      const effectiveAgreedAt = contractAgreedAt || new Date().toISOString()
 
       const payload = {
-        equipmentId: wizardData.equipmentId,
+        equipmentId: equipmentId,
         startDate: wizardData.selectionStart,
         endDate: wizardData.selectionEnd || wizardData.selectionStart,
         rentalDays: contractData.rentalDays,
@@ -153,14 +207,14 @@ export default function CheckoutStep2({ wizardData, updateWizard, onBack, onNext
         promoCode: wizardData.promoCode || '',
         discountAmount: wizardData.discountAmount || 0,
         renterNotes,
-        contractAgreedAt
+        contractAgreedAt: effectiveAgreedAt
       }
 
       const order = await createOrder(payload)
       // Hapus draft form dari sessionStorage setelah pesanan berhasil terbuat di database
-      if (wizardData.equipmentId) {
+      if (equipmentId) {
         try {
-          sessionStorage.removeItem(`checkout_draft_${wizardData.equipmentId}`)
+          sessionStorage.removeItem(`checkout_draft_${equipmentId}`)
         } catch {
           // ignore error
         }
@@ -278,17 +332,17 @@ export default function CheckoutStep2({ wizardData, updateWizard, onBack, onNext
 
             {/* Kontrak Sewa Digital */}
             <div className={`bg-white ring-1 rounded-[14px] p-5 flex flex-col gap-4 transition-all ${
-              contractError ? 'ring-red-400 bg-red-50/20' : contractAgreedAt ? 'ring-emerald-300' : 'ring-slate-200'
+              contractError ? 'ring-red-400 bg-red-50/20' : isAgreed ? 'ring-emerald-300' : 'ring-slate-200'
             }`}>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2.5">
-                  <FileText className={`w-5 h-5 ${contractAgreedAt ? 'text-emerald-600' : 'text-slate-500'}`} />
+                  <FileText className={`w-5 h-5 ${isAgreed ? 'text-emerald-600' : 'text-slate-500'}`} />
                   <div>
                     <h2 className="text-[14px] font-bold text-slate-900">Kontrak Sewa Digital</h2>
                     <p className="text-[11px] text-slate-500">Harus dibaca dan disetujui sebelum pembayaran</p>
                   </div>
                 </div>
-                {contractAgreedAt ? (
+                {isAgreed ? (
                   <div className="flex items-center gap-1.5 px-2.5 py-1 bg-emerald-50 ring-1 ring-emerald-300 rounded-full">
                     <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
                     <span className="text-[11px] text-emerald-700 font-semibold">Kontrak Disetujui ✓</span>
@@ -301,7 +355,7 @@ export default function CheckoutStep2({ wizardData, updateWizard, onBack, onNext
                 )}
               </div>
 
-              {contractAgreedAt ? (
+              {isAgreed ? (
                 <div className="flex flex-col gap-2 p-3.5 bg-emerald-50 ring-1 ring-emerald-200 rounded-xl">
                   <div className="flex items-center gap-2">
                     <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
@@ -310,7 +364,7 @@ export default function CheckoutStep2({ wizardData, updateWizard, onBack, onNext
                     </span>
                   </div>
                   <p className="text-[11px] text-emerald-600">
-                    Waktu persetujuan: {new Date(contractAgreedAt).toLocaleString('id-ID', { dateStyle: 'full', timeStyle: 'short' })}
+                    Waktu persetujuan: {contractAgreedAt ? new Date(contractAgreedAt).toLocaleString('id-ID', { dateStyle: 'full', timeStyle: 'short' }) : 'Hari ini'}
                   </p>
                   <button onClick={() => setShowKontrak(true)} className="text-[11px] text-blue-600 font-semibold hover:underline text-left cursor-pointer">
                     Lihat detail kontrak →
@@ -324,7 +378,7 @@ export default function CheckoutStep2({ wizardData, updateWizard, onBack, onNext
                   {contractError && (
                     <div className="flex items-center gap-2 p-2.5 bg-red-50 ring-1 ring-red-300 rounded-xl">
                       <AlertCircle className="w-4 h-4 text-red-600 shrink-0" />
-                      <p className="text-[11px] text-red-700 font-semibold">Kontrak harus disetujui sebelum dapat melanjutkan pembayaran.</p>
+                      <p className="text-[11px] text-red-700 font-semibold">Setujui kontrak sewa terlebih dahulu</p>
                     </div>
                   )}
                   <button
@@ -411,8 +465,8 @@ export default function CheckoutStep2({ wizardData, updateWizard, onBack, onNext
                 `Bayar Rp ${(wizardData.totalPaid || 0).toLocaleString('id-ID')} →`
               )}
             </button>
-            {!contractAgreedAt && (
-              <p className="text-[10px] text-amber-600 text-center font-semibold">
+            {!isAgreed && (
+              <p className="text-[10px] text-red-600 text-center font-semibold">
                 ⚠ Setujui kontrak sewa terlebih dahulu
               </p>
             )}
@@ -427,8 +481,10 @@ export default function CheckoutStep2({ wizardData, updateWizard, onBack, onNext
       <ModalKontrakSewa
         isOpen={showKontrak}
         onClose={() => setShowKontrak(false)}
+        isAgreed={isAgreed}
+        setIsAgreed={setIsAgreed}
         onAgree={handleAgreeContract}
-        alreadyAgreed={!!contractAgreedAt}
+        alreadyAgreed={isAgreed}
         contractData={contractData}
       />
     </div>
