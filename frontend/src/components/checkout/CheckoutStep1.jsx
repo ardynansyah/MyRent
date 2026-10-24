@@ -63,6 +63,17 @@ function WizardSteps({ current }) {
   )
 }
 
+// ── Helper Session Storage Draft ──────────────────────────────────────────────
+function getDraft(equipmentId) {
+  if (!equipmentId) return null
+  try {
+    const raw = sessionStorage.getItem(`checkout_draft_${equipmentId}`)
+    return raw ? JSON.parse(raw) : null
+  } catch {
+    return null
+  }
+}
+
 export default function CheckoutStep1({ wizardData, updateWizard, onNext }) {
   const navigate = useNavigate()
   const user = getSessionUser()
@@ -70,21 +81,46 @@ export default function CheckoutStep1({ wizardData, updateWizard, onNext }) {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
+  // Baca draft form dari sessionStorage jika ada
+  const draft = useMemo(() => getDraft(wizardData.equipmentId), [wizardData.equipmentId])
+
   // Kalender
-  const [selectionStart, setSelectionStart] = useState(() => normalizeDate(wizardData.selectionStart))
-  const [selectionEnd, setSelectionEnd] = useState(() => normalizeDate(wizardData.selectionEnd))
+  const [selectionStart, setSelectionStart] = useState(() => {
+    const val = wizardData.selectionStart || draft?.selectionStart
+    return val ? normalizeDate(val) : null
+  })
+  const [selectionEnd, setSelectionEnd] = useState(() => {
+    const val = wizardData.selectionEnd || draft?.selectionEnd
+    return val ? normalizeDate(val) : null
+  })
   const [showCalendar, setShowCalendar] = useState(false)
   const [dateWarning, setDateWarning] = useState(false)
 
   // Metode serah terima
-  const [deliveryMethod, setDeliveryMethod] = useState(wizardData.deliveryMethod || 'PICKUP')
+  const [deliveryMethod, setDeliveryMethod] = useState(() => {
+    return wizardData.deliveryMethod || draft?.deliveryMethod || 'PICKUP'
+  })
 
   // Add-ons
-  const [selectedAddons, setSelectedAddons] = useState(wizardData.addons?.map(a => a.id) || [])
+  const [selectedAddons, setSelectedAddons] = useState(() => {
+    if (wizardData.addons && wizardData.addons.length > 0) {
+      return wizardData.addons.map(a => typeof a === 'string' ? a : a.id)
+    }
+    if (draft?.selectedAddons) return draft.selectedAddons
+    if (draft?.addons) return draft.addons.map(a => typeof a === 'string' ? a : a.id)
+    return []
+  })
 
   // Promo
-  const [promoInput, setPromoInput] = useState(wizardData.promoCode || '')
-  const [promoData, setPromoData] = useState(null)
+  const [promoInput, setPromoInput] = useState(() => {
+    return wizardData.promoCode || draft?.promoCode || ''
+  })
+  const [promoData, setPromoData] = useState(() => {
+    if (wizardData.promoCode && wizardData.discountAmount > 0) {
+      return { code: wizardData.promoCode, discountAmount: wizardData.discountAmount }
+    }
+    return draft?.promoData || null
+  })
   const [promoError, setPromoError] = useState('')
   const [promoLoading, setPromoLoading] = useState(false)
 
@@ -184,6 +220,47 @@ export default function CheckoutStep1({ wizardData, updateWizard, onNext }) {
     updateWizard(patch)
     onNext(patch)
   }
+
+  // Simpan draft form ke sessionStorage setiap kali opsi pengiriman, tambahan, promo, atau tanggal berubah
+  useEffect(() => {
+    if (!wizardData.equipmentId) return
+    const draftKey = `checkout_draft_${wizardData.equipmentId}`
+    const addons = ADDON_OPTIONS.filter(a => selectedAddons.includes(a.id))
+    const draftData = {
+      equipmentId: wizardData.equipmentId,
+      selectionStart: selectionStart ? selectionStart.toISOString().slice(0, 10) : null,
+      selectionEnd: selectionEnd ? selectionEnd.toISOString().slice(0, 10) : null,
+      deliveryMethod,
+      selectedAddons,
+      addons,
+      addonsCost,
+      promoCode: promoInput.trim(),
+      promoData,
+      discountAmount: promoData?.discountAmount || 0,
+      rentalCost,
+      shippingCost: effectiveShippingCost,
+      depositAmount: equipment?.deposit || 0,
+      totalPaid: totalPayment
+    }
+    try {
+      sessionStorage.setItem(draftKey, JSON.stringify(draftData))
+    } catch {
+      // ignore storage error
+    }
+  }, [
+    wizardData.equipmentId,
+    selectionStart,
+    selectionEnd,
+    deliveryMethod,
+    selectedAddons,
+    promoInput,
+    promoData,
+    addonsCost,
+    rentalCost,
+    effectiveShippingCost,
+    equipment?.deposit,
+    totalPayment
+  ])
 
   // KYC info penyewa
   const kycData = user?.kycData || {}

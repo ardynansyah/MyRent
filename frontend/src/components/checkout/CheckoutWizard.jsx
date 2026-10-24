@@ -22,26 +22,36 @@ export default function CheckoutWizard() {
 
   // ── Shared wizard state ────────────────────────────────────────────────────
   const [wizardData, setWizardData] = useState(() => {
-    // Ambil state yang di-pass dari DetailAlat (via navigate state)
+    // Ambil state yang di-pass dari DetailAlat (via navigate state) atau sessionStorage draft
     const fromDetail = location.state || {}
+    const draftKey = equipmentId ? `checkout_draft_${equipmentId}` : null
+    let draft = {}
+    if (draftKey) {
+      try {
+        const stored = sessionStorage.getItem(draftKey)
+        if (stored) draft = JSON.parse(stored)
+      } catch {
+        // ignore parse error
+      }
+    }
     return {
-      equipmentId: equipmentId || fromDetail.equipmentId,
-      selectionStart: fromDetail.selectionStart || null,
-      selectionEnd: fromDetail.selectionEnd || null,
-      deliveryMethod: fromDetail.deliveryMethod || 'PICKUP',
-      addons: fromDetail.addons || [],
-      addonsCost: fromDetail.addonsCost || 0,
-      promoCode: fromDetail.promoCode || '',
-      discountAmount: fromDetail.discountAmount || 0,
-      renterNotes: fromDetail.renterNotes || '',
-      contractAgreedAt: fromDetail.contractAgreedAt || null,
-      rentalCost: fromDetail.rentalCost || 0,
-      shippingCost: fromDetail.shippingCost || 0,
-      depositAmount: fromDetail.depositAmount || 0,
+      equipmentId: equipmentId || fromDetail.equipmentId || draft.equipmentId,
+      selectionStart: fromDetail.selectionStart || draft.selectionStart || null,
+      selectionEnd: fromDetail.selectionEnd || draft.selectionEnd || null,
+      deliveryMethod: fromDetail.deliveryMethod || draft.deliveryMethod || 'PICKUP',
+      addons: fromDetail.addons || draft.addons || [],
+      addonsCost: fromDetail.addonsCost || draft.addonsCost || 0,
+      promoCode: fromDetail.promoCode || draft.promoCode || '',
+      discountAmount: fromDetail.discountAmount || draft.discountAmount || 0,
+      renterNotes: fromDetail.renterNotes || draft.renterNotes || '',
+      contractAgreedAt: fromDetail.contractAgreedAt || draft.contractAgreedAt || null,
+      rentalCost: fromDetail.rentalCost || draft.rentalCost || 0,
+      shippingCost: fromDetail.shippingCost || draft.shippingCost || 0,
+      depositAmount: fromDetail.depositAmount || draft.depositAmount || 0,
       // Step 2 result
       orderId: fromDetail.orderId || null,
       invoiceNumber: fromDetail.invoiceNumber || null,
-      totalPaid: fromDetail.totalPaid || 0
+      totalPaid: fromDetail.totalPaid || draft.totalPaid || 0
     }
   })
 

@@ -55,12 +55,35 @@ export default function CheckoutStep2({ wizardData, updateWizard, onBack, onNext
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
-  const [renterNotes, setRenterNotes] = useState(wizardData.renterNotes || '')
+  const [renterNotes, setRenterNotes] = useState(() => {
+    if (wizardData.renterNotes) return wizardData.renterNotes
+    if (wizardData.equipmentId) {
+      try {
+        const raw = sessionStorage.getItem(`checkout_draft_${wizardData.equipmentId}`)
+        if (raw) return JSON.parse(raw).renterNotes || ''
+      } catch {}
+    }
+    return ''
+  })
   const [showKontrak, setShowKontrak] = useState(false)
   const [contractAgreedAt, setContractAgreedAt] = useState(wizardData.contractAgreedAt || null)
   const [contractError, setContractError] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState('')
+
+  // Sinkronisasi renterNotes ke sessionStorage draft
+  useEffect(() => {
+    if (!wizardData.equipmentId) return
+    try {
+      const draftKey = `checkout_draft_${wizardData.equipmentId}`
+      const raw = sessionStorage.getItem(draftKey)
+      if (raw) {
+        const parsed = JSON.parse(raw)
+        parsed.renterNotes = renterNotes
+        sessionStorage.setItem(draftKey, JSON.stringify(parsed))
+      }
+    } catch {}
+  }, [renterNotes, wizardData.equipmentId])
 
   useEffect(() => {
     if (!wizardData.equipmentId) { setError('ID alat tidak ditemukan'); setLoading(false); return }
@@ -134,6 +157,14 @@ export default function CheckoutStep2({ wizardData, updateWizard, onBack, onNext
       }
 
       const order = await createOrder(payload)
+      // Hapus draft form dari sessionStorage setelah pesanan berhasil terbuat di database
+      if (wizardData.equipmentId) {
+        try {
+          sessionStorage.removeItem(`checkout_draft_${wizardData.equipmentId}`)
+        } catch {
+          // ignore error
+        }
+      }
       updateWizard({ orderId: order.id, invoiceNumber: order.invoiceNumber })
       onNext(order.id)
     } catch (err) {
