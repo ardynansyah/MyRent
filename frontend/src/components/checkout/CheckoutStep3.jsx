@@ -274,16 +274,18 @@ export default function CheckoutStep3() {
   return (
     <div className="min-h-screen bg-[#F8FAFC] flex flex-col">
       {/* Top Bar */}
-      <header className="w-full h-[68px] shrink-0 flex items-center justify-between px-8 bg-white border-b border-slate-200 sticky top-0 z-40">
-        <div className="flex items-center gap-3.5">
-          <span className="text-[18px] text-blue-600 font-extrabold tracking-[-0.3px]">SewaAlat</span>
-          <div className="w-px h-[18px] bg-slate-200" />
-          <span className="text-[13px] font-semibold text-slate-900">Checkout · Pembayaran Escrow</span>
+      <header className="w-full bg-white border-b border-slate-200 sticky top-0 z-40">
+        <div className="w-full max-w-[1600px] mx-auto px-4 md:px-12 lg:px-20 h-[68px] flex items-center justify-between">
+          <div className="flex items-center gap-3.5">
+            <span className="text-[18px] text-blue-600 font-extrabold tracking-[-0.3px]">SewaAlat</span>
+            <div className="w-px h-[18px] bg-slate-200" />
+            <span className="text-[13px] font-semibold text-slate-900">Checkout · Pembayaran Escrow</span>
+          </div>
+          <span className="text-[11px] font-semibold text-blue-700 bg-blue-50 px-2.5 py-1 rounded-full">Langkah 3 dari 3</span>
         </div>
-        <span className="text-[11px] font-semibold text-blue-700 bg-blue-50 px-2.5 py-1 rounded-full">Langkah 3 dari 3</span>
       </header>
 
-      <main className="w-full max-w-[1040px] mx-auto flex flex-col gap-5 py-7 px-4 md:px-0 pb-12">
+      <main className="w-full max-w-[1600px] mx-auto px-4 md:px-12 lg:px-20 flex flex-col gap-5 py-7 pb-12">
         <WizardSteps />
 
         {/* Countdown 24 jam */}

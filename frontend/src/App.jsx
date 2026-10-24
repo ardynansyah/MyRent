@@ -374,8 +374,8 @@ function DashboardView({
       <Toast message={toastMessage} />
 
       {/* Top Navigation */}
-      <header className="sticky top-0 z-40 backdrop-blur-md bg-white/90 border-b border-slate-200 px-4 sm:px-8 py-3.5 transition-all">
-        <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
+      <header className="sticky top-0 z-40 backdrop-blur-md bg-white/90 border-b border-slate-200 py-3.5 transition-all">
+        <div className="w-full max-w-[1600px] mx-auto px-4 md:px-12 lg:px-20 flex items-center justify-between gap-4">
           <div className="flex items-center gap-4">
             <button
               type="button"
@@ -460,7 +460,7 @@ function DashboardView({
       </header>
 
       {/* Main Content */}
-      <main className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-8 py-8 space-y-8">
+      <main className="flex-1 w-full max-w-[1600px] mx-auto px-4 md:px-12 lg:px-20 py-8 space-y-8">
         {/* Banner */}
         <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-blue-700 to-indigo-800 p-6 sm:p-10 text-white shadow-md">
           <div className="relative z-10 max-w-2xl space-y-3">
@@ -664,34 +664,36 @@ function DashboardPemilikPlaceholder({ onLogout }) {
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col justify-between text-slate-800 font-sans">
-      <header className="sticky top-0 z-40 backdrop-blur-md bg-white/90 border-b border-slate-200 px-4 sm:px-8 py-3.5 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <button
-            type="button"
-            onClick={() => navigate('/')}
-            className="text-lg text-blue-600 font-extrabold tracking-[-0.3px] cursor-pointer"
-          >
-            MyRent
-          </button>
-          <span className="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200">
-            Mode Pemilik Alat
-          </span>
-        </div>
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={() => navigate('/')}
-            className="text-xs font-semibold px-3 py-1.5 rounded-lg border border-slate-200 hover:bg-slate-50 transition-colors cursor-pointer"
-          >
-            Beranda
-          </button>
-          <button
-            type="button"
-            onClick={handleLogout}
-            className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 transition-colors cursor-pointer"
-          >
-            Keluar
-          </button>
+      <header className="sticky top-0 z-40 backdrop-blur-md bg-white/90 border-b border-slate-200 py-3.5">
+        <div className="w-full max-w-[1600px] mx-auto px-4 md:px-12 lg:px-20 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => navigate('/')}
+              className="text-lg text-blue-600 font-extrabold tracking-[-0.3px] cursor-pointer"
+            >
+              MyRent
+            </button>
+            <span className="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200">
+              Mode Pemilik Alat
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => navigate('/')}
+              className="text-xs font-semibold px-3 py-1.5 rounded-lg border border-slate-200 hover:bg-slate-50 transition-colors cursor-pointer"
+            >
+              Beranda
+            </button>
+            <button
+              type="button"
+              onClick={handleLogout}
+              className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 transition-colors cursor-pointer"
+            >
+              Keluar
+            </button>
+          </div>
         </div>
       </header>
 

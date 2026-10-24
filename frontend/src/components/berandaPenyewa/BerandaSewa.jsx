@@ -277,7 +277,7 @@ export default function BerandaSewa({
       />
 
       {/* 2. Main Content: Sidebar + Product Grid */}
-      <main className="box-border w-full max-w-[1440px] mx-auto h-fit flex flex-col lg:flex-row gap-6 py-7 px-4 md:px-8 pb-10 justify-start items-start">
+      <main className="box-border w-full max-w-[1600px] mx-auto px-4 md:px-12 lg:px-20 h-fit flex flex-col lg:flex-row gap-6 py-7 pb-10 justify-start items-start">
         {/* Left: Filter Sidebar */}
         <SidebarFilter
           filters={filters}

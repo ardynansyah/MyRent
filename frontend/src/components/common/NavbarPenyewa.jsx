@@ -57,14 +57,15 @@ export default function NavbarPenyewa({
   }
 
   return (
-    <header className="box-border w-full h-[68px] shrink-0 flex flex-row gap-4 lg:gap-7 px-4 md:px-8 justify-start items-center bg-white border-b border-slate-200 sticky top-0 z-40 transition-all">
-      {/* Wordmark Logo */}
-      <Link
-        to="/beranda-sewa"
-        className="text-lg text-blue-600 font-extrabold tracking-tight text-left whitespace-nowrap cursor-pointer hover:opacity-90 transition-opacity bg-transparent border-0 p-0 no-underline"
-      >
-        SewaAlat
-      </Link>
+    <header className="box-border w-full bg-white border-b border-slate-200 sticky top-0 z-40 transition-all">
+      <div className="w-full max-w-[1600px] mx-auto px-4 md:px-12 lg:px-20 h-[68px] flex flex-row gap-4 lg:gap-7 items-center justify-between">
+        {/* Wordmark Logo */}
+        <Link
+          to="/beranda-sewa"
+          className="text-lg text-blue-600 font-extrabold tracking-tight text-left whitespace-nowrap cursor-pointer hover:opacity-90 transition-opacity bg-transparent border-0 p-0 no-underline"
+        >
+          SewaAlat
+        </Link>
 
       {/* NavLinks */}
       <nav className="box-border w-fit shrink-0 h-fit hidden md:flex flex-row gap-2 lg:gap-5 justify-start items-center">
@@ -216,6 +217,7 @@ export default function NavbarPenyewa({
             </div>
           )}
         </div>
+      </div>
       </div>
 
       {/* Global Wallet Modal */}

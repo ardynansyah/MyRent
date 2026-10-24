@@ -118,3 +118,31 @@ html {
   font-variant-numeric: tabular-nums;
   font-feature-settings: "tnum" 1;
 }
+
+/* Universal Wide Layout Wrapper: w-full max-w-[1600px] mx-auto px-4 md:px-12 lg:px-20 */
+.layout-container,
+.universal-wrapper {
+  width: 100%;
+  max-width: 1600px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+@media (min-width: 768px) {
+  .layout-container,
+  .universal-wrapper {
+    padding-left: 3rem;
+    padding-right: 3rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .layout-container,
+  .universal-wrapper {
+    padding-left: 5rem;
+    padding-right: 5rem;
+  }
+}
+

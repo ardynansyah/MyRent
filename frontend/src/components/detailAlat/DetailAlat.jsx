@@ -218,7 +218,7 @@ export default function DetailAlat({
       />
 
       {/* 2. Main Detail Page Layout: Two Columns */}
-      <main className="box-border w-full max-w-360 mx-auto h-fit flex flex-col lg:flex-row gap-6 py-7 px-4 md:px-8 pb-12 justify-start items-start">
+      <main className="box-border w-full max-w-[1600px] mx-auto px-4 md:px-12 lg:px-20 h-fit flex flex-col lg:flex-row gap-6 py-7 pb-12 justify-start items-start">
         {/* Left Column: Media, Specs, Warning, Calendar, Description */}
         <section className="box-border flex-1 min-w-0 w-full h-fit flex flex-col gap-5.5 justify-start items-start">
           {/* Breadcrumb Navigation */}

@@ -177,7 +177,7 @@ export default function PesananSaya() {
       />
 
       {/* Main Container */}
-      <main className="box-border w-full max-w-[1200px] mx-auto h-fit flex flex-col gap-5 py-7 px-4 md:px-8 pb-16">
+      <main className="box-border w-full max-w-[1600px] mx-auto px-4 md:px-12 lg:px-20 h-fit flex flex-col gap-5 py-7 pb-16">
         {/* Page Head */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-3">
           <div>

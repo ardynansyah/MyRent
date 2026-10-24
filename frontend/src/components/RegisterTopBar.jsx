@@ -22,8 +22,9 @@ export default function RegisterTopBar({
   const handleLogin = onBackToLogin || onLoginClick
 
   return (
-    <header className="w-full h-16 shrink-0 flex flex-row items-center justify-between px-4 sm:px-8 bg-white border-b border-slate-200 sticky top-0 z-30">
-      {/* Sisi Kiri: Logo + Garis Pemisah + Keterangan Role */}
+    <header className="w-full bg-white border-b border-slate-200 sticky top-0 z-30">
+      <div className="w-full max-w-[1600px] mx-auto px-4 md:px-12 lg:px-20 h-16 flex flex-row items-center justify-between">
+        {/* Sisi Kiri: Logo + Garis Pemisah + Keterangan Role */}
       <div className="flex items-center gap-3">
         <button
           type="button"
@@ -73,6 +74,7 @@ export default function RegisterTopBar({
           </div>
         </div>
       )}
+      </div>
     </header>
   )
 }
