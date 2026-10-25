@@ -18,6 +18,7 @@ import ModalDetailPengajuan from '../components/pesananSaya/ModalDetailPengajuan
 import ModalBatalPesanan from '../components/pesananSaya/ModalBatalPesanan'
 import ModalDompet from '../components/pesananSaya/ModalDompet'
 import ModalKontrakSewa from '../components/checkout/ModalKontrakSewa'
+import ModalBeriUlasan from '../components/pesananSaya/ModalBeriUlasan'
 import {
   listOrders,
   cancelOrder,
@@ -50,6 +51,8 @@ export default function PesananSaya() {
   const [isCancelOpen, setIsCancelOpen] = useState(false)
   const [isWalletOpen, setIsWalletOpen] = useState(false)
   const [isKontrakOpen, setIsKontrakOpen] = useState(false)
+  const [isReviewOpen, setIsReviewOpen] = useState(false)
+
 
   const showToast = (message) => {
     setToast(message)
@@ -389,6 +392,10 @@ export default function PesananSaya() {
                   setSelectedOrder(ord)
                   setIsKontrakOpen(true)
                 }}
+                onReview={(ord) => {
+                  setSelectedOrder(ord)
+                  setIsReviewOpen(true)
+                }}
               />
             ))}
           </div>
@@ -396,6 +403,19 @@ export default function PesananSaya() {
       </main>
 
       {/* Modals */}
+      <ModalBeriUlasan
+        isOpen={isReviewOpen}
+        onClose={() => {
+          setIsReviewOpen(false)
+          setSelectedOrder(null)
+        }}
+        order={selectedOrder}
+        onSuccess={(_ordId) => {
+          showToast('Ulasan berhasil dikirim! Terima kasih atas masukan berharga Anda.')
+          fetchOrders()
+        }}
+      />
+
       <ModalPerpanjangSewa
         isOpen={isExtendOpen}
         onClose={() => {

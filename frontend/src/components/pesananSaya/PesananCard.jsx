@@ -11,7 +11,8 @@ import {
   AlertCircle,
   CheckCircle2,
   Clock,
-  ChevronRight
+  ChevronRight,
+  Star
 } from 'lucide-react'
 import { formatShortDate, formatLongDate } from '../../lib/dateHelpers'
 
@@ -23,7 +24,8 @@ export default function PesananCard({
   onCancel,
   onViewDetail,
   onTrack,
-  onViewContract
+  onViewContract,
+  onReview
 }) {
   const navigate = useNavigate()
   const equipment = order.equipment || {}
@@ -379,17 +381,32 @@ export default function PesananCard({
           {/* Status: SELESAI */}
           {status === 'SELESAI' && (
             <>
+              {order.review ? (
+                <div className="flex items-center gap-1.5 py-1.5 px-3 rounded-xl bg-amber-50 text-amber-800 ring-1 ring-amber-200 text-xs font-semibold">
+                  <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-500" />
+                  <span>Diulas {order.review.rating}/5</span>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => onReview?.(order)}
+                  className="py-2 px-3.5 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 active:scale-95 rounded-xl transition-all shadow-xs flex items-center gap-1.5 cursor-pointer"
+                >
+                  <Star className="w-3.5 h-3.5 fill-white text-white" />
+                  <span>Beri Ulasan</span>
+                </button>
+              )}
               <button
                 type="button"
                 onClick={() => navigate(`/pesanan-saya/${order.id}/kembalikan`)}
-                className="py-2 px-3 text-xs font-semibold text-slate-700 bg-white hover:bg-slate-50 ring-1 ring-slate-200 rounded-xl transition-all"
+                className="py-2 px-3 text-xs font-semibold text-slate-700 bg-white hover:bg-slate-50 ring-1 ring-slate-200 rounded-xl transition-all cursor-pointer"
               >
                 Lihat Dokumen BAST
               </button>
               <button
                 type="button"
                 onClick={() => navigate(`/detail-alat/${order.equipmentId}`)}
-                className="py-2 px-3.5 text-xs font-semibold text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-xl transition-all"
+                className="py-2 px-3.5 text-xs font-semibold text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-xl transition-all cursor-pointer"
               >
                 Sewa Lagi
               </button>

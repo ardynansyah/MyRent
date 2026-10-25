@@ -70,7 +70,8 @@ ordersRouter.get('/', async (req, res, next) => {
         equipment: {
           include: { owner: { select: { id: true, fullName: true, email: true, phone: true, kycData: true } } }
         },
-        user: { select: { id: true, fullName: true, email: true, phone: true, kycData: true } }
+        user: { select: { id: true, fullName: true, email: true, phone: true, kycData: true } },
+        review: true
       }
     })
 
@@ -120,7 +121,8 @@ ordersRouter.get('/:id', async (req, res, next) => {
         equipment: {
           include: { owner: { select: { id: true, fullName: true, email: true, phone: true, kycData: true } } }
         },
-        user: { select: { id: true, fullName: true, email: true, phone: true, kycData: true } }
+        user: { select: { id: true, fullName: true, email: true, phone: true, kycData: true } },
+        review: true
       }
     })
 
@@ -741,3 +743,76 @@ ordersRouter.patch('/:id/complete-inspection', async (req, res, next) => {
     next(error)
   }
 })
+
+/**
+ * POST /api/orders/:id/review
+ * Penyewa mengirim rating & ulasan untuk pesanan berstatus SELESAI
+ */
+ordersRouter.post('/:id/review', async (req, res, next) => {
+  try {
+    const { rating, comment } = req.body ?? {}
+    const numRating = Number(rating)
+    if (!numRating || numRating < 1 || numRating > 5) {
+      return res.status(400).json({
+        error: { code: 'VALIDATION_ERROR', message: 'Rating harus bernilai 1-5 bintang' }
+      })
+    }
+
+    if (!comment || typeof comment !== 'string' || !comment.trim()) {
+      return res.status(400).json({
+        error: { code: 'VALIDATION_ERROR', message: 'Komentar ulasan wajib diisi' }
+      })
+    }
+
+    const order = await prisma.order.findUnique({
+      where: { id: req.params.id },
+      include: { review: true }
+    })
+
+    if (!order) {
+      return res.status(404).json({
+        error: { code: 'ORDER_NOT_FOUND', message: 'Pesanan tidak ditemukan' }
+      })
+    }
+
+    if (order.userId !== req.userId && req.userRole !== 'ADMIN') {
+      return res.status(403).json({
+        error: { code: 'FORBIDDEN', message: 'Hanya penyewa pesanan ini yang dapat memberikan ulasan' }
+      })
+    }
+
+    if (order.status !== 'SELESAI') {
+      return res.status(400).json({
+        error: { code: 'INVALID_STATUS', message: 'Ulasan hanya dapat dikirimkan untuk pesanan yang sudah berstatus SELESAI' }
+      })
+    }
+
+    if (order.review) {
+      return res.status(400).json({
+        error: { code: 'ALREADY_REVIEWED', message: 'Pesanan ini sudah pernah Anda beri ulasan' }
+      })
+    }
+
+    const review = await prisma.review.create({
+      data: {
+        orderId: order.id,
+        equipmentId: order.equipmentId,
+        userId: req.userId,
+        rating: Math.round(numRating),
+        comment: comment.trim()
+      },
+      include: {
+        user: { select: { id: true, fullName: true, kycData: true } },
+        equipment: { select: { id: true, name: true, category: true } }
+      }
+    })
+
+    return res.status(201).json({
+      data: review,
+      message: 'Ulasan berhasil disimpan. Terima kasih atas apresiasi Anda!'
+    })
+  } catch (error) {
+    next(error)
+  }
+})
+

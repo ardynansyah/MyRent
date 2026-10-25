@@ -220,3 +220,18 @@ export async function rejectOrder(id) {
   if (!res.ok) throw new Error(body?.error?.message || 'Gagal menolak pesanan')
   return body?.data
 }
+
+/**
+ * Kirim rating dan ulasan untuk pesanan SELESAI.
+ */
+export async function submitReview(orderId, { rating, comment }) {
+  const res = await fetch(`${API_BASE}/orders/${encodeURIComponent(orderId)}/review`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...authHeaders() },
+    body: JSON.stringify({ rating, comment })
+  })
+  const body = await res.json().catch(() => ({}))
+  if (!res.ok) throw new Error(body?.error?.message || 'Gagal mengirim ulasan')
+  return body?.data
+}
+

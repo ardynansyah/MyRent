@@ -68,6 +68,7 @@ model User {
 
   equipments Equipment[]
   orders     Order[]
+  reviews    Review[]
 }
 
 model Equipment {
@@ -93,8 +94,9 @@ model Equipment {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  owner  User    @relation(fields: [ownerId], references: [id])
-  orders Order[]
+  owner   User      @relation(fields: [ownerId], references: [id])
+  orders  Order[]
+  reviews Review[]
 
   @@index([ownerId])
   @@index([status])
@@ -171,8 +173,28 @@ model Order {
 
   user           User        @relation(fields: [userId], references: [id])
   equipment      Equipment   @relation(fields: [equipmentId], references: [id])
+  review         Review?
 
   @@index([userId])
   @@index([equipmentId])
   @@index([status])
 }
+
+model Review {
+  id          String   @id @default(uuid())
+  orderId     String   @unique
+  equipmentId String
+  userId      String
+  rating      Int
+  comment     String   @db.Text
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  order       Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  equipment   Equipment @relation(fields: [equipmentId], references: [id], onDelete: Cascade)
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([equipmentId])
+  @@index([userId])
+}
+

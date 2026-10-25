@@ -281,6 +281,83 @@ async function main() {
     }
   })
 
+  // 4b. Penyewa tambahan untuk ragam ulasan dan riwayat transaksi
+  const PENYEWA_2_ID = '22222222-2222-4222-8222-222222222223'
+  const PENYEWA_2_EMAIL = 'andini@myrent.com'
+  const penyewa2 = await prisma.user.upsert({
+    where: { email: PENYEWA_2_EMAIL },
+    update: {
+      fullName: 'Siti Andini',
+      phone: '081234567891',
+      verificationStatus: 'DISETUJUI',
+      submissionCode: 'VR-1003',
+      kycData: {
+        businessName: 'Dapur Roti Andini',
+        businessSector: 'Oven & Bakery',
+        city: 'Jakarta Selatan',
+        district: 'Kec. Kebayoran Baru',
+        address: 'Jl. Senopati Raya No. 45, Jakarta Selatan',
+        dayaListrik: 2200
+      }
+    },
+    create: {
+      id: PENYEWA_2_ID,
+      email: PENYEWA_2_EMAIL,
+      password: hashedPenyewaPassword,
+      role: 'PENYEWA',
+      fullName: 'Siti Andini',
+      phone: '081234567891',
+      verificationStatus: 'DISETUJUI',
+      submissionCode: 'VR-1003',
+      kycData: {
+        businessName: 'Dapur Roti Andini',
+        businessSector: 'Oven & Bakery',
+        city: 'Jakarta Selatan',
+        district: 'Kec. Kebayoran Baru',
+        address: 'Jl. Senopati Raya No. 45, Jakarta Selatan',
+        dayaListrik: 2200
+      }
+    }
+  })
+
+  const PENYEWA_3_ID = '22222222-2222-4222-8222-222222222224'
+  const PENYEWA_3_EMAIL = 'pakhari@myrent.com'
+  const penyewa3 = await prisma.user.upsert({
+    where: { email: PENYEWA_3_EMAIL },
+    update: {
+      fullName: 'Hari Wibowo',
+      phone: '081298765431',
+      verificationStatus: 'DISETUJUI',
+      submissionCode: 'VR-1004',
+      kycData: {
+        businessName: 'Warung Sate Pak Hari',
+        businessSector: 'Kuliner & Kopi',
+        city: 'Jakarta Selatan',
+        district: 'Kec. Tebet',
+        address: 'Jl. Tebet Timur No. 18, Jakarta Selatan',
+        dayaListrik: 1300
+      }
+    },
+    create: {
+      id: PENYEWA_3_ID,
+      email: PENYEWA_3_EMAIL,
+      password: hashedPenyewaPassword,
+      role: 'PENYEWA',
+      fullName: 'Hari Wibowo',
+      phone: '081298765431',
+      verificationStatus: 'DISETUJUI',
+      submissionCode: 'VR-1004',
+      kycData: {
+        businessName: 'Warung Sate Pak Hari',
+        businessSector: 'Kuliner & Kopi',
+        city: 'Jakarta Selatan',
+        district: 'Kec. Tebet',
+        address: 'Jl. Tebet Timur No. 18, Jakarta Selatan',
+        dayaListrik: 1300
+      }
+    }
+  })
+
   // 5. Data alat milik akun PEMILIK di atas.
   for (const item of EQUIPMENTS) {
     await prisma.equipment.upsert({
@@ -330,7 +407,7 @@ async function main() {
     {
       id: 'b2000000-0000-4000-8000-000000000002',
       invoiceNumber: 'INV-2406-021',
-      userId: PENYEWA_ID,
+      userId: PENYEWA_2_ID,
       equipmentId: 'a1000000-0000-4000-8000-000000000002',
       startDate: new Date(now.getTime() + 3 * 86400000),
       endDate: new Date(now.getTime() + 7 * 86400000),
@@ -345,7 +422,7 @@ async function main() {
     {
       id: 'b2000000-0000-4000-8000-000000000003',
       invoiceNumber: 'INV-2406-024',
-      userId: PENYEWA_ID,
+      userId: PENYEWA_3_ID,
       equipmentId: 'a1000000-0000-4000-8000-000000000003',
       startDate: new Date(now.getTime() + 1 * 86400000),
       endDate: new Date(now.getTime() + 4 * 86400000),
@@ -372,6 +449,81 @@ async function main() {
       totalPaid: 965000,
       status: 'DISPUTE',
       disputeNote: 'Penyewa melaporkan kerusakan pada pedal elektronik saat penggunaan hari ke-5.'
+    },
+    {
+      id: 'b2000000-0000-4000-8000-000000000005',
+      invoiceNumber: 'INV-2406-012',
+      userId: PENYEWA_ID,
+      equipmentId: 'a1000000-0000-4000-8000-000000000001',
+      startDate: new Date(now.getTime() - 15 * 86400000),
+      endDate: new Date(now.getTime() - 8 * 86400000),
+      rentalDays: 7,
+      deliveryMethod: 'COURIER',
+      rentalCost: 1050000,
+      shippingCost: 45000,
+      depositAmount: 500000,
+      totalPaid: 1595000,
+      status: 'SELESAI'
+    },
+    {
+      id: 'b2000000-0000-4000-8000-000000000006',
+      invoiceNumber: 'INV-2406-015',
+      userId: PENYEWA_ID,
+      equipmentId: 'a1000000-0000-4000-8000-000000000002',
+      startDate: new Date(now.getTime() - 7 * 86400000),
+      endDate: new Date(now.getTime() - 3 * 86400000),
+      rentalDays: 4,
+      deliveryMethod: 'PICKUP',
+      rentalCost: 840000,
+      shippingCost: 0,
+      depositAmount: 750000,
+      totalPaid: 1590000,
+      status: 'SELESAI'
+    },
+    {
+      id: 'b2000000-0000-4000-8000-000000000007',
+      invoiceNumber: 'INV-2405-082',
+      userId: PENYEWA_3_ID,
+      equipmentId: 'a1000000-0000-4000-8000-000000000003',
+      startDate: new Date(now.getTime() - 25 * 86400000),
+      endDate: new Date(now.getTime() - 21 * 86400000),
+      rentalDays: 4,
+      deliveryMethod: 'COURIER',
+      rentalCost: 380000,
+      shippingCost: 35000,
+      depositAmount: 300000,
+      totalPaid: 715000,
+      status: 'SELESAI'
+    },
+    {
+      id: 'b2000000-0000-4000-8000-000000000008',
+      invoiceNumber: 'INV-2405-098',
+      userId: PENYEWA_2_ID,
+      equipmentId: 'a1000000-0000-4000-8000-000000000002',
+      startDate: new Date(now.getTime() - 20 * 86400000),
+      endDate: new Date(now.getTime() - 15 * 86400000),
+      rentalDays: 5,
+      deliveryMethod: 'PICKUP',
+      rentalCost: 1050000,
+      shippingCost: 0,
+      depositAmount: 750000,
+      totalPaid: 1800000,
+      status: 'SELESAI'
+    },
+    {
+      id: 'b2000000-0000-4000-8000-000000000009',
+      invoiceNumber: 'INV-2405-071',
+      userId: PENYEWA_ID,
+      equipmentId: 'a1000000-0000-4000-8000-000000000004',
+      startDate: new Date(now.getTime() - 30 * 86400000),
+      endDate: new Date(now.getTime() - 24 * 86400000),
+      rentalDays: 6,
+      deliveryMethod: 'COURIER',
+      rentalCost: 450000,
+      shippingCost: 40000,
+      depositAmount: 400000,
+      totalPaid: 890000,
+      status: 'SELESAI'
     }
   ]
 
@@ -397,16 +549,78 @@ async function main() {
     })
   }
 
+  // 7. Data Ulasan (Reviews) untuk toko Pemilik
+  const REVIEW_SEEDS = [
+    {
+      id: 'c3000000-0000-4000-8000-000000000001',
+      orderId: 'b2000000-0000-4000-8000-000000000005',
+      equipmentId: 'a1000000-0000-4000-8000-000000000001',
+      userId: PENYEWA_ID,
+      rating: 5,
+      comment:
+        'Alat sangat terawat, pemilik ramah dan responsif saat setup di toko. Deposit dikembalikan cepat di hari yang sama.',
+      createdAt: new Date(now.getTime() - 7 * 86400000)
+    },
+    {
+      id: 'c3000000-0000-4000-8000-000000000002',
+      orderId: 'b2000000-0000-4000-8000-000000000008',
+      equipmentId: 'a1000000-0000-4000-8000-000000000002',
+      userId: PENYEWA_2_ID,
+      rating: 5,
+      comment:
+        'Oven deck bekerja sangat stabil, suhu presisi untuk pastry dan roti artisan kami. Sangat membantu lonjakan pesanan!',
+      createdAt: new Date(now.getTime() - 14 * 86400000)
+    },
+    {
+      id: 'c3000000-0000-4000-8000-000000000003',
+      orderId: 'b2000000-0000-4000-8000-000000000007',
+      equipmentId: 'a1000000-0000-4000-8000-000000000003',
+      userId: PENYEWA_3_ID,
+      rating: 4,
+      comment:
+        'Mesin vakum food grade berkualitas dan pompa kering bersih. Membantu kemasan keripik kami jadi lebih higienis.',
+      createdAt: new Date(now.getTime() - 20 * 86400000)
+    },
+    {
+      id: 'c3000000-0000-4000-8000-000000000004',
+      orderId: 'b2000000-0000-4000-8000-000000000009',
+      equipmentId: 'a1000000-0000-4000-8000-000000000004',
+      userId: PENYEWA_ID,
+      rating: 5,
+      comment:
+        'Mesin jahit Jack direct drive sangat halus, hemat listrik 400W. Pengiriman tepat waktu dan instruksi pemilik sangat jelas.',
+      createdAt: new Date(now.getTime() - 23 * 86400000)
+    }
+  ]
+
+  for (const review of REVIEW_SEEDS) {
+    await prisma.review.upsert({
+      where: { id: review.id },
+      update: {
+        orderId: review.orderId,
+        equipmentId: review.equipmentId,
+        userId: review.userId,
+        rating: review.rating,
+        comment: review.comment,
+        createdAt: review.createdAt
+      },
+      create: review
+    })
+  }
+
   console.log('✅ Database Seeder Berhasil:')
   console.log(`  - Admin Utama   : ${defaultAdmin.email} (Role: ${defaultAdmin.role})`)
   console.log(`  - Admin Template: ${templateAdmin.email} (Role: ${templateAdmin.role})`)
   console.log(`  - Pemilik Katalog: ${pemilik.email} (Role: ${pemilik.role})`)
-  console.log(`  - Penyewa Demo   : ${penyewa.email} (Role: ${penyewa.role}, daya ${penyewa.kycData?.dayaListrik} W)`)
+  console.log(`  - Penyewa Demo 1 : ${penyewa.email} (Role: ${penyewa.role}, daya ${penyewa.kycData?.dayaListrik} W)`)
+  console.log(`  - Penyewa Demo 2 : ${penyewa2.email} (${penyewa2.kycData?.businessName})`)
+  console.log(`  - Penyewa Demo 3 : ${penyewa3.email} (${penyewa3.kycData?.businessName})`)
   console.log(`  - Password Admin : ${adminPassword}`)
   console.log(`  - Password Pemilik: ${PEMILIK_PASSWORD}`)
   console.log(`  - Password Penyewa: ${PENYEWA_PASSWORD}`)
   console.log(`  - Equipment      : ${EQUIPMENTS.length} unit (${EQUIPMENTS.filter((e) => e.status === 'TERSEDIA').length} TERSEDIA)`)
-  console.log(`  - Orders         : ${ORDER_SEEDS.length} pesanan demo`)
+  console.log(`  - Orders         : ${ORDER_SEEDS.length} pesanan demo (termasuk pesanan SELESAI siap diulas)`)
+  console.log(`  - Reviews        : ${REVIEW_SEEDS.length} ulasan pelanggan realistik`)
 }
 
 main()

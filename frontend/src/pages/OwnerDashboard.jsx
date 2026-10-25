@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react'
+import React, { useState, useEffect, useMemo, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   LayoutDashboard,
@@ -22,12 +22,18 @@ import {
   LogOut,
   Clock,
   Layers,
-  X
+  X,
+  Filter,
+  MessageSquare,
+  ChevronRight,
+  BadgeCheck,
+  Check
 } from 'lucide-react'
 import { listOrders, acceptOrder, rejectOrder } from '../lib/ordersApi'
 import { listEquipments, createEquipment, formatRupiah } from '../lib/equipmentsApi'
+import { listReviews } from '../lib/reviewsApi'
 import { getSessionUser, logoutUser, getUserInitials } from '../lib/userSession'
-import { formatShortDate } from '../lib/dateHelpers'
+import { formatShortDate, formatLongDate } from '../lib/dateHelpers'
 
 // Data fallback realistis jika database lokal kosong atau belum ada transaksi
 const FALLBACK_EQUIPMENTS = [
@@ -94,6 +100,57 @@ const FALLBACK_ORDERS = [
   }
 ]
 
+const FALLBACK_REVIEWS = [
+  {
+    id: 'c3000000-0000-4000-8000-000000000001',
+    orderId: 'b2000000-0000-4000-8000-000000000005',
+    equipmentId: 'a1000000-0000-4000-8000-000000000001',
+    rating: 5,
+    comment:
+      'Alat sangat terawat, pemilik ramah dan responsif saat setup di toko. Deposit dikembalikan cepat di hari yang sama.',
+    createdAt: new Date(Date.now() - 7 * 86400000).toISOString(),
+    user: { fullName: 'Budi Santoso', kycData: { businessName: 'Warung Kopi Nusantara' } },
+    equipment: { name: 'Espresso Machine La Marzocco GS3', category: 'Mesin Kopi' },
+    order: { invoiceNumber: 'INV-2406-012' }
+  },
+  {
+    id: 'c3000000-0000-4000-8000-000000000002',
+    orderId: 'b2000000-0000-4000-8000-000000000008',
+    equipmentId: 'a1000000-0000-4000-8000-000000000002',
+    rating: 5,
+    comment:
+      'Oven deck bekerja sangat stabil, suhu presisi untuk pastry dan roti artisan kami. Sangat membantu lonjakan pesanan!',
+    createdAt: new Date(Date.now() - 14 * 86400000).toISOString(),
+    user: { fullName: 'Siti Andini', kycData: { businessName: 'Dapur Roti Andini' } },
+    equipment: { name: 'Oven Deck Bakery 2 Pintu', category: 'Oven & Bakery' },
+    order: { invoiceNumber: 'INV-2405-098' }
+  },
+  {
+    id: 'c3000000-0000-4000-8000-000000000003',
+    orderId: 'b2000000-0000-4000-8000-000000000007',
+    equipmentId: 'a1000000-0000-4000-8000-000000000003',
+    rating: 4,
+    comment:
+      'Mesin vakum food grade berkualitas dan pompa kering bersih. Membantu kemasan keripik kami jadi lebih higienis.',
+    createdAt: new Date(Date.now() - 20 * 86400000).toISOString(),
+    user: { fullName: 'Hari Wibowo', kycData: { businessName: 'Warung Sate Pak Hari' } },
+    equipment: { name: 'Mesin Kemasan Vakum Otomatis', category: 'Mesin Kemasan' },
+    order: { invoiceNumber: 'INV-2405-082' }
+  },
+  {
+    id: 'c3000000-0000-4000-8000-000000000004',
+    orderId: 'b2000000-0000-4000-8000-000000000009',
+    equipmentId: 'a1000000-0000-4000-8000-000000000004',
+    rating: 5,
+    comment:
+      'Mesin jahit Jack direct drive sangat halus, hemat listrik 400W. Pengiriman tepat waktu dan instruksi pemilik sangat jelas.',
+    createdAt: new Date(Date.now() - 23 * 86400000).toISOString(),
+    user: { fullName: 'Budi Santoso', kycData: { businessName: 'Warung Kopi Nusantara' } },
+    equipment: { name: 'Mesin Jahit Industri Juki DDL-8700', category: 'Konveksi' },
+    order: { invoiceNumber: 'INV-2405-071' }
+  }
+]
+
 export default function OwnerDashboard() {
   const navigate = useNavigate()
   const currentUser = getSessionUser() || { fullName: 'Kopi Senja Roastery', role: 'PEMILIK' }
@@ -101,12 +158,26 @@ export default function OwnerDashboard() {
   // State
   const [orders, setOrders] = useState([])
   const [equipments, setEquipments] = useState([])
+  const [reviews, setReviews] = useState([])
+  const [reviewsMeta, setReviewsMeta] = useState({
+    total: 4,
+    averageRating: 4.8,
+    distribution: { 1: 0, 2: 0, 3: 0, 4: 1, 5: 3 }
+  })
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
-  const [activeTab, setActiveTab] = useState('ringkasan')
+  const [activeTab, setActiveTab] = useState('ringkasan') // 'ringkasan' | 'alat' | 'pesanan' | 'dompet' | 'profil' | 'ulasan' | 'pengaturan'
   const [toastMessage, setToastMessage] = useState('')
   const [actionLoadingId, setActionLoadingId] = useState(null)
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
+
+  // Notification Popover state (Task 2)
+  const [isNotificationOpen, setIsNotificationOpen] = useState(false)
+  const notificationRef = useRef(null)
+
+  // Filter Ulasan state (Task 4)
+  const [starFilter, setStarFilter] = useState('ALL')
+  const [reviewSearchQuery, setReviewSearchQuery] = useState('')
 
   // Form State untuk Tambah Alat
   const [formData, setFormData] = useState({
@@ -124,30 +195,61 @@ export default function OwnerDashboard() {
     setTimeout(() => setToastMessage(''), 3500)
   }
 
+  // Click outside listener untuk dropdown notifikasi
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (notificationRef.current && !notificationRef.current.contains(event.target)) {
+        setIsNotificationOpen(false)
+      }
+    }
+    if (isNotificationOpen) {
+      document.addEventListener('mousedown', handleClickOutside)
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [isNotificationOpen])
+
   // Load data real dari database backend
   const fetchData = async () => {
     try {
       setLoading(true)
-      const [orderRes, equipRes] = await Promise.all([
+      const [orderRes, equipRes, reviewRes] = await Promise.all([
         listOrders({ as: 'owner' }).catch(() => []),
-        listEquipments({ allStatus: 'true' }).catch(() => [])
+        listEquipments({ allStatus: 'true' }).catch(() => []),
+        listReviews({ as: 'owner' }).catch(() => null)
       ])
 
-      // Jika data DB ada, gunakan data DB. Jika masih kosong, gunakan data fallback terstruktur
+      // Data Orders
       if (orderRes && orderRes.length > 0) {
         setOrders(orderRes)
       } else {
         setOrders(FALLBACK_ORDERS)
       }
 
+      // Data Equipments
       if (equipRes && equipRes.length > 0) {
         setEquipments(equipRes)
       } else {
         setEquipments(FALLBACK_EQUIPMENTS)
       }
+
+      // Data Reviews
+      if (reviewRes && reviewRes.data && reviewRes.data.length > 0) {
+        setReviews(reviewRes.data)
+        setReviewsMeta(reviewRes.meta)
+      } else {
+        setReviews(FALLBACK_REVIEWS)
+        setReviewsMeta({
+          total: FALLBACK_REVIEWS.length,
+          averageRating: 4.8,
+          distribution: { 1: 0, 2: 0, 3: 0, 4: 1, 5: 3 }
+        })
+      }
     } catch {
       setOrders(FALLBACK_ORDERS)
       setEquipments(FALLBACK_EQUIPMENTS)
+      setReviews(FALLBACK_REVIEWS)
     } finally {
       setLoading(false)
     }
@@ -242,21 +344,124 @@ export default function OwnerDashboard() {
     ]
   }, [orders])
 
+  // Data notifikasi dinamis untuk Task 2
+  const inspectionOrders = useMemo(() => {
+    return orders.filter((o) => o.status === 'INSPEKSI')
+  }, [orders])
+
+  const notificationItems = useMemo(() => {
+    const items = []
+
+    // 1. Permintaan sewa baru (MENUNGGU_KONFIRMASI)
+    if (pendingOrders.length > 0) {
+      items.push({
+        id: 'notif-pending',
+        type: 'ORDER',
+        title: `${pendingOrders.length} Permintaan Sewa Baru`,
+        desc: 'Menunggu konfirmasi penerimaan pengajuan alat',
+        icon: Inbox,
+        colorBg: 'bg-blue-100',
+        colorText: 'text-blue-700',
+        action: () => {
+          setActiveTab('ringkasan')
+          setIsNotificationOpen(false)
+        }
+      })
+    }
+
+    // 2. Jadwal pengembalian hari ini / terdekat
+    if (upcomingReturns.length > 0) {
+      const nearest = upcomingReturns[0]
+      items.push({
+        id: 'notif-return',
+        type: 'RETURN',
+        title: 'Jadwal Pengembalian Alat',
+        desc: `${nearest.equipment?.name || 'Unit alat'} (${nearest.user?.fullName || 'Penyewa'}) · ${nearest.time || '14.00'}`,
+        icon: Calendar,
+        colorBg: 'bg-emerald-100',
+        colorText: 'text-emerald-700',
+        action: () => {
+          setActiveTab('pesanan')
+          setIsNotificationOpen(false)
+        }
+      })
+    }
+
+    // 3. Inspeksi yang menunggu verifikasi / pelepasan deposit
+    if (inspectionOrders.length > 0) {
+      items.push({
+        id: 'notif-inspection',
+        type: 'INSPECTION',
+        title: `${inspectionOrders.length} Inspeksi Menunggu Verifikasi`,
+        desc: 'Periksa kelengkapan fisik unit & setujui pengembalian deposit',
+        icon: ShieldCheck,
+        colorBg: 'bg-amber-100',
+        colorText: 'text-amber-700',
+        action: () => {
+          setActiveTab('pesanan')
+          setIsNotificationOpen(false)
+        }
+      })
+    }
+
+    // 4. Aktivitas ulasan/rating baru
+    if (reviews.length > 0) {
+      const latest = reviews[0]
+      items.push({
+        id: 'notif-review',
+        type: 'REVIEW',
+        title: `Ulasan Bintang ${latest.rating} Baru Masuk`,
+        desc: `"${(latest.comment || '').slice(0, 44)}..." · ${latest.user?.fullName || 'Penyewa'}`,
+        icon: Star,
+        colorBg: 'bg-amber-100',
+        colorText: 'text-amber-700',
+        action: () => {
+          setActiveTab('ulasan')
+          setIsNotificationOpen(false)
+        }
+      })
+    }
+
+    return items
+  }, [pendingOrders, upcomingReturns, inspectionOrders, reviews])
+
+  const totalNotificationBadge = notificationItems.length
+
+  // Filter ulasan di Tab Ulasan (Task 4)
+  const filteredReviews = useMemo(() => {
+    return reviews.filter((r) => {
+      // Filter rating bintang
+      if (starFilter !== 'ALL') {
+        if (starFilter === 'LOW' && r.rating > 2) return false
+        if (typeof starFilter === 'number' && r.rating !== starFilter) return false
+      }
+
+      // Filter search
+      if (reviewSearchQuery.trim()) {
+        const q = reviewSearchQuery.toLowerCase()
+        const userMatch = (r.user?.fullName || '').toLowerCase().includes(q)
+        const bizMatch = (r.user?.kycData?.businessName || '').toLowerCase().includes(q)
+        const equipMatch = (r.equipment?.name || '').toLowerCase().includes(q)
+        const commentMatch = (r.comment || '').toLowerCase().includes(q)
+        return userMatch || bizMatch || equipMatch || commentMatch
+      }
+
+      return true
+    })
+  }, [reviews, starFilter, reviewSearchQuery])
+
   // Aksi: Terima Pesanan Masuk (Handler dinamis terhubung API & State)
   const handleTerimaPesanan = async (id) => {
     try {
       setActionLoadingId(id)
       const targetOrder = orders.find((o) => o.id === id)
 
-      // Coba panggil API backend
       try {
         await acceptOrder(id)
       } catch (err) {
-        // Jika offline atau mock ID, perbarui state optimis
         console.warn('API sync fallback to local state:', err.message)
       }
 
-      // Update state lokal secara optimis
       setOrders((prev) =>
         prev.map((o) => (o.id === id ? { ...o, status: 'DIKIRIM' } : o))
       )
@@ -275,14 +480,12 @@ export default function OwnerDashboard() {
       setActionLoadingId(id)
       const targetOrder = orders.find((o) => o.id === id)
 
-      // Coba panggil API backend
       try {
         await rejectOrder(id)
       } catch (err) {
         console.warn('API sync fallback to local state:', err.message)
       }
 
-      // Update state lokal
       setOrders((prev) =>
         prev.map((o) => (o.id === id ? { ...o, status: 'DIBATALKAN' } : o))
       )
@@ -357,13 +560,13 @@ export default function OwnerDashboard() {
         </div>
       )}
 
-      {/* ── SIDEBAR PEMILIK ──────────────────────────────────────────────── */}
-      <aside className="w-full md:w-64 bg-white border-r border-slate-200 shrink-0 flex flex-col justify-between p-5 md:min-h-screen">
-        <div className="space-y-6">
-          {/* Brand Logo & Mode Badge */}
-          <div className="flex items-center gap-3 px-1">
-            <div className="w-9 h-9 rounded-xl bg-blue-600 flex items-center justify-center text-white shadow-xs">
-              <Layers className="w-5 h-5" />
+      {/* ── SIDEBAR PEMILIK (TASK 1: STICKY, FIT-TO-SCREEN, SCROLL HANYA MENU TENGAH) ── */}
+      <aside className="w-full md:w-64 bg-white border-r border-slate-200 shrink-0 md:sticky md:top-0 md:h-screen md:overflow-hidden flex flex-col justify-between p-3.5 md:p-4 z-20">
+        {/* Pinned Top Header: Logo */}
+        <div className="shrink-0 pb-3 mb-1 border-b border-slate-100 flex items-center justify-between">
+          <div className="flex items-center gap-2.5 px-1">
+            <div className="w-8 h-8 rounded-xl bg-blue-600 flex items-center justify-center text-white shadow-xs">
+              <Layers className="w-4 h-4" />
             </div>
             <div>
               <div className="text-base font-extrabold text-slate-900 tracking-tight leading-tight">
@@ -374,17 +577,20 @@ export default function OwnerDashboard() {
               </div>
             </div>
           </div>
+        </div>
 
-          {/* Navigasi Utama */}
-          <div className="space-y-1">
-            <div className="px-3 pb-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+        {/* Scrollable Middle Navigation (HANYA BAGIAN INI YANG SCROLL JIKA LAYAR PENDEK) */}
+        <div className="flex-1 overflow-y-auto space-y-3 py-1 pr-0.5 scrollbar-none">
+          {/* Menu Utama */}
+          <div className="space-y-0.5">
+            <div className="px-2.5 pb-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
               MENU UTAMA
             </div>
 
             <button
               type="button"
               onClick={() => setActiveTab('ringkasan')}
-              className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+              className={`w-full flex items-center justify-between px-2.5 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                 activeTab === 'ringkasan'
                   ? 'bg-blue-50 text-blue-700 shadow-2xs'
                   : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
@@ -399,7 +605,7 @@ export default function OwnerDashboard() {
             <button
               type="button"
               onClick={() => setActiveTab('alat')}
-              className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+              className={`w-full flex items-center justify-between px-2.5 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                 activeTab === 'alat'
                   ? 'bg-blue-50 text-blue-700 shadow-2xs'
                   : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
@@ -409,7 +615,7 @@ export default function OwnerDashboard() {
                 <Package className="w-4 h-4" />
                 <span>Alat Saya</span>
               </div>
-              <span className="text-[11px] px-2 py-0.5 rounded-md bg-slate-100 text-slate-600 font-bold">
+              <span className="text-[11px] px-1.5 py-0.2 rounded-md bg-slate-100 text-slate-600 font-bold">
                 {equipments.length}
               </span>
             </button>
@@ -417,7 +623,7 @@ export default function OwnerDashboard() {
             <button
               type="button"
               onClick={() => setActiveTab('pesanan')}
-              className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+              className={`w-full flex items-center justify-between px-2.5 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                 activeTab === 'pesanan'
                   ? 'bg-blue-50 text-blue-700 shadow-2xs'
                   : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
@@ -428,7 +634,7 @@ export default function OwnerDashboard() {
                 <span>Pesanan Masuk</span>
               </div>
               {pendingOrders.length > 0 && (
-                <span className="text-[10px] px-2 py-0.5 rounded-full bg-blue-600 text-white font-extrabold shadow-2xs">
+                <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-blue-600 text-white font-extrabold shadow-2xs">
                   {pendingOrders.length}
                 </span>
               )}
@@ -437,7 +643,7 @@ export default function OwnerDashboard() {
             <button
               type="button"
               onClick={() => setActiveTab('dompet')}
-              className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+              className={`w-full flex items-center justify-between px-2.5 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                 activeTab === 'dompet'
                   ? 'bg-blue-50 text-blue-700 shadow-2xs'
                   : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
@@ -452,7 +658,7 @@ export default function OwnerDashboard() {
             <button
               type="button"
               onClick={() => setActiveTab('profil')}
-              className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+              className={`w-full flex items-center justify-between px-2.5 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                 activeTab === 'profil'
                   ? 'bg-blue-50 text-blue-700 shadow-2xs'
                   : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
@@ -463,17 +669,20 @@ export default function OwnerDashboard() {
                 <span>Profil Toko</span>
               </div>
             </button>
+          </div>
 
-            <div className="pt-4 px-3 pb-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+          {/* Menu Lainnya */}
+          <div className="space-y-0.5">
+            <div className="pt-2 px-2.5 pb-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
               LAINNYA
             </div>
 
             <button
               type="button"
               onClick={() => setActiveTab('ulasan')}
-              className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+              className={`w-full flex items-center justify-between px-2.5 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                 activeTab === 'ulasan'
-                  ? 'bg-blue-50 text-blue-700'
+                  ? 'bg-blue-50 text-blue-700 shadow-2xs'
                   : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
               }`}
             >
@@ -481,14 +690,17 @@ export default function OwnerDashboard() {
                 <Star className="w-4 h-4" />
                 <span>Ulasan</span>
               </div>
+              <span className="text-[10px] font-extrabold px-1.5 py-0.2 rounded-full bg-amber-100 text-amber-700">
+                {reviewsMeta.total}
+              </span>
             </button>
 
             <button
               type="button"
               onClick={() => setActiveTab('pengaturan')}
-              className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+              className={`w-full flex items-center justify-between px-2.5 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                 activeTab === 'pengaturan'
-                  ? 'bg-blue-50 text-blue-700'
+                  ? 'bg-blue-50 text-blue-700 shadow-2xs'
                   : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
               }`}
             >
@@ -500,8 +712,8 @@ export default function OwnerDashboard() {
 
             <button
               type="button"
-              onClick={() => showToast('Pusat Bantuan MyRent siap membantu 24/7 di WhatsApp')}
-              className="w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-all cursor-pointer"
+              onClick={() => showToast('Pusat Bantuan MyRent siap melayani Anda 24/7 di WhatsApp Official')}
+              className="w-full flex items-center justify-between px-2.5 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-all cursor-pointer"
             >
               <div className="flex items-center gap-2.5">
                 <HelpCircle className="w-4 h-4" />
@@ -511,32 +723,32 @@ export default function OwnerDashboard() {
           </div>
         </div>
 
-        {/* Bagian Bawah: Escrow & User Card */}
-        <div className="pt-6 space-y-4">
+        {/* Pinned Bottom Footer: Escrow & User Card */}
+        <div className="shrink-0 pt-2.5 space-y-2.5 border-t border-slate-100">
           {/* Card Escrow */}
-          <div className="bg-slate-50 border border-slate-200/90 rounded-xl p-3.5 space-y-1">
-            <div className="text-[10.5px] font-semibold text-slate-500">
+          <div className="bg-slate-50 border border-slate-200/90 rounded-xl p-2.5 space-y-0.5">
+            <div className="text-[10px] font-semibold text-slate-500">
               Dana di Escrow
             </div>
-            <div className="text-base font-extrabold text-slate-900 tabular-nums">
+            <div className="text-sm font-extrabold text-slate-900 tabular-nums">
               {formatRupiah(stats.escrowTotal)}
             </div>
-            <div className="text-[10px] text-slate-400">
+            <div className="text-[9.5px] text-slate-400 leading-tight">
               Cair otomatis setelah inspeksi unit selesai
             </div>
           </div>
 
           {/* User Profile Info & Logout */}
-          <div className="pt-2 border-t border-slate-100 flex items-center justify-between">
-            <div className="flex items-center gap-2.5 overflow-hidden">
-              <div className="w-8 h-8 rounded-full bg-blue-600 text-white font-bold text-xs flex items-center justify-center shrink-0">
+          <div className="pt-1 flex items-center justify-between">
+            <div className="flex items-center gap-2 overflow-hidden">
+              <div className="w-7 h-7 rounded-full bg-blue-600 text-white font-bold text-xs flex items-center justify-center shrink-0">
                 {getUserInitials(currentUser)}
               </div>
               <div className="truncate">
                 <div className="text-xs font-bold text-slate-900 truncate">
                   {currentUser?.fullName || 'Kopi Senja'}
                 </div>
-                <div className="text-[10px] text-slate-400 truncate">
+                <div className="text-[9.5px] text-slate-400 truncate">
                   Mode Pemilik
                 </div>
               </div>
@@ -555,19 +767,25 @@ export default function OwnerDashboard() {
       </aside>
 
       {/* ── KONTEN UTAMA ─────────────────────────────────────────────────── */}
-      <main className="flex-1 p-4 md:p-8 overflow-y-auto max-w-[1600px] mx-auto w-full space-y-6">
-        {/* TopBar */}
-        <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2">
+      <main className="flex-1 p-4 md:p-7 overflow-y-auto max-w-[1600px] mx-auto w-full space-y-5">
+        {/* TopBar & Notification Bell (Task 2: Popover Dropdown) */}
+        <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-1">
           <div>
             <h1 className="text-2xl md:text-3xl font-extrabold text-slate-900 tracking-tight">
-              Ringkasan Toko
+              {activeTab === 'ringkasan' && 'Ringkasan Toko'}
+              {activeTab === 'ulasan' && 'Ulasan & Rating'}
+              {activeTab === 'alat' && 'Katalog Alat Saya'}
+              {activeTab === 'pesanan' && 'Daftar Semua Pesanan'}
+              {activeTab === 'dompet' && 'Dompet & Escrow'}
+              {activeTab === 'profil' && 'Profil Toko'}
+              {activeTab === 'pengaturan' && 'Pengaturan'}
             </h1>
             <p className="text-xs md:text-sm text-slate-500 font-medium mt-0.5">
               Gudang Cilandak · {pendingOrders.length} pesanan baru menunggu konfirmasi
             </p>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2.5">
             {/* Search Bar */}
             <div className="relative w-full sm:w-60">
               <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
@@ -580,20 +798,106 @@ export default function OwnerDashboard() {
               />
             </div>
 
-            {/* Notification Bell */}
-            <button
-              type="button"
-              onClick={() => showToast('Semua notifikasi transaksi dalam status terbaru')}
-              className="p-2 rounded-xl bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors shadow-2xs cursor-pointer relative"
-              title="Notifikasi"
-            >
-              <Bell className="w-4 h-4" />
-              {pendingOrders.length > 0 && (
-                <span className="w-2 h-2 rounded-full bg-blue-600 absolute top-1.5 right-1.5" />
-              )}
-            </button>
+            {/* Notification Bell with Dropdown Popover (Task 2) */}
+            <div className="relative" ref={notificationRef}>
+              <button
+                type="button"
+                onClick={() => setIsNotificationOpen((prev) => !prev)}
+                className={`p-2 rounded-xl bg-white border transition-all shadow-2xs cursor-pointer relative ${
+                  isNotificationOpen
+                    ? 'border-blue-600 ring-2 ring-blue-100 text-blue-600'
+                    : 'border-slate-200 text-slate-600 hover:bg-slate-50'
+                }`}
+                title="Notifikasi & Perlu Tindakan"
+              >
+                <Bell className="w-4 h-4" />
+                {totalNotificationBadge > 0 && (
+                  <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-blue-600 text-white text-[10px] font-extrabold flex items-center justify-center shadow-xs">
+                    {totalNotificationBadge}
+                  </span>
+                )}
+              </button>
 
-            {/* Tombol Utama Tambah Alat (WARNA PRIMARY BIRU WAJIB) */}
+              {/* Popover Dropdown Notifikasi */}
+              {isNotificationOpen && (
+                <div className="absolute right-0 top-full mt-2 w-80 sm:w-96 bg-white rounded-2xl shadow-2xl border border-slate-200 z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-150">
+                  {/* Header Popover */}
+                  <div className="flex items-center justify-between px-4 py-3 bg-slate-50 border-b border-slate-100">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-bold text-slate-900">Perlu Tindakan &amp; Notifikasi</span>
+                      {totalNotificationBadge > 0 && (
+                        <span className="px-1.5 py-0.2 rounded-full text-[10px] font-extrabold bg-blue-100 text-blue-700">
+                          {totalNotificationBadge}
+                        </span>
+                      )}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setIsNotificationOpen(false)}
+                      className="p-1 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-200/60 transition-colors"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+
+                  {/* List Item Notifikasi */}
+                  <div className="max-h-80 overflow-y-auto divide-y divide-slate-100 p-2 space-y-1">
+                    {notificationItems.length === 0 ? (
+                      <div className="py-8 text-center space-y-2">
+                        <CheckCircle2 className="w-8 h-8 text-emerald-500 mx-auto" />
+                        <div className="text-xs font-bold text-slate-800">
+                          Semua beres!
+                        </div>
+                        <div className="text-[11px] text-slate-500">
+                          Tidak ada tindakan mendesak yang butuh perhatian saat ini.
+                        </div>
+                      </div>
+                    ) : (
+                      notificationItems.map((item) => {
+                        const Icon = item.icon
+                        return (
+                          <div
+                            key={item.id}
+                            onClick={item.action}
+                            className="p-2.5 rounded-xl hover:bg-slate-50 flex items-start gap-3 transition-colors cursor-pointer group"
+                          >
+                            <div className={`w-8 h-8 rounded-lg ${item.colorBg} ${item.colorText} flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform`}>
+                              <Icon className="w-4 h-4" />
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <div className="text-xs font-bold text-slate-900 group-hover:text-blue-600 transition-colors">
+                                {item.title}
+                              </div>
+                              <div className="text-[11px] text-slate-500 line-clamp-1 mt-0.5">
+                                {item.desc}
+                              </div>
+                            </div>
+                            <ChevronRight className="w-3.5 h-3.5 text-slate-300 group-hover:text-blue-600 group-hover:translate-x-0.5 transition-all shrink-0 mt-1" />
+                          </div>
+                        )
+                      })
+                    )}
+                  </div>
+
+                  {/* Footer Popover */}
+                  <div className="px-4 py-2.5 bg-slate-50 border-t border-slate-100 flex items-center justify-between text-[11px]">
+                    <span className="text-slate-400 font-medium">Auto-refresh aktif</span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setActiveTab('pesanan')
+                        setIsNotificationOpen(false)
+                      }}
+                      className="font-bold text-blue-600 hover:underline cursor-pointer"
+                    >
+                      Buka Pesanan Masuk
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Tombol Utama Tambah Alat */}
             <button
               type="button"
               onClick={() => setIsAddModalOpen(true)}
@@ -605,212 +909,216 @@ export default function OwnerDashboard() {
           </div>
         </header>
 
-        {/* ── HERO ROW: Revenue Card & Action Card ────────────────────────── */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-          {/* Revenue Card (Kiri, spans 2 cols) */}
-          <div className="lg:col-span-2 bg-white border border-slate-200/90 rounded-2xl p-5 md:p-6 shadow-sm flex flex-col justify-between">
-            <div>
-              <div className="flex items-center justify-between">
-                <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
-                  PENDAPATAN BULAN INI
-                </span>
-                <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
-                  <TrendingUp className="w-3 h-3" />
-                  +18,2%
-                </span>
-              </div>
-
-              <div className="text-3xl md:text-4xl font-extrabold text-slate-900 mt-2 tabular-nums tracking-tight">
-                {formatRupiah(stats.totalRevenue)}
-              </div>
-              <div className="text-xs text-slate-500 font-medium mt-1">
-                {stats.txCount} transaksi sewa aktif & selesai · Target bulan ini Rp 6.000.000
-              </div>
-            </div>
-
-            {/* Visual Bar Chart Trend Pendapatan */}
-            <div className="my-5 pt-3">
-              <div className="flex items-end gap-2 md:gap-3 h-20 w-full">
-                {[
-                  { label: 'Min 1', height: '40%', val: 'Rp 650k' },
-                  { label: 'Min 2', height: '60%', val: 'Rp 950k' },
-                  { label: 'Min 3', height: '50%', val: 'Rp 780k' },
-                  { label: 'Min 4', height: '75%', val: 'Rp 1.150k' },
-                  { label: 'Min 5', height: '65%', val: 'Rp 920k' },
-                  { label: 'Min 6', height: '90%', val: 'Rp 1.450k', highlight: true }
-                ].map((bar, idx) => (
-                  <div key={idx} className="flex-1 flex flex-col items-center gap-1.5 h-full justify-end group">
-                    <div
-                      style={{ height: bar.height }}
-                      className={`w-full rounded-md transition-all group-hover:opacity-85 ${
-                        bar.highlight ? 'bg-blue-600' : 'bg-slate-200'
-                      }`}
-                      title={`${bar.label}: ${bar.val}`}
-                    />
-                    <span className="text-[10px] text-slate-400 font-medium">{bar.label}</span>
+        {/* ── TAB CONTENT: RINGKASAN TOKO ───────────────────────────────────── */}
+        {activeTab === 'ringkasan' && (
+          <>
+            {/* ── HERO ROW: Revenue Card (2 cols) & Pengembalian Terdekat (1 col) ── */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 items-stretch">
+              {/* Revenue Card (Kiri, spans 2 cols) */}
+              <div className="lg:col-span-2 bg-white border border-slate-200/90 rounded-2xl p-5 md:p-6 shadow-sm flex flex-col justify-between h-full">
+                <div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                      PENDAPATAN BULAN INI
+                    </span>
+                    <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+                      <TrendingUp className="w-3 h-3" />
+                      +18,2%
+                    </span>
                   </div>
-                ))}
-              </div>
-            </div>
 
-            {/* Foot Stats Row */}
-            <div className="pt-4 border-t border-slate-100 grid grid-cols-3 gap-3">
-              <div>
-                <div className="text-[10.5px] font-semibold text-slate-400">Unit Disewa</div>
-                <div className="text-sm md:text-base font-bold text-slate-900 mt-0.5">
-                  {stats.activeUnitsRented} unit
-                </div>
-              </div>
-              <div>
-                <div className="text-[10.5px] font-semibold text-slate-400">Rata-rata Sewa</div>
-                <div className="text-sm md:text-base font-bold text-slate-900 mt-0.5">
-                  {stats.avgDays} hari
-                </div>
-              </div>
-              <div>
-                <div className="text-[10.5px] font-semibold text-slate-400">Deposit Aktif</div>
-                <div className="text-sm md:text-base font-bold text-slate-900 mt-0.5 tabular-nums">
-                  {formatRupiah(stats.activeDeposit)}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Action Card ("Perlu Tindakan") */}
-          <div className="bg-white border border-slate-200/90 rounded-2xl p-5 md:p-6 shadow-sm flex flex-col justify-between space-y-4">
-            <div className="flex items-center justify-between">
-              <span className="text-sm font-bold text-slate-900">Perlu Tindakan</span>
-              <span className="text-xs font-extrabold px-2 py-0.5 rounded-full bg-blue-100 text-blue-700">
-                {pendingOrders.length + 1}
-              </span>
-            </div>
-
-            <div className="space-y-3 flex-1">
-              {/* Item 1: Permintaan sewa baru */}
-              <div className="flex items-start gap-3 p-2.5 rounded-xl bg-slate-50 border border-slate-100 hover:border-slate-200 transition-colors">
-                <div className="w-8 h-8 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center shrink-0">
-                  <Inbox className="w-4 h-4" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="text-xs font-bold text-slate-900">
-                    {pendingOrders.length} Permintaan sewa baru
+                  <div className="text-3xl md:text-4xl font-extrabold text-slate-900 mt-2 tabular-nums tracking-tight">
+                    {formatRupiah(stats.totalRevenue)}
                   </div>
-                  <div className="text-[11px] text-slate-500 truncate mt-0.5">
-                    Menunggu konfirmasi penerimaan alat
+                  <div className="text-xs text-slate-500 font-medium mt-1">
+                    {stats.txCount} transaksi sewa aktif &amp; selesai · Target bulan ini Rp 6.000.000
+                  </div>
+                </div>
+
+                {/* Visual Bar Chart Trend Pendapatan */}
+                <div className="my-5 pt-3">
+                  <div className="flex items-end gap-2 md:gap-3 h-20 w-full">
+                    {[
+                      { label: 'Min 1', height: '40%', val: 'Rp 650k' },
+                      { label: 'Min 2', height: '60%', val: 'Rp 950k' },
+                      { label: 'Min 3', height: '50%', val: 'Rp 780k' },
+                      { label: 'Min 4', height: '75%', val: 'Rp 1.150k' },
+                      { label: 'Min 5', height: '65%', val: 'Rp 920k' },
+                      { label: 'Min 6', height: '90%', val: 'Rp 1.450k', highlight: true }
+                    ].map((bar, idx) => (
+                      <div key={idx} className="flex-1 flex flex-col items-center gap-1.5 h-full justify-end group">
+                        <div
+                          style={{ height: bar.height }}
+                          className={`w-full rounded-md transition-all group-hover:opacity-85 ${
+                            bar.highlight ? 'bg-blue-600' : 'bg-slate-200'
+                          }`}
+                          title={`${bar.label}: ${bar.val}`}
+                        />
+                        <span className="text-[10px] text-slate-400 font-medium">{bar.label}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Foot Stats Row */}
+                <div className="pt-4 border-t border-slate-100 grid grid-cols-3 gap-3">
+                  <div>
+                    <div className="text-[10.5px] font-semibold text-slate-400">Unit Disewa</div>
+                    <div className="text-sm md:text-base font-bold text-slate-900 mt-0.5">
+                      {stats.activeUnitsRented} unit
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-[10.5px] font-semibold text-slate-400">Rata-rata Sewa</div>
+                    <div className="text-sm md:text-base font-bold text-slate-900 mt-0.5">
+                      {stats.avgDays} hari
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-[10.5px] font-semibold text-slate-400">Deposit Aktif</div>
+                    <div className="text-sm md:text-base font-bold text-slate-900 mt-0.5 tabular-nums">
+                      {formatRupiah(stats.activeDeposit)}
+                    </div>
                   </div>
                 </div>
               </div>
 
-              {/* Item 2: Jadwal Pengembalian */}
-              <div className="flex items-start gap-3 p-2.5 rounded-xl bg-slate-50 border border-slate-100 hover:border-slate-200 transition-colors">
-                <div className="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0">
-                  <Calendar className="w-4 h-4" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="text-xs font-bold text-slate-900">
-                    Pengembalian hari ini
+              {/* Task 3: Pengembalian Terdekat Card (Dipindahkan ke slot kanan atas bersisian dengan Revenue Card) */}
+              <div className="lg:col-span-1 bg-white border border-slate-200/90 rounded-2xl p-5 md:p-6 shadow-sm flex flex-col justify-between h-full space-y-4">
+                <div>
+                  <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+                    <div className="flex items-center gap-2">
+                      <div className="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-700 flex items-center justify-center">
+                        <Calendar className="w-4 h-4" />
+                      </div>
+                      <span className="text-sm font-bold text-slate-900">
+                        Pengembalian Terdekat
+                      </span>
+                    </div>
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200">
+                      Minggu Ini
+                    </span>
                   </div>
-                  <div className="text-[11px] text-slate-500 truncate mt-0.5">
-                    Mesin Espresso 2 Grup · 14.00
+
+                  <div className="space-y-3 mt-4">
+                    {upcomingReturns.slice(0, 3).map((item, idx) => {
+                      const returnDate = item.endDate ? new Date(item.endDate) : null
+                      const dateNum = returnDate && !isNaN(returnDate.getTime()) ? returnDate.getDate() : (18 + idx * 3)
+                      const monthStr = returnDate && !isNaN(returnDate.getTime())
+                        ? returnDate.toLocaleString('id-ID', { month: 'short' })
+                        : 'Jun'
+
+                      return (
+                        <div key={idx} className="flex items-center gap-3 p-2 rounded-xl hover:bg-slate-50 transition-colors">
+                          <div className="w-10 h-10 rounded-xl bg-slate-50 border border-slate-200 flex flex-col items-center justify-center text-center shrink-0">
+                            <span className="text-xs font-extrabold text-slate-900 leading-tight">
+                              {dateNum}
+                            </span>
+                            <span className="text-[9px] font-bold text-slate-400 uppercase">
+                              {monthStr}
+                            </span>
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <div className="text-xs font-bold text-slate-900 truncate">
+                              {item.equipment?.name}
+                            </div>
+                            <div className="text-[11px] text-slate-500 truncate mt-0.5">
+                              {item.time || '14.00'} · {item.user?.fullName}
+                            </div>
+                          </div>
+                        </div>
+                      )
+                    })}
                   </div>
                 </div>
-              </div>
 
-              {/* Item 3: Inspeksi */}
-              <div className="flex items-start gap-3 p-2.5 rounded-xl bg-slate-50 border border-slate-100 hover:border-slate-200 transition-colors">
-                <div className="w-8 h-8 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center shrink-0">
-                  <ShieldCheck className="w-4 h-4" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="text-xs font-bold text-slate-900">
-                    Inspeksi menunggu verifikasi
-                  </div>
-                  <div className="text-[11px] text-slate-500 truncate mt-0.5">
-                    Lepaskan deposit setelah unit diperiksa
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <button
-              type="button"
-              onClick={() => setActiveTab('pesanan')}
-              className="text-xs font-bold text-blue-600 hover:text-blue-700 flex items-center gap-1.5 cursor-pointer pt-2"
-            >
-              <span>Tinjau semua pengajuan</span>
-              <ArrowRight className="w-3.5 h-3.5" />
-            </button>
-          </div>
-        </div>
-
-        {/* ── STATS ROW (4 METRIK) ────────────────────────────────────────── */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="bg-white border border-slate-200/90 rounded-2xl p-4 shadow-sm space-y-1">
-            <div className="flex items-center justify-between text-slate-500">
-              <span className="text-[11px] font-semibold">Alat Aktif</span>
-              <Package className="w-4 h-4 text-slate-400" />
-            </div>
-            <div className="text-2xl font-extrabold text-slate-900 tabular-nums">
-              {stats.activeEquipment}
-            </div>
-            <div className="text-[10.5px] text-slate-400 font-medium">
-              dari {stats.totalEquipment} unit katalog
-            </div>
-          </div>
-
-          <div className="bg-white border border-slate-200/90 rounded-2xl p-4 shadow-sm space-y-1">
-            <div className="flex items-center justify-between text-slate-500">
-              <span className="text-[11px] font-semibold">Utilisasi Alat</span>
-              <TrendingUp className="w-4 h-4 text-slate-400" />
-            </div>
-            <div className="text-2xl font-extrabold text-slate-900 tabular-nums">
-              {stats.utilization}%
-            </div>
-            <div className="text-[10.5px] text-emerald-600 font-medium">
-              +6% dari bulan lalu
-            </div>
-          </div>
-
-          <div className="bg-white border border-slate-200/90 rounded-2xl p-4 shadow-sm space-y-1">
-            <div className="flex items-center justify-between text-slate-500">
-              <span className="text-[11px] font-semibold">Rating Toko</span>
-              <Star className="w-4 h-4 text-amber-500 fill-amber-400" />
-            </div>
-            <div className="text-2xl font-extrabold text-slate-900 tabular-nums">
-              4,9
-            </div>
-            <div className="text-[10.5px] text-slate-400 font-medium">
-              128 ulasan pelanggan
-            </div>
-          </div>
-
-          {/* Quick CTA Tambah Alat */}
-          <div
-            onClick={() => setIsAddModalOpen(true)}
-            className="bg-blue-50 hover:bg-blue-100/80 border border-blue-200 rounded-2xl p-4 shadow-sm flex items-center justify-between cursor-pointer transition-all group"
-          >
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center shadow-xs group-hover:scale-105 transition-transform">
-                <Plus className="w-5 h-5" />
-              </div>
-              <div>
-                <div className="text-xs font-bold text-slate-900">
-                  Tambah Alat
-                </div>
-                <div className="text-[10.5px] text-blue-700 font-medium">
-                  Perluas katalog sewa
+                <div className="pt-3 border-t border-slate-100">
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab('pesanan')}
+                    className="w-full py-2 px-3 rounded-xl bg-slate-50 hover:bg-blue-50 text-slate-600 hover:text-blue-700 text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                  >
+                    <span>Lihat Jadwal Lengkap</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </button>
                 </div>
               </div>
             </div>
-            <ArrowUpRight className="w-4 h-4 text-blue-600 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
-          </div>
-        </div>
 
-        {/* ── BOTTOM ROW: Pesanan Masuk & Side Schedule ─────────────────────── */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-          {/* List Pesanan Masuk (Kiri, spans 2 cols) */}
-          <div className="lg:col-span-2 bg-white border border-slate-200/90 rounded-2xl p-5 md:p-6 shadow-sm flex flex-col justify-between">
-            <div>
+            {/* ── STATS ROW (4 METRIK) ────────────────────────────────────────── */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="bg-white border border-slate-200/90 rounded-2xl p-4 shadow-sm space-y-1">
+                <div className="flex items-center justify-between text-slate-500">
+                  <span className="text-[11px] font-semibold">Alat Aktif</span>
+                  <Package className="w-4 h-4 text-slate-400" />
+                </div>
+                <div className="text-2xl font-extrabold text-slate-900 tabular-nums">
+                  {stats.activeEquipment}
+                </div>
+                <div className="text-[10.5px] text-slate-400 font-medium">
+                  dari {stats.totalEquipment} unit katalog
+                </div>
+              </div>
+
+              <div className="bg-white border border-slate-200/90 rounded-2xl p-4 shadow-sm space-y-1">
+                <div className="flex items-center justify-between text-slate-500">
+                  <span className="text-[11px] font-semibold">Utilisasi Alat</span>
+                  <TrendingUp className="w-4 h-4 text-slate-400" />
+                </div>
+                <div className="text-2xl font-extrabold text-slate-900 tabular-nums">
+                  {stats.utilization}%
+                </div>
+                <div className="text-[10.5px] text-emerald-600 font-medium">
+                  +6% dari bulan lalu
+                </div>
+              </div>
+
+              {/* Task 4: Rating Toko terhubung ke Database Riil & Clickable */}
+              <div
+                onClick={() => setActiveTab('ulasan')}
+                className="bg-white hover:border-amber-200 border border-slate-200/90 rounded-2xl p-4 shadow-sm space-y-1 cursor-pointer transition-all group"
+                title="Buka daftar lengkap ulasan pelanggan"
+              >
+                <div className="flex items-center justify-between text-slate-500">
+                  <span className="text-[11px] font-semibold group-hover:text-amber-700 transition-colors">
+                    Rating Toko
+                  </span>
+                  <Star className="w-4 h-4 text-amber-500 fill-amber-400" />
+                </div>
+                <div className="text-2xl font-extrabold text-slate-900 tabular-nums flex items-baseline gap-1.5">
+                  <span>{reviewsMeta.averageRating ? reviewsMeta.averageRating.toFixed(1).replace('.', ',') : '4,8'}</span>
+                  <span className="text-xs font-normal text-slate-400">/ 5.0</span>
+                </div>
+                <div className="text-[10.5px] text-slate-400 font-medium flex items-center justify-between">
+                  <span>{reviewsMeta.total} ulasan pelanggan</span>
+                  <ArrowRight className="w-3 h-3 text-amber-500 group-hover:translate-x-0.5 transition-transform" />
+                </div>
+              </div>
+
+              {/* Quick CTA Tambah Alat */}
+              <div
+                onClick={() => setIsAddModalOpen(true)}
+                className="bg-blue-50 hover:bg-blue-100/80 border border-blue-200 rounded-2xl p-4 shadow-sm flex items-center justify-between cursor-pointer transition-all group"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center shadow-xs group-hover:scale-105 transition-transform">
+                    <Plus className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <div className="text-xs font-bold text-slate-900">
+                      Tambah Alat
+                    </div>
+                    <div className="text-[10.5px] text-blue-700 font-medium">
+                      Perluas katalog sewa
+                    </div>
+                  </div>
+                </div>
+                <ArrowUpRight className="w-4 h-4 text-blue-600 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+              </div>
+            </div>
+
+            {/* ── BOTTOM SECTION: Pesanan Masuk (Task 3: Full Width, Lega & Proporsional) ── */}
+            <div className="w-full bg-white border border-slate-200/90 rounded-2xl p-5 md:p-6 shadow-sm space-y-4">
               <div className="flex items-center justify-between pb-4 border-b border-slate-100">
                 <div>
                   <h2 className="text-base font-extrabold text-slate-900">
@@ -825,7 +1133,7 @@ export default function OwnerDashboard() {
                   onClick={() => setActiveTab('pesanan')}
                   className="text-xs font-bold text-blue-600 hover:underline cursor-pointer"
                 >
-                  Lihat Semua
+                  Lihat Semua Pesanan
                 </button>
               </div>
 
@@ -838,7 +1146,7 @@ export default function OwnerDashboard() {
                       Tidak ada pesanan menunggu konfirmasi
                     </div>
                     <div className="text-xs text-slate-500">
-                      Semua pengajuan sewa telah diproses.
+                      Semua pengajuan sewa telah diproses secara tuntas.
                     </div>
                   </div>
                 ) : (
@@ -854,7 +1162,7 @@ export default function OwnerDashboard() {
                     return (
                       <div
                         key={order.id}
-                        className="py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-slate-50/60 -mx-2 px-2 rounded-xl transition-colors"
+                        className="py-4 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:bg-slate-50/70 -mx-2 px-2 rounded-xl transition-colors"
                       >
                         <div className="flex items-start gap-3.5">
                           <div className="w-10 h-10 rounded-xl bg-blue-50 border border-blue-100 text-blue-700 font-extrabold text-xs flex items-center justify-center shrink-0">
@@ -881,8 +1189,8 @@ export default function OwnerDashboard() {
                           </div>
                         </div>
 
-                        {/* Amount & Action Buttons (Terima: Primary Biru WAJIB) */}
-                        <div className="flex sm:flex-col items-center sm:items-end justify-between sm:justify-center gap-2">
+                        {/* Amount & Action Buttons */}
+                        <div className="flex md:flex-col items-center md:items-end justify-between md:justify-center gap-2">
                           <div className="text-sm md:text-base font-extrabold text-slate-900 tabular-nums">
                             {formatRupiah(order.totalPaid || order.rentalCost)}
                           </div>
@@ -910,93 +1218,479 @@ export default function OwnerDashboard() {
                   })
                 )}
               </div>
-            </div>
 
-            {/* Insight Tip Box */}
-            <div className="mt-6 pt-4 border-t border-slate-100 flex items-center gap-2.5 p-3 bg-blue-50/70 border border-blue-100 rounded-xl text-blue-900 text-xs font-medium">
-              <Sparkles className="w-4 h-4 text-blue-600 shrink-0" />
-              <span>
-                Tip: Alat dengan 3+ foto asli dan deskripsi daya watt lengkap mendapat 2× lebih banyak pengajuan sewa dari UMKM.
-              </span>
-            </div>
-          </div>
-
-          {/* Right Column: Schedule & Ulasan */}
-          <div className="space-y-5">
-            {/* Schedule Pengembalian Terdekat */}
-            <div className="bg-white border border-slate-200/90 rounded-2xl p-5 shadow-sm space-y-4">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-bold text-slate-900">
-                  Pengembalian Terdekat
-                </span>
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200">
-                  Minggu Ini
+              {/* Insight Tip Box */}
+              <div className="mt-4 pt-3 border-t border-slate-100 flex items-center gap-2.5 p-3 bg-blue-50/70 border border-blue-100 rounded-xl text-blue-900 text-xs font-medium">
+                <Sparkles className="w-4 h-4 text-blue-600 shrink-0" />
+                <span>
+                  Tip: Alat dengan foto asli berkualitas dan panduan daya listrik akurat mendapat 2× lebih banyak pengajuan sewa dari UMKM.
                 </span>
               </div>
+            </div>
+          </>
+        )}
 
-              <div className="space-y-3">
-                {upcomingReturns.slice(0, 2).map((item, idx) => {
-                  const returnDate = item.endDate ? new Date(item.endDate) : null
-                  const dateNum = returnDate && !isNaN(returnDate.getTime()) ? returnDate.getDate() : (18 + idx * 3)
-                  const monthStr = returnDate && !isNaN(returnDate.getTime())
-                    ? returnDate.toLocaleString('id-ID', { month: 'short' })
-                    : 'Jun'
+        {/* ── TAB CONTENT: ULASAN & RATING (TASK 4: TAB LENGKAP) ─────────────── */}
+        {activeTab === 'ulasan' && (
+          <div className="space-y-5 animate-in fade-in duration-200">
+            {/* Header Summary Box */}
+            <div className="bg-white border border-slate-200/90 rounded-2xl p-5 md:p-6 shadow-sm">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
+                {/* Big Score Card */}
+                <div className="flex flex-col items-center justify-center p-4 bg-slate-50 border border-slate-200/80 rounded-2xl text-center space-y-2">
+                  <div className="text-4xl md:text-5xl font-black text-slate-900 tracking-tight">
+                    {reviewsMeta.averageRating ? reviewsMeta.averageRating.toFixed(1).replace('.', ',') : '4,8'}
+                  </div>
+                  <div className="flex items-center gap-1 text-amber-400">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <Star
+                        key={star}
+                        className={`w-5 h-5 ${
+                          star <= Math.round(reviewsMeta.averageRating || 5)
+                            ? 'fill-amber-400 text-amber-400'
+                            : 'text-slate-300'
+                        }`}
+                      />
+                    ))}
+                  </div>
+                  <div className="text-xs font-bold text-slate-600">
+                    {reviewsMeta.total} Ulasan Pelanggan
+                  </div>
+                  <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+                    <BadgeCheck className="w-3 h-3" />
+                    100% Terverifikasi
+                  </span>
+                </div>
+
+                {/* Rating Distribution Breakdown Bars */}
+                <div className="md:col-span-2 space-y-2">
+                  <div className="text-xs font-bold text-slate-700 mb-2">
+                    Distribusi Penilaian Bintang
+                  </div>
+                  {[5, 4, 3, 2, 1].map((star) => {
+                    const count = reviewsMeta.distribution?.[star] || 0
+                    const total = reviewsMeta.total || 1
+                    const percentage = Math.round((count / total) * 100)
+
+                    return (
+                      <div key={star} className="flex items-center gap-3 text-xs">
+                        <div className="flex items-center gap-1 w-16 text-slate-600 font-semibold shrink-0">
+                          <span>{star}</span>
+                          <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+                        </div>
+                        <div className="flex-1 h-2.5 bg-slate-100 rounded-full overflow-hidden">
+                          <div
+                            style={{ width: `${percentage}%` }}
+                            className="h-full bg-amber-400 rounded-full transition-all duration-300"
+                          />
+                        </div>
+                        <div className="w-12 text-right text-[11px] font-semibold text-slate-400 tabular-nums shrink-0">
+                          {count} ({percentage}%)
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            </div>
+
+            {/* Filter Chips & Search Bar */}
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+              <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0 scrollbar-none">
+                <button
+                  type="button"
+                  onClick={() => setStarFilter('ALL')}
+                  className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all cursor-pointer whitespace-nowrap ${
+                    starFilter === 'ALL'
+                      ? 'bg-blue-600 text-white shadow-xs'
+                      : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
+                  }`}
+                >
+                  Semua ({reviewsMeta.total})
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setStarFilter(5)}
+                  className={`px-3 py-1.5 rounded-full text-xs font-semibold flex items-center gap-1 transition-all cursor-pointer whitespace-nowrap ${
+                    starFilter === 5
+                      ? 'bg-blue-600 text-white shadow-xs'
+                      : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
+                  }`}
+                >
+                  <span>5 Bintang</span>
+                  <span className="text-[10px] opacity-80">({reviewsMeta.distribution?.[5] || 0})</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setStarFilter(4)}
+                  className={`px-3 py-1.5 rounded-full text-xs font-semibold flex items-center gap-1 transition-all cursor-pointer whitespace-nowrap ${
+                    starFilter === 4
+                      ? 'bg-blue-600 text-white shadow-xs'
+                      : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
+                  }`}
+                >
+                  <span>4 Bintang</span>
+                  <span className="text-[10px] opacity-80">({reviewsMeta.distribution?.[4] || 0})</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setStarFilter(3)}
+                  className={`px-3 py-1.5 rounded-full text-xs font-semibold flex items-center gap-1 transition-all cursor-pointer whitespace-nowrap ${
+                    starFilter === 3
+                      ? 'bg-blue-600 text-white shadow-xs'
+                      : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
+                  }`}
+                >
+                  <span>3 Bintang</span>
+                  <span className="text-[10px] opacity-80">({reviewsMeta.distribution?.[3] || 0})</span>
+                </button>
+              </div>
+
+              {/* Search in reviews */}
+              <div className="relative w-full sm:w-64">
+                <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                <input
+                  type="text"
+                  value={reviewSearchQuery}
+                  onChange={(e) => setReviewSearchQuery(e.target.value)}
+                  placeholder="Cari ulasan atau alat..."
+                  className="w-full bg-white text-xs rounded-xl pl-9 pr-3 py-2 text-slate-800 placeholder-slate-400 border border-slate-200 focus:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100 transition-all shadow-2xs"
+                />
+              </div>
+            </div>
+
+            {/* List of Customer Reviews */}
+            <div className="space-y-3.5">
+              {filteredReviews.length === 0 ? (
+                <div className="bg-white border border-slate-200/90 rounded-2xl p-12 text-center space-y-2">
+                  <Star className="w-10 h-10 text-slate-300 mx-auto" />
+                  <div className="text-sm font-bold text-slate-800">
+                    Tidak ada ulasan ditemukan
+                  </div>
+                  <div className="text-xs text-slate-500">
+                    Coba sesuaikan filter bintang atau kata kunci pencarian Anda.
+                  </div>
+                </div>
+              ) : (
+                filteredReviews.map((rev) => {
+                  const renterName = rev.user?.fullName || rev.user?.email || 'Penyewa Terverifikasi'
+                  const businessName = rev.user?.kycData?.businessName || null
+                  const equipmentName = rev.equipment?.name || 'Alat Produksi UMKM'
 
                   return (
-                    <div key={idx} className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-slate-50 border border-slate-200 flex flex-col items-center justify-center text-center shrink-0">
-                        <span className="text-xs font-extrabold text-slate-900 leading-tight">
-                          {dateNum}
-                        </span>
-                        <span className="text-[9px] font-bold text-slate-400 uppercase">
-                          {monthStr}
-                        </span>
+                    <div
+                      key={rev.id}
+                      className="bg-white border border-slate-200/90 rounded-2xl p-5 shadow-sm space-y-3 hover:border-slate-300 transition-colors"
+                    >
+                      {/* Review Top Meta */}
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-slate-100">
+                        <div className="flex items-center gap-3">
+                          <div className="w-9 h-9 rounded-full bg-blue-100 text-blue-700 font-bold text-xs flex items-center justify-center shrink-0">
+                            {getUserInitials(rev.user)}
+                          </div>
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <span className="text-xs font-bold text-slate-900">
+                                {renterName}
+                              </span>
+                              {businessName && (
+                                <span className="text-[10px] font-semibold px-2 py-0.5 rounded-md bg-slate-100 text-slate-600">
+                                  {businessName}
+                                </span>
+                              )}
+                            </div>
+                            <div className="text-[11px] text-blue-600 font-medium mt-0.5">
+                              {equipmentName}
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-3 self-end sm:self-auto">
+                          <div className="flex items-center gap-0.5 text-amber-400">
+                            {[...Array(5)].map((_, i) => (
+                              <Star
+                                key={i}
+                                className={`w-3.5 h-3.5 ${
+                                  i < rev.rating
+                                    ? 'fill-amber-400 text-amber-400'
+                                    : 'text-slate-200'
+                                }`}
+                              />
+                            ))}
+                          </div>
+                          <span className="text-[11px] text-slate-400 font-medium">
+                            {formatShortDate(rev.createdAt)}
+                          </span>
+                        </div>
                       </div>
-                      <div className="min-w-0 flex-1">
-                        <div className="text-xs font-bold text-slate-900 truncate">
-                          {item.equipment?.name}
+
+                      {/* Comment Body */}
+                      <blockquote className="text-xs text-slate-700 leading-relaxed font-normal">
+                        “{rev.comment}”
+                      </blockquote>
+
+                      {/* Footer Badge */}
+                      <div className="pt-2 flex items-center justify-between text-[11px] text-slate-400">
+                        <div className="flex items-center gap-1.5">
+                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                          <span className="text-emerald-700 font-medium">Transaksi Sewa Selesai</span>
+                          {rev.order?.invoiceNumber && (
+                            <span className="text-slate-400">· {rev.order.invoiceNumber}</span>
+                          )}
                         </div>
-                        <div className="text-[11px] text-slate-500 truncate mt-0.5">
-                          {item.time || '14.00'} · {item.user?.fullName}
-                        </div>
+                        <span className="text-slate-400 font-medium">
+                          Masa sewa terverifikasi
+                        </span>
                       </div>
                     </div>
                   )
-                })}
-              </div>
+                })
+              )}
             </div>
+          </div>
+        )}
 
-            {/* Ulasan Terbaru */}
-            <div className="bg-white border border-slate-200/90 rounded-2xl p-5 shadow-sm space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-bold text-slate-900">Ulasan Terbaru</span>
-                <div className="flex items-center gap-0.5 text-amber-500">
-                  {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
-                  ))}
+        {/* ── TAB CONTENT: ALAT SAYA ────────────────────────────────────────── */}
+        {activeTab === 'alat' && (
+          <div className="space-y-4 animate-in fade-in duration-200">
+            <div className="bg-white border border-slate-200/90 rounded-2xl p-5 shadow-sm">
+              <div className="flex items-center justify-between pb-4 border-b border-slate-100">
+                <div>
+                  <h2 className="text-base font-extrabold text-slate-900">
+                    Daftar Peralatan Katalog ({equipments.length} unit)
+                  </h2>
+                  <p className="text-xs text-slate-500 font-medium mt-0.5">
+                    Kelola ketersediaan, tarif harian, dan deposit peralatan produksi Anda
+                  </p>
                 </div>
+                <button
+                  type="button"
+                  onClick={() => setIsAddModalOpen(true)}
+                  className="px-3.5 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-xs transition-all cursor-pointer flex items-center gap-1"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>Tambah Alat</span>
+                </button>
               </div>
 
-              <blockquote className="text-xs text-slate-600 leading-relaxed font-normal italic">
-                “Alat sangat terawat, pemilik ramah dan responsif saat setup di toko. Deposit dikembalikan cepat di hari yang sama.”
-              </blockquote>
+              <div className="divide-y divide-slate-100">
+                {equipments.map((eq) => (
+                  <div key={eq.id} className="py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div className="flex items-start gap-3.5">
+                      <div className="w-12 h-12 rounded-xl bg-slate-100 overflow-hidden shrink-0 border border-slate-200">
+                        <img
+                          src={eq.images?.[0] || 'https://images.unsplash.com/photo-1517668808822-9ebb02f2a0e6?auto=format&fit=crop&w=400&q=80'}
+                          alt={eq.name}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      <div>
+                        <div className="text-xs sm:text-sm font-bold text-slate-900">
+                          {eq.name}
+                        </div>
+                        <div className="text-[11px] text-slate-500 mt-0.5">
+                          {eq.category} · Daya {eq.powerWatt || 1200}W · {eq.location || 'Jakarta Selatan'}
+                        </div>
+                        <div className="text-xs font-extrabold text-blue-600 mt-1">
+                          {formatRupiah(eq.pricePerDay)} <span className="text-[10px] font-normal text-slate-400">/ hari</span>
+                        </div>
+                      </div>
+                    </div>
 
-              <div className="pt-2 border-t border-slate-100 flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <div className="w-6 h-6 rounded-full bg-blue-100 text-blue-700 font-bold text-[10px] flex items-center justify-center">
-                    R
+                    <div className="flex items-center gap-2.5">
+                      <span className={`text-[11px] font-bold px-2.5 py-1 rounded-full border ${
+                        eq.status === 'TERSEDIA'
+                          ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                          : eq.status === 'DISEWA'
+                          ? 'bg-blue-50 text-blue-700 border-blue-200'
+                          : 'bg-amber-50 text-amber-700 border-amber-200'
+                      }`}>
+                        {eq.status || 'TERSEDIA'}
+                      </span>
+                    </div>
                   </div>
-                  <span className="text-xs font-semibold text-slate-800">
-                    Rina · Warung Sate Pak Hari
-                  </span>
-                </div>
-                <span className="text-[10.5px] text-blue-600 font-bold cursor-pointer hover:underline">
-                  Lihat Semua
-                </span>
+                ))}
               </div>
             </div>
           </div>
-        </div>
+        )}
+
+        {/* ── TAB CONTENT: PESANAN MASUK & RIWAYAT ─────────────────────────── */}
+        {activeTab === 'pesanan' && (
+          <div className="space-y-4 animate-in fade-in duration-200">
+            <div className="bg-white border border-slate-200/90 rounded-2xl p-5 shadow-sm space-y-4">
+              <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+                <div>
+                  <h2 className="text-base font-extrabold text-slate-900">
+                    Seluruh Transaksi Pesanan ({orders.length})
+                  </h2>
+                  <p className="text-xs text-slate-500 font-medium mt-0.5">
+                    Riwayat lengkap pengajuan, sewa berjalan, inspeksi, dan pesanan selesai
+                  </p>
+                </div>
+              </div>
+
+              <div className="divide-y divide-slate-100">
+                {orders.map((o) => (
+                  <div key={o.id} className="py-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div className="flex items-start gap-3.5">
+                      <div className="w-10 h-10 rounded-xl bg-slate-100 border border-slate-200 text-slate-700 font-extrabold text-xs flex items-center justify-center shrink-0">
+                        {getUserInitials(o.user)}
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs sm:text-sm font-bold text-slate-900">
+                            {o.user?.kycData?.businessName || o.user?.fullName || 'Penyewa'}
+                          </span>
+                          <span className="text-[10px] font-semibold text-slate-400">
+                            {o.invoiceNumber}
+                          </span>
+                        </div>
+                        <div className="text-xs text-slate-600 font-medium mt-0.5">
+                          {o.equipment?.name || 'Unit Alat'}
+                        </div>
+                        <div className="text-[11px] text-slate-400 mt-1">
+                          {formatShortDate(o.startDate)} – {formatShortDate(o.endDate)} · {o.rentalDays || 1} hari
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-4 justify-between md:justify-end">
+                      <div className="text-right">
+                        <div className="text-sm font-extrabold text-slate-900 tabular-nums">
+                          {formatRupiah(o.totalPaid || o.rentalCost)}
+                        </div>
+                        <div className="text-[10px] text-slate-400">
+                          Deposit {formatRupiah(o.depositAmount)}
+                        </div>
+                      </div>
+
+                      <span className={`text-[11px] font-bold px-2.5 py-1 rounded-full border ${
+                        o.status === 'SELESAI'
+                          ? 'bg-slate-100 text-slate-700 border-slate-200'
+                          : o.status === 'SEWA_AKTIF'
+                          ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                          : o.status === 'MENUNGGU_KONFIRMASI'
+                          ? 'bg-blue-50 text-blue-700 border-blue-200'
+                          : 'bg-amber-50 text-amber-700 border-amber-200'
+                      }`}>
+                        {o.status}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ── TAB CONTENT: DOMPET & ESCROW ─────────────────────────────────── */}
+        {activeTab === 'dompet' && (
+          <div className="space-y-4 animate-in fade-in duration-200">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+              <div className="bg-white border border-slate-200/90 rounded-2xl p-5 shadow-sm space-y-2">
+                <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                  DANA DI ESCROW
+                </span>
+                <div className="text-2xl font-black text-slate-900 tabular-nums">
+                  {formatRupiah(stats.escrowTotal)}
+                </div>
+                <p className="text-xs text-slate-500">
+                  Aman ditahan di penampungan escrow dan dicairkan segera setelah inspeksi alat selesai.
+                </p>
+              </div>
+
+              <div className="bg-white border border-slate-200/90 rounded-2xl p-5 shadow-sm space-y-2">
+                <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                  TOTAL PENDAPATAN CAIR
+                </span>
+                <div className="text-2xl font-black text-emerald-600 tabular-nums">
+                  {formatRupiah(stats.totalRevenue)}
+                </div>
+                <p className="text-xs text-slate-500">
+                  Total akumulasi sewa yang telah selesai dan ditransfer ke rekening bank Anda.
+                </p>
+              </div>
+
+              <div className="bg-white border border-slate-200/90 rounded-2xl p-5 shadow-sm space-y-2">
+                <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                  SECURITY DEPOSIT AKTIF
+                </span>
+                <div className="text-2xl font-black text-blue-600 tabular-nums">
+                  {formatRupiah(stats.activeDeposit)}
+                </div>
+                <p className="text-xs text-slate-500">
+                  Jaminan proteksi unit dari penyewa yang sedang aktif menggunakan alat.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ── TAB CONTENT: PROFIL TOKO ─────────────────────────────────────── */}
+        {activeTab === 'profil' && (
+          <div className="bg-white border border-slate-200/90 rounded-2xl p-6 shadow-sm space-y-4 animate-in fade-in duration-200">
+            <div className="flex items-center gap-4 pb-4 border-b border-slate-100">
+              <div className="w-14 h-14 rounded-2xl bg-blue-600 text-white font-extrabold text-xl flex items-center justify-center shadow-xs">
+                {getUserInitials(currentUser)}
+              </div>
+              <div>
+                <h2 className="text-lg font-extrabold text-slate-900">
+                  {currentUser?.fullName || 'Kopi Senja Roastery'}
+                </h2>
+                <div className="flex items-center gap-2 text-xs text-slate-500 mt-0.5">
+                  <span>Gudang Cilandak, Jakarta Selatan</span>
+                  <span>·</span>
+                  <span className="text-emerald-600 font-bold flex items-center gap-1">
+                    <BadgeCheck className="w-3.5 h-3.5" />
+                    Toko Terverifikasi
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+              <div className="p-3 bg-slate-50 rounded-xl border border-slate-200/80 space-y-1">
+                <span className="text-slate-400 font-semibold">Email Kontak</span>
+                <div className="font-bold text-slate-800">{currentUser?.email || 'pemilik@myrent.com'}</div>
+              </div>
+              <div className="p-3 bg-slate-50 rounded-xl border border-slate-200/80 space-y-1">
+                <span className="text-slate-400 font-semibold">Nomor WhatsApp</span>
+                <div className="font-bold text-slate-800">0812-1122-3344</div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ── TAB CONTENT: PENGATURAN ───────────────────────────────────────── */}
+        {activeTab === 'pengaturan' && (
+          <div className="bg-white border border-slate-200/90 rounded-2xl p-6 shadow-sm space-y-4 animate-in fade-in duration-200">
+            <h2 className="text-base font-extrabold text-slate-900">
+              Pengaturan Toko &amp; Notifikasi
+            </h2>
+            <div className="space-y-3 text-xs">
+              <div className="flex items-center justify-between p-3 bg-slate-50 rounded-xl border border-slate-200/80">
+                <div>
+                  <div className="font-bold text-slate-900">Notifikasi WhatsApp untuk Pesanan Baru</div>
+                  <div className="text-slate-500 text-[11px]">Terima pesan instan saat ada penyewa mengajukan sewa alat</div>
+                </div>
+                <div className="w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center">
+                  <Check className="w-3 h-3" />
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between p-3 bg-slate-50 rounded-xl border border-slate-200/80">
+                <div>
+                  <div className="font-bold text-slate-900">Jeda Perawatan Otomatis (Maintenance Buffer)</div>
+                  <div className="text-slate-500 text-[11px]">Berikan jeda 1 hari setelah alat dikembalikan untuk pembersihan unit</div>
+                </div>
+                <div className="w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center">
+                  <Check className="w-3 h-3" />
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </main>
 
       {/* ── MODAL TAMBAH ALAT BARU ────────────────────────────────────────── */}
@@ -1111,7 +1805,7 @@ export default function OwnerDashboard() {
 
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-1">
-                  Deskripsi & Kelengkapan Alat
+                  Deskripsi &amp; Kelengkapan Alat
                 </label>
                 <textarea
                   rows={2}
@@ -1134,7 +1828,7 @@ export default function OwnerDashboard() {
                   type="submit"
                   className="px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-xs transition-all cursor-pointer"
                 >
-                  Simpan & Tayangkan
+                  Simpan &amp; Tayangkan
                 </button>
               </div>
             </form>
