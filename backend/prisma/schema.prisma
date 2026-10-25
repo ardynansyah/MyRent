@@ -42,6 +42,8 @@ enum EquipmentStatus {
   TERSEDIA
   DISEWA
   MAINTENANCE
+  INSPEKSI
+  NONAKTIF
 }
 
 model User {
@@ -80,17 +82,27 @@ model Equipment {
   pricePerDay Int
   deposit     Int
   powerWatt   Int
-  weightKg    Float
-  dimensions  String
-  // Jeda(rawat) yang harus disisihkan setelah alat kembali dari penyewa.
+  weightKg    Float    @default(10)
+  dimensions  String   @default("40 × 30 × 30 cm")
+  // Durasi minimal hari penyewaan
+  minRentDays Int      @default(1)
+  // Jeda rawat yang harus disisihkan setelah alat kembali dari penyewa.
   maintenanceBufferDays Int    @default(1)
-  location    String
+  location    String   @default("Jakarta Selatan")
   // Jarak (km) dari titik acuan penyewa — sementara dipakai untuk badge "Terdekat".
-  distance    Float
+  distance    Float    @default(2.5)
   status      EquipmentStatus @default(TERSEDIA)
   // Array URL foto alat (JSON array of string).
   images      Json?
+  // Daftar kelengkapan / aksesoris (JSON array of string, mis. ["Kabel", "Nozzle"])
+  accessories Json?
+  // Metode pengiriman yang didukung (JSON array of string, mis. ["PICKUP", "COURIER"])
+  deliveryMethods Json?
+  // Kondisi alat (mis. "Prima", "Terawat", "Sangat Baik")
+  condition   String   @default("Prima")
   stock       Int      @default(1)
+  // Soft delete flag untuk menjaga keutuhan riwayat Order
+  isDeleted   Boolean  @default(false)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
@@ -100,6 +112,7 @@ model Equipment {
 
   @@index([ownerId])
   @@index([status])
+  @@index([isDeleted])
 }
 
 /**

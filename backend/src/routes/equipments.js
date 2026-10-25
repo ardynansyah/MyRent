@@ -23,6 +23,12 @@ function presentEquipment(equipment, bookedRanges = []) {
     .map((image) => (typeof image === 'string' ? image : image?.url ?? image?.src ?? null))
     .filter((url) => typeof url === 'string' && url.length > 0)
 
+  const rawAccessories = Array.isArray(equipment.accessories) ? equipment.accessories : []
+  const accessories = rawAccessories.map((item) => (typeof item === 'string' ? item : item?.name ?? String(item)))
+
+  const rawDelivery = Array.isArray(equipment.deliveryMethods) ? equipment.deliveryMethods : []
+  const deliveryMethods = rawDelivery.length > 0 ? rawDelivery : ['PICKUP', 'COURIER']
+
   return {
     id: equipment.id,
     name: equipment.name,
@@ -33,10 +39,15 @@ function presentEquipment(equipment, bookedRanges = []) {
     powerWatt: equipment.powerWatt,
     weightKg: equipment.weightKg,
     dimensions: equipment.dimensions,
-    maintenanceBufferDays: equipment.maintenanceBufferDays,
+    minRentDays: equipment.minRentDays ?? 1,
+    maintenanceBufferDays: equipment.maintenanceBufferDays ?? 1,
     location: equipment.location,
     distance: equipment.distance,
     status: equipment.status,
+    condition: equipment.condition || 'Prima',
+    accessories,
+    deliveryMethods,
+    isDeleted: Boolean(equipment.isDeleted),
     images,
     stock: equipment.stock,
     createdAt: equipment.createdAt,
@@ -98,17 +109,22 @@ function buildDayStatusFromOrders(orders, bufferDays = 1) {
  *
  * Daftar alat yang siap disewa beserta info pemiliknya.
  * Didukung filter sederhana lewat query string:
- *  - `category`  → filter kategori (case-insensitive)
- *  - `search`    → cari pada nama / kategori / deskripsi
- *  - `ownerId`   → filter berdasarkan pemilik tertentu
- *  - `status`    → filter status spesifik
- *  - `allStatus` → jika 'true', kembalikan semua status (TERSEDIA, DISEWA, MAINTENANCE)
+ *  - `category`       → filter kategori (case-insensitive)
+ *  - `search`         → cari pada nama / kategori / deskripsi
+ *  - `ownerId`        → filter berdasarkan pemilik tertentu
+ *  - `status`         → filter status spesifik (TERSEDIA, DISEWA, INSPEKSI, NONAKTIF)
+ *  - `allStatus`      → jika 'true', kembalikan semua status
+ *  - `includeDeleted` → jika 'true', ikut sertakan item yang di-soft-delete
  */
 equipmentsRouter.get('/', async (req, res, next) => {
   try {
-    const { category, search, ownerId, status, allStatus } = req.query ?? {}
+    const { category, search, ownerId, status, allStatus, includeDeleted } = req.query ?? {}
 
     const where = {}
+
+    if (includeDeleted !== 'true') {
+      where.isDeleted = false
+    }
 
     if (status) {
       where.status = String(status)
@@ -135,13 +151,17 @@ equipmentsRouter.get('/', async (req, res, next) => {
       }
     }
 
+    const orderBy = ownerId
+      ? [{ createdAt: 'desc' }]
+      : [{ distance: 'asc' }, { createdAt: 'desc' }]
+
     const equipments = await prisma.equipment.findMany({
       where,
       include: { owner: true },
-      orderBy: [{ distance: 'asc' }, { createdAt: 'desc' }]
+      orderBy
     })
 
-    res.json({ data: equipments.map(e => presentEquipment(e)) })
+    res.json({ data: equipments.map((e) => presentEquipment(e)) })
   } catch (error) {
     next(error)
   }
@@ -180,9 +200,15 @@ equipmentsRouter.post('/', async (req, res, next) => {
       powerWatt = 0,
       weightKg = 10,
       dimensions = '40 × 30 × 30 cm',
+      minRentDays = 1,
       maintenanceBufferDays = 1,
-      location = 'Jakarta',
+      location = 'Jakarta Selatan',
       distance = 2.0,
+      status = 'TERSEDIA',
+      condition = 'Prima',
+      accessories = [],
+      deliveryMethods = ['PICKUP', 'COURIER'],
+      stock = 1,
       images = []
     } = req.body ?? {}
 
@@ -191,6 +217,22 @@ equipmentsRouter.post('/', async (req, res, next) => {
         error: { code: 'VALIDATION_ERROR', message: 'Nama, kategori, tarif sewa, dan deposit wajib diisi' }
       })
     }
+
+    const formattedAccessories = Array.isArray(accessories)
+      ? accessories.map((a) => (typeof a === 'string' ? a.trim() : a?.name?.trim())).filter(Boolean)
+      : []
+
+    const formattedDelivery =
+      Array.isArray(deliveryMethods) && deliveryMethods.length > 0
+        ? deliveryMethods
+        : ['PICKUP', 'COURIER']
+
+    const formattedImages =
+      Array.isArray(images) && images.length > 0
+        ? images.filter((url) => typeof url === 'string' && url.trim().length > 0)
+        : [
+            'https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=800&q=80'
+          ]
 
     const created = await prisma.equipment.create({
       data: {
@@ -203,13 +245,17 @@ equipmentsRouter.post('/', async (req, res, next) => {
         powerWatt: Number(powerWatt) || 0,
         weightKg: Number(weightKg) || 10,
         dimensions: String(dimensions),
-        maintenanceBufferDays: Number(maintenanceBufferDays) || 1,
+        minRentDays: Math.max(1, Number(minRentDays) || 1),
+        maintenanceBufferDays: Math.max(0, Number(maintenanceBufferDays) || 1),
         location: String(location),
         distance: Number(distance) || 2.0,
-        status: 'TERSEDIA',
-        images: Array.isArray(images) && images.length > 0 ? images : [
-          'https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=800&q=80'
-        ]
+        status: status || 'TERSEDIA',
+        condition: String(condition || 'Prima'),
+        accessories: formattedAccessories,
+        deliveryMethods: formattedDelivery,
+        stock: Number(stock) || 1,
+        isDeleted: false,
+        images: formattedImages
       },
       include: { owner: true }
     })
@@ -224,15 +270,216 @@ equipmentsRouter.post('/', async (req, res, next) => {
 })
 
 /**
+ * PUT/PATCH /api/equipments/:id
+ *
+ * Perbarui detail alat oleh pemiliknya.
+ */
+async function handleUpdateEquipment(req, res, next) {
+  try {
+    const authHeader = req.headers.authorization
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({
+        error: { code: 'UNAUTHORIZED', message: 'Token otentikasi wajib disertakan' }
+      })
+    }
+
+    let userId
+    let userRole
+    try {
+      const decoded = jwt.verify(authHeader.split(' ')[1], config.jwtSecret)
+      userId = decoded.userId
+      userRole = decoded.role
+    } catch {
+      return res.status(401).json({
+        error: { code: 'INVALID_TOKEN', message: 'Token tidak valid atau kedaluwarsa' }
+      })
+    }
+
+    const id = String(req.params.id ?? '').trim()
+    if (!id) {
+      throw new ApiError(400, 'INVALID_ID', 'ID alat wajib diisi')
+    }
+
+    const existing = await prisma.equipment.findUnique({
+      where: { id }
+    })
+
+    if (!existing) {
+      throw new ApiError(404, 'EQUIPMENT_NOT_FOUND', `Alat dengan id '${id}' tidak ditemukan`)
+    }
+
+    if (existing.ownerId !== userId && userRole !== 'ADMIN') {
+      return res.status(403).json({
+        error: { code: 'FORBIDDEN', message: 'Anda tidak memiliki akses untuk mengubah alat ini' }
+      })
+    }
+
+    const {
+      name,
+      category,
+      description,
+      pricePerDay,
+      deposit,
+      powerWatt,
+      weightKg,
+      dimensions,
+      minRentDays,
+      maintenanceBufferDays,
+      location,
+      distance,
+      status,
+      condition,
+      accessories,
+      deliveryMethods,
+      stock,
+      images,
+      isActive,
+      isDeleted
+    } = req.body ?? {}
+
+    const data = {}
+    if (name !== undefined) data.name = String(name).trim()
+    if (category !== undefined) data.category = String(category).trim()
+    if (description !== undefined) data.description = String(description).trim()
+    if (pricePerDay !== undefined) data.pricePerDay = Number(pricePerDay)
+    if (deposit !== undefined) data.deposit = Number(deposit)
+    if (powerWatt !== undefined) data.powerWatt = Number(powerWatt) || 0
+    if (weightKg !== undefined) data.weightKg = Number(weightKg) || 10
+    if (dimensions !== undefined) data.dimensions = String(dimensions)
+    if (minRentDays !== undefined) data.minRentDays = Math.max(1, Number(minRentDays) || 1)
+    if (maintenanceBufferDays !== undefined) {
+      data.maintenanceBufferDays = Math.max(0, Number(maintenanceBufferDays) || 1)
+    }
+    if (location !== undefined) data.location = String(location)
+    if (distance !== undefined) data.distance = Number(distance) || 2.0
+    if (condition !== undefined) data.condition = String(condition)
+    if (stock !== undefined) data.stock = Math.max(0, Number(stock) || 1)
+    if (isDeleted !== undefined) data.isDeleted = Boolean(isDeleted)
+
+    if (status !== undefined) {
+      data.status = status
+    } else if (isActive !== undefined) {
+      data.status = isActive ? 'TERSEDIA' : 'NONAKTIF'
+    }
+
+    if (accessories !== undefined && Array.isArray(accessories)) {
+      data.accessories = accessories
+        .map((a) => (typeof a === 'string' ? a.trim() : a?.name?.trim()))
+        .filter(Boolean)
+    }
+
+    if (deliveryMethods !== undefined && Array.isArray(deliveryMethods)) {
+      data.deliveryMethods = deliveryMethods
+    }
+
+    if (images !== undefined && Array.isArray(images)) {
+      data.images = images.filter((url) => typeof url === 'string' && url.trim().length > 0)
+    }
+
+    const updated = await prisma.equipment.update({
+      where: { id },
+      data,
+      include: { owner: true }
+    })
+
+    return res.json({
+      data: presentEquipment(updated),
+      message: 'Alat berhasil diperbarui.'
+    })
+  } catch (error) {
+    next(error)
+  }
+}
+
+equipmentsRouter.put('/:id', handleUpdateEquipment)
+equipmentsRouter.patch('/:id', handleUpdateEquipment)
+
+/**
+ * DELETE /api/equipments/:id
+ *
+ * Hapus alat oleh pemilik dengan mekanisme Safe Soft-Delete jika alat sudah memiliki riwayat Order.
+ */
+equipmentsRouter.delete('/:id', async (req, res, next) => {
+  try {
+    const authHeader = req.headers.authorization
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({
+        error: { code: 'UNAUTHORIZED', message: 'Token otentikasi wajib disertakan' }
+      })
+    }
+
+    let userId
+    let userRole
+    try {
+      const decoded = jwt.verify(authHeader.split(' ')[1], config.jwtSecret)
+      userId = decoded.userId
+      userRole = decoded.role
+    } catch {
+      return res.status(401).json({
+        error: { code: 'INVALID_TOKEN', message: 'Token tidak valid atau kedaluwarsa' }
+      })
+    }
+
+    const id = String(req.params.id ?? '').trim()
+    if (!id) {
+      throw new ApiError(400, 'INVALID_ID', 'ID alat wajib diisi')
+    }
+
+    const existing = await prisma.equipment.findUnique({
+      where: { id }
+    })
+
+    if (!existing) {
+      throw new ApiError(404, 'EQUIPMENT_NOT_FOUND', `Alat dengan id '${id}' tidak ditemukan`)
+    }
+
+    if (existing.ownerId !== userId && userRole !== 'ADMIN') {
+      return res.status(403).json({
+        error: { code: 'FORBIDDEN', message: 'Anda tidak memiliki akses untuk menghapus alat ini' }
+      })
+    }
+
+    const orderCount = await prisma.order.count({
+      where: { equipmentId: id }
+    })
+
+    if (orderCount > 0) {
+      // Safe delete: soft delete agar integritas data Order masa lalu tetap utuh
+      const updated = await prisma.equipment.update({
+        where: { id },
+        data: {
+          isDeleted: true,
+          status: 'NONAKTIF'
+        },
+        include: { owner: true }
+      })
+
+      return res.json({
+        data: presentEquipment(updated),
+        message: 'Alat berhasil diarsipkan dengan aman karena memiliki riwayat pesanan.',
+        softDeleted: true
+      })
+    } else {
+      // Hard delete aman jika belum ada transaksi sama sekali
+      await prisma.equipment.delete({
+        where: { id }
+      })
+
+      return res.json({
+        data: { id },
+        message: 'Alat berhasil dihapus permanen.',
+        softDeleted: false
+      })
+    }
+  } catch (error) {
+    next(error)
+  }
+})
+
+/**
  * GET /api/equipments/:id
  *
- * Detail satu alat. Alat yang sedang DISEWA atau MAINTENANCE tetap bisa
- * diambil lewat endpoint ini (dipakai halaman detail), hanya katalog daftar
- * yang menyaring status TERSEDIA.
- *
- * Juga menyertakan `dayStatus` dan `bookedRanges` berdasarkan pesanan
- * aktif (MENUNGGU_KONFIRMASI, DIKIRIM, SEWA_AKTIF, INSPEKSI)
- * sehingga AvailabilityCalendar bisa otomatis menandai tanggal terisi.
+ * Detail satu alat.
  */
 equipmentsRouter.get('/:id', async (req, res, next) => {
   try {
@@ -260,7 +507,7 @@ equipmentsRouter.get('/:id', async (req, res, next) => {
       throw new ApiError(404, 'EQUIPMENT_NOT_FOUND', `Alat dengan id '${id}' tidak ditemukan`)
     }
 
-    const bookedRanges = equipment.orders.map(o => ({
+    const bookedRanges = equipment.orders.map((o) => ({
       id: o.id,
       startDate: o.startDate.toISOString().slice(0, 10),
       endDate: o.endDate.toISOString().slice(0, 10),

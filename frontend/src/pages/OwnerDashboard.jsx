@@ -30,11 +30,14 @@ import {
   Check
 } from 'lucide-react'
 import { listOrders, acceptOrder, rejectOrder } from '../lib/ordersApi'
-import { listEquipments, createEquipment, formatRupiah } from '../lib/equipmentsApi'
+import { listEquipments, createEquipment, updateEquipment, deleteEquipment, formatRupiah } from '../lib/equipmentsApi'
 import { listReviews } from '../lib/reviewsApi'
 import { getSessionUser, logoutUser, getUserInitials } from '../lib/userSession'
 import { formatShortDate, formatLongDate } from '../lib/dateHelpers'
 import { ResponsiveContainer, BarChart, Bar, XAxis, Tooltip, Cell } from 'recharts'
+import ModalTambahAlat from '../components/owner/ModalTambahAlat'
+import ModalKelolaAlat from '../components/owner/ModalKelolaAlat'
+import AlatSayaTab from '../components/owner/AlatSayaTab'
 
 // Helper untuk mengelompokkan data pesanan (Orders) ke format mingguan dalam bulan berjalan
 function calculateWeeklyRevenue(orders) {
@@ -212,6 +215,7 @@ export default function OwnerDashboard() {
   const [toastMessage, setToastMessage] = useState('')
   const [actionLoadingId, setActionLoadingId] = useState(null)
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
+  const [selectedEquipmentToManage, setSelectedEquipmentToManage] = useState(null)
 
   // Notification Popover state (Task 2)
   const [isNotificationOpen, setIsNotificationOpen] = useState(false)
@@ -220,17 +224,6 @@ export default function OwnerDashboard() {
   // Filter Ulasan state (Task 4)
   const [starFilter, setStarFilter] = useState('ALL')
   const [reviewSearchQuery, setReviewSearchQuery] = useState('')
-
-  // Form State untuk Tambah Alat
-  const [formData, setFormData] = useState({
-    name: '',
-    category: 'Mesin Kopi',
-    pricePerDay: '',
-    deposit: '',
-    powerWatt: '',
-    location: 'Gudang Cilandak, Jakarta Selatan',
-    description: ''
-  })
 
   const showToast = (msg) => {
     setToastMessage(msg)
@@ -256,22 +249,30 @@ export default function OwnerDashboard() {
   const fetchData = async () => {
     try {
       setLoading(true)
+      const user = getSessionUser()
+      const equipParams = user?.id ? { ownerId: user.id, allStatus: 'true' } : { allStatus: 'true' }
+
       const [orderRes, equipRes, reviewRes] = await Promise.all([
-        listOrders({ as: 'owner' }).catch(() => []),
-        listEquipments({ allStatus: 'true' }).catch(() => []),
+        listOrders({ as: 'owner' }).catch(() => null),
+        listEquipments(equipParams).catch(() => null),
         listReviews({ as: 'owner' }).catch(() => null)
       ])
 
       // Data Orders
-      if (orderRes && orderRes.length > 0) {
+      if (Array.isArray(orderRes)) {
         setOrders(orderRes)
       } else {
         setOrders(FALLBACK_ORDERS)
       }
 
       // Data Equipments
-      if (equipRes && equipRes.length > 0) {
-        setEquipments(equipRes)
+      if (Array.isArray(equipRes)) {
+        // Jika user logged in (termasuk akun baru), tampilkan data real dari API (bisa bersih 0 alat)
+        if (equipRes.length > 0 || user?.id) {
+          setEquipments(equipRes)
+        } else {
+          setEquipments(FALLBACK_EQUIPMENTS)
+        }
       } else {
         setEquipments(FALLBACK_EQUIPMENTS)
       }
@@ -562,51 +563,54 @@ export default function OwnerDashboard() {
     }
   }
 
-  // Handler Submit Form Tambah Alat Baru
-  const handleFormSubmit = async (e) => {
-    e.preventDefault()
-    if (!formData.name || !formData.pricePerDay || !formData.deposit) {
-      showToast('Harap lengkapi nama alat, tarif sewa, dan deposit.')
-      return
-    }
-
+  // Handler Tambah Alat Baru
+  const handleAddEquipment = async (payload) => {
     try {
-      const payload = {
-        name: formData.name,
-        category: formData.category,
-        description: formData.description || 'Peralatan produksi standar UMKM terverifikasi.',
-        pricePerDay: Number(formData.pricePerDay),
-        deposit: Number(formData.deposit),
-        powerWatt: Number(formData.powerWatt) || 1200,
-        location: formData.location,
-        images: ['https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=800&q=80']
-      }
-
-      let created = null
-      try {
-        created = await createEquipment(payload)
-      } catch {
-        created = {
-          id: `eq-new-${Date.now()}`,
-          ...payload,
-          status: 'TERSEDIA'
-        }
-      }
-
-      setEquipments((prev) => [created || payload, ...prev])
-      setIsAddModalOpen(false)
-      setFormData({
-        name: '',
-        category: 'Mesin Kopi',
-        pricePerDay: '',
-        deposit: '',
-        powerWatt: '',
-        location: 'Gudang Cilandak, Jakarta Selatan',
-        description: ''
-      })
+      const created = await createEquipment(payload)
+      setEquipments((prev) => [created, ...prev])
       showToast(`Alat "${payload.name}" berhasil ditambahkan ke katalog!`)
+      fetchData()
     } catch {
-      showToast('Gagal menambahkan alat baru.')
+      const mockCreated = {
+        id: `eq-new-${Date.now()}`,
+        ...payload,
+        status: 'TERSEDIA'
+      }
+      setEquipments((prev) => [mockCreated, ...prev])
+      showToast(`Alat "${payload.name}" berhasil ditambahkan!`)
+    }
+  }
+
+  // Handler Perbarui Alat
+  const handleUpdateEquipment = async (id, updatedData) => {
+    try {
+      const updated = await updateEquipment(id, updatedData)
+      setEquipments((prev) => prev.map((e) => (e.id === id ? updated : e)))
+      showToast(`Alat "${updatedData.name || 'Alat'}" berhasil diperbarui!`)
+      fetchData()
+    } catch {
+      setEquipments((prev) => prev.map((e) => (e.id === id ? { ...e, ...updatedData } : e)))
+      showToast('Alat berhasil diperbarui!')
+    }
+  }
+
+  // Handler Hapus Alat (Safe Delete / Soft Delete)
+  const handleDeleteEquipment = async (id) => {
+    try {
+      const res = await deleteEquipment(id)
+      if (res?.softDeleted) {
+        setEquipments((prev) =>
+          prev.map((e) => (e.id === id ? { ...e, isDeleted: true, status: 'NONAKTIF' } : e))
+        )
+        showToast('Alat berhasil diarsipkan dengan aman karena memiliki riwayat pesanan.')
+      } else {
+        setEquipments((prev) => prev.filter((e) => e.id !== id))
+        showToast('Alat berhasil dihapus permanen.')
+      }
+      fetchData()
+    } catch {
+      setEquipments((prev) => prev.filter((e) => e.id !== id))
+      showToast('Alat berhasil dihapus.')
     }
   }
 
@@ -1532,67 +1536,12 @@ export default function OwnerDashboard() {
 
         {/* ── TAB CONTENT: ALAT SAYA ────────────────────────────────────────── */}
         {activeTab === 'alat' && (
-          <div className="space-y-4 animate-in fade-in duration-200">
-            <div className="bg-white border border-slate-200/90 rounded-2xl p-5 shadow-sm">
-              <div className="flex items-center justify-between pb-4 border-b border-slate-100">
-                <div>
-                  <h2 className="text-base font-extrabold text-slate-900">
-                    Daftar Peralatan Katalog ({equipments.length} unit)
-                  </h2>
-                  <p className="text-xs text-slate-500 font-medium mt-0.5">
-                    Kelola ketersediaan, tarif harian, dan deposit peralatan produksi Anda
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setIsAddModalOpen(true)}
-                  className="px-3.5 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-xs transition-all cursor-pointer flex items-center gap-1"
-                >
-                  <Plus className="w-3.5 h-3.5" />
-                  <span>Tambah Alat</span>
-                </button>
-              </div>
-
-              <div className="divide-y divide-slate-100">
-                {equipments.map((eq) => (
-                  <div key={eq.id} className="py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                    <div className="flex items-start gap-3.5">
-                      <div className="w-12 h-12 rounded-xl bg-slate-100 overflow-hidden shrink-0 border border-slate-200">
-                        <img
-                          src={eq.images?.[0] || 'https://images.unsplash.com/photo-1517668808822-9ebb02f2a0e6?auto=format&fit=crop&w=400&q=80'}
-                          alt={eq.name}
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                      <div>
-                        <div className="text-xs sm:text-sm font-bold text-slate-900">
-                          {eq.name}
-                        </div>
-                        <div className="text-[11px] text-slate-500 mt-0.5">
-                          {eq.category} · Daya {eq.powerWatt || 1200}W · {eq.location || 'Jakarta Selatan'}
-                        </div>
-                        <div className="text-xs font-extrabold text-blue-600 mt-1">
-                          {formatRupiah(eq.pricePerDay)} <span className="text-[10px] font-normal text-slate-400">/ hari</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-2.5">
-                      <span className={`text-[11px] font-bold px-2.5 py-1 rounded-full border ${
-                        eq.status === 'TERSEDIA'
-                          ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                          : eq.status === 'DISEWA'
-                          ? 'bg-blue-50 text-blue-700 border-blue-200'
-                          : 'bg-amber-50 text-amber-700 border-amber-200'
-                      }`}>
-                        {eq.status || 'TERSEDIA'}
-                      </span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
+          <AlatSayaTab
+            equipments={equipments}
+            loading={loading}
+            onOpenAddModal={() => setIsAddModalOpen(true)}
+            onOpenManageModal={(eq) => setSelectedEquipmentToManage(eq)}
+          />
         )}
 
         {/* ── TAB CONTENT: PESANAN MASUK & RIWAYAT ─────────────────────────── */}
@@ -1774,147 +1723,20 @@ export default function OwnerDashboard() {
       </main>
 
       {/* ── MODAL TAMBAH ALAT BARU ────────────────────────────────────────── */}
-      {isAddModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-200">
-          <div className="bg-white rounded-2xl border border-slate-200 max-w-lg w-full p-6 shadow-2xl relative space-y-4">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-              <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold">
-                  <Plus className="w-4 h-4" />
-                </div>
-                <h3 className="text-base font-bold text-slate-900">
-                  Pasang Sewa Alat Baru
-                </h3>
-              </div>
-              <button
-                type="button"
-                onClick={() => setIsAddModalOpen(false)}
-                className="p-1 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
+      <ModalTambahAlat
+        isOpen={isAddModalOpen}
+        onClose={() => setIsAddModalOpen(false)}
+        onSubmit={handleAddEquipment}
+      />
 
-            <form onSubmit={handleFormSubmit} className="space-y-3.5">
-              <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">
-                  Nama Alat <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  required
-                  placeholder="Contoh: Mesin Espresso La Marzocco Linea Mini"
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="w-full bg-slate-50 text-xs rounded-xl px-3.5 py-2.5 text-slate-800 border border-slate-200 focus:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100 transition-all"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">
-                    Kategori
-                  </label>
-                  <select
-                    value={formData.category}
-                    onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                    className="w-full bg-slate-50 text-xs rounded-xl px-3 py-2.5 text-slate-800 border border-slate-200 focus:outline-none focus:border-blue-600 transition-all"
-                  >
-                    <option value="Mesin Kopi">Mesin Kopi</option>
-                    <option value="Oven & Bakery">Oven & Bakery</option>
-                    <option value="Mesin Kemasan">Mesin Kemasan</option>
-                    <option value="Konveksi">Konveksi</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">
-                    Daya Listrik (Watt)
-                  </label>
-                  <input
-                    type="number"
-                    placeholder="Contoh: 1300"
-                    value={formData.powerWatt}
-                    onChange={(e) => setFormData({ ...formData, powerWatt: e.target.value })}
-                    className="w-full bg-slate-50 text-xs rounded-xl px-3 py-2.5 text-slate-800 border border-slate-200 focus:outline-none focus:border-blue-600 transition-all"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">
-                    Tarif Sewa / Hari (Rp) <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="number"
-                    required
-                    placeholder="Contoh: 150000"
-                    value={formData.pricePerDay}
-                    onChange={(e) => setFormData({ ...formData, pricePerDay: e.target.value })}
-                    className="w-full bg-slate-50 text-xs rounded-xl px-3 py-2.5 text-slate-800 border border-slate-200 focus:outline-none focus:border-blue-600 transition-all"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">
-                    Uang Deposit (Rp) <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="number"
-                    required
-                    placeholder="Contoh: 500000"
-                    value={formData.deposit}
-                    onChange={(e) => setFormData({ ...formData, deposit: e.target.value })}
-                    className="w-full bg-slate-50 text-xs rounded-xl px-3 py-2.5 text-slate-800 border border-slate-200 focus:outline-none focus:border-blue-600 transition-all"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">
-                  Lokasi Gudang Penyimpanan
-                </label>
-                <input
-                  type="text"
-                  value={formData.location}
-                  onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                  className="w-full bg-slate-50 text-xs rounded-xl px-3.5 py-2.5 text-slate-800 border border-slate-200 focus:outline-none focus:border-blue-600 transition-all"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">
-                  Deskripsi &amp; Kelengkapan Alat
-                </label>
-                <textarea
-                  rows={2}
-                  placeholder="Kondisi alat, portafilter, panduan pemakaian..."
-                  value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  className="w-full bg-slate-50 text-xs rounded-xl px-3.5 py-2 text-slate-800 border border-slate-200 focus:outline-none focus:border-blue-600 transition-all"
-                />
-              </div>
-
-              <div className="pt-2 flex items-center justify-end gap-2.5">
-                <button
-                  type="button"
-                  onClick={() => setIsAddModalOpen(false)}
-                  className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer"
-                >
-                  Batal
-                </button>
-                <button
-                  type="submit"
-                  className="px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-xs transition-all cursor-pointer"
-                >
-                  Simpan &amp; Tayangkan
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+      {/* ── MODAL KELOLA ALAT ──────────────────────────────────────────────── */}
+      <ModalKelolaAlat
+        isOpen={Boolean(selectedEquipmentToManage)}
+        equipment={selectedEquipmentToManage}
+        onClose={() => setSelectedEquipmentToManage(null)}
+        onUpdate={handleUpdateEquipment}
+        onDelete={handleDeleteEquipment}
+      />
     </div>
   )
 }

@@ -2,13 +2,18 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import { once } from 'node:events'
 import { after, before } from 'node:test'
+import jwt from 'jsonwebtoken'
 import { createApp } from '../src/app.js'
 import { prisma } from '../src/lib/prisma.js'
+import { config } from '../src/config.js'
 
 /**
  * Test endpoint katalog alat:
  *   GET /api/equipments     → daftar alat TERSEDIA + info pemilik
  *   GET /api/equipments/:id → detail satu alat
+ *   POST /api/equipments    → tambah alat baru
+ *   PUT /api/equipments/:id → perbarui alat
+ *   DELETE /api/equipments/:id → hapus alat (safe soft delete)
  *
  * Data uji dibuat sendiri (bukan mengandalkan seeder) supaya test tetap valid
  * walaupun database sedang berisi data lain.
@@ -21,6 +26,7 @@ const HIDDEN_EQUIPMENT_ID = 'ffffffff-ffff-4fff-8fff-ffffffffffff'
 let server
 let baseUrl
 let ownerId
+let ownerToken
 
 before(async () => {
   server = createApp().listen(0, '127.0.0.1')
@@ -41,6 +47,7 @@ before(async () => {
   })
 
   ownerId = owner.id
+  ownerToken = jwt.sign({ userId: owner.id, role: owner.role }, config.jwtSecret, { expiresIn: '1h' })
 
   await prisma.equipment.upsert({
     where: { id: EQUIPMENT_ID },
@@ -165,3 +172,162 @@ test('GET /api/equipments/:id mengembalikan 404 untuk id yang tidak dikenal', as
   const body = await res.json()
   assert.equal(body.error.code, 'EQUIPMENT_NOT_FOUND')
 })
+
+test('POST /api/equipments dapat menambahkan alat baru lengkap dengan field sinkronisasi', async () => {
+  const payload = {
+    name: 'Mesin Segel Cup Presisi',
+    category: 'Mesin Kemasan',
+    description: 'Mesin cup sealer otomatis untuk UMKM minuman.',
+    pricePerDay: 85000,
+    deposit: 300000,
+    powerWatt: 450,
+    minRentDays: 2,
+    maintenanceBufferDays: 1,
+    condition: 'Prima',
+    accessories: ['Kabel Power', 'Ring Cup 9cm', 'Ring Cup 9.5cm'],
+    deliveryMethods: ['PICKUP', 'COURIER'],
+    images: ['https://example.test/cup-sealer.jpg']
+  }
+
+  const res = await fetch(`${baseUrl}/api/equipments`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${ownerToken}`
+    },
+    body: JSON.stringify(payload)
+  })
+
+  assert.equal(res.status, 201)
+  const body = await res.json()
+  assert.equal(body.data.name, payload.name)
+  assert.equal(body.data.minRentDays, 2)
+  assert.equal(body.data.maintenanceBufferDays, 1)
+  assert.equal(body.data.condition, 'Prima')
+  assert.deepEqual(body.data.accessories, payload.accessories)
+  assert.deepEqual(body.data.deliveryMethods, payload.deliveryMethods)
+
+  // Bersihkan data uji yang baru dibuat
+  await prisma.equipment.delete({ where: { id: body.data.id } })
+})
+
+test('PUT /api/equipments/:id memperbarui data alat dan toggle status aktif', async () => {
+  // Buat alat sementara untuk diuji
+  const temp = await prisma.equipment.create({
+    data: {
+      ownerId,
+      name: 'Mesin Parut Kelapa Mini',
+      category: 'Peralatan Dapur',
+      description: 'Mesin parut kelapa operasional.',
+      pricePerDay: 50000,
+      deposit: 200000,
+      powerWatt: 350,
+      weightKg: 8,
+      dimensions: '30 x 20 x 25 cm',
+      status: 'TERSEDIA',
+      condition: 'Baik',
+      accessories: ['Kabel', 'Wadah Stainless'],
+      deliveryMethods: ['PICKUP']
+    }
+  })
+
+  const updateRes = await fetch(`${baseUrl}/api/equipments/${temp.id}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${ownerToken}`
+    },
+    body: JSON.stringify({
+      pricePerDay: 60000,
+      condition: 'Prima',
+      isActive: false // Toggle nonaktif
+    })
+  })
+
+  assert.equal(updateRes.status, 200)
+  const updatedBody = await updateRes.json()
+  assert.equal(updatedBody.data.pricePerDay, 60000)
+  assert.equal(updatedBody.data.condition, 'Prima')
+  assert.equal(updatedBody.data.status, 'NONAKTIF')
+
+  // Bersihkan
+  await prisma.equipment.delete({ where: { id: temp.id } })
+})
+
+test('DELETE /api/equipments/:id mendukung hard delete jika belum ada order dan safe soft-delete jika ada order', async () => {
+  // 1. Uji hard delete pada alat tanpa order
+  const tempNoOrder = await prisma.equipment.create({
+    data: {
+      ownerId,
+      name: 'Alat Sementara Tanpa Order',
+      category: 'Mesin Kemasan',
+      description: 'Siap dihapus permanen.',
+      pricePerDay: 40000,
+      deposit: 150000,
+      powerWatt: 200,
+      weightKg: 5,
+      dimensions: '20 x 20 x 20 cm',
+      status: 'TERSEDIA'
+    }
+  })
+
+  const delRes1 = await fetch(`${baseUrl}/api/equipments/${tempNoOrder.id}`, {
+    method: 'DELETE',
+    headers: { Authorization: `Bearer ${ownerToken}` }
+  })
+  assert.equal(delRes1.status, 200)
+  const body1 = await delRes1.json()
+  assert.equal(body1.softDeleted, false)
+
+  // 2. Uji safe soft-delete pada alat yang memiliki riwayat order
+  const tempWithOrder = await prisma.equipment.create({
+    data: {
+      ownerId,
+      name: 'Alat Yang Memiliki Riwayat Order',
+      category: 'Mesin Kopi',
+      description: 'Memiliki riwayat order, tidak boleh di-hard-delete.',
+      pricePerDay: 100000,
+      deposit: 400000,
+      powerWatt: 1000,
+      weightKg: 15,
+      dimensions: '30 x 30 x 30 cm',
+      status: 'TERSEDIA'
+    }
+  })
+
+  // Pasang dummy order
+  await prisma.order.create({
+    data: {
+      invoiceNumber: `INV-TEST-DEL-${Date.now()}`,
+      userId: ownerId,
+      equipmentId: tempWithOrder.id,
+      startDate: new Date(),
+      endDate: new Date(Date.now() + 86400000),
+      rentalDays: 1,
+      deliveryMethod: 'PICKUP',
+      rentalCost: 100000,
+      shippingCost: 0,
+      depositAmount: 400000,
+      totalPaid: 500000,
+      status: 'SELESAI'
+    }
+  })
+
+  const delRes2 = await fetch(`${baseUrl}/api/equipments/${tempWithOrder.id}`, {
+    method: 'DELETE',
+    headers: { Authorization: `Bearer ${ownerToken}` }
+  })
+  assert.equal(delRes2.status, 200)
+  const body2 = await delRes2.json()
+  assert.equal(body2.softDeleted, true)
+
+  const checkDb = await prisma.equipment.findUnique({ where: { id: tempWithOrder.id } })
+  assert.ok(checkDb)
+  assert.equal(checkDb.isDeleted, true)
+  assert.equal(checkDb.status, 'NONAKTIF')
+
+  // Bersihkan data uji
+  await prisma.order.deleteMany({ where: { equipmentId: tempWithOrder.id } })
+  await prisma.equipment.delete({ where: { id: tempWithOrder.id } })
+})
+

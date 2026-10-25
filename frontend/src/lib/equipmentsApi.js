@@ -82,6 +82,60 @@ export async function createEquipment(data) {
 }
 
 /**
+ * Perbarui data alat (Owner side).
+ *
+ * @param {string} id - UUID alat
+ * @param {object} data - data pembaruan
+ * @returns {Promise<object>}
+ */
+export async function updateEquipment(id, data) {
+  const token = getUserToken()
+  const headers = {
+    'Content-Type': 'application/json',
+    ...(token ? { Authorization: `Bearer ${token}` } : {})
+  }
+
+  const response = await fetch(`${API_BASE}/equipments/${encodeURIComponent(id)}`, {
+    method: 'PUT',
+    headers,
+    body: JSON.stringify(data)
+  })
+
+  const body = await response.json().catch(() => ({}))
+  if (!response.ok) {
+    throw new Error(body?.error?.message || 'Gagal memperbarui alat')
+  }
+
+  return body?.data
+}
+
+/**
+ * Hapus alat (Owner side - dengan dukungan soft delete).
+ *
+ * @param {string} id - UUID alat
+ * @returns {Promise<object>}
+ */
+export async function deleteEquipment(id) {
+  const token = getUserToken()
+  const headers = {
+    'Content-Type': 'application/json',
+    ...(token ? { Authorization: `Bearer ${token}` } : {})
+  }
+
+  const response = await fetch(`${API_BASE}/equipments/${encodeURIComponent(id)}`, {
+    method: 'DELETE',
+    headers
+  })
+
+  const body = await response.json().catch(() => ({}))
+  if (!response.ok) {
+    throw new Error(body?.error?.message || 'Gagal menghapus alat')
+  }
+
+  return body
+}
+
+/**
  * Format angka Rupiah ke gaya tampilan lokal.
  * @param {number|string} value
  * @returns {string}
@@ -91,4 +145,5 @@ export function formatRupiah(value) {
   if (!Number.isFinite(number)) return 'Rp 0'
   return `Rp ${number.toLocaleString('id-ID')}`
 }
+
 

@@ -34,12 +34,19 @@ const EQUIPMENTS = [
     powerWatt: 1300,
     weightKg: 45,
     dimensions: '58 × 49 × 41 cm',
+    minRentDays: 1,
     maintenanceBufferDays: 1,
     location: 'Kec. Cilandak, Jakarta Selatan',
     distance: 2.4,
     status: 'TERSEDIA',
+    condition: 'Prima',
+    accessories: ['Portafilter 58mm', 'Tamper Stainless', 'Milk Pitcher', 'Kabel Power'],
+    deliveryMethods: ['PICKUP', 'COURIER'],
+    isDeleted: false,
     images: [
-      'https://images.unsplash.com/photo-1517668808822-9ebb02f2a0e6?auto=format&fit=crop&w=800&q=80'
+      'https://images.unsplash.com/photo-1517668808822-9ebb02f2a0e6?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&w=800&q=80'
     ]
   },
   {
@@ -53,12 +60,18 @@ const EQUIPMENTS = [
     powerWatt: 1200,
     weightKg: 85,
     dimensions: '90 × 70 × 60 cm',
+    minRentDays: 2,
     maintenanceBufferDays: 1,
     location: 'Kec. Kebayoran Baru, Jakarta Selatan',
     distance: 3.1,
     status: 'TERSEDIA',
+    condition: 'Prima',
+    accessories: ['Loyang 40x60 (4 pcs)', 'Selang Gas Regulator', 'Sarung Tangan Panas'],
+    deliveryMethods: ['PICKUP', 'COURIER'],
+    isDeleted: false,
     images: [
-      'https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=800&q=80'
+      'https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=800&q=80'
     ]
   },
   {
@@ -72,12 +85,20 @@ const EQUIPMENTS = [
     powerWatt: 900,
     weightKg: 28,
     dimensions: '45 × 35 × 30 cm',
+    minRentDays: 1,
     maintenanceBufferDays: 1,
     location: 'Kec. Tebet, Jakarta Selatan',
     distance: 1.2,
     status: 'TERSEDIA',
+    condition: 'Terawat',
+    accessories: ['Kabel Power', 'Sample Kantong Vakum', 'Nozzle Vakum', 'Kawat Pemanas Cadangan'],
+    deliveryMethods: ['PICKUP', 'COURIER'],
+    isDeleted: false,
     images: [
-      'https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=800&q=80'
+      'https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1581092335397-9583fe92d232?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1581092580497-e0d23cbdf1dc?auto=format&fit=crop&w=800&q=80'
     ]
   },
   {
@@ -91,10 +112,15 @@ const EQUIPMENTS = [
     powerWatt: 400,
     weightKg: 12,
     dimensions: '55 × 25 × 35 cm',
+    minRentDays: 3,
     maintenanceBufferDays: 2,
     location: 'Kec. Pasar Minggu, Jakarta Selatan',
     distance: 5.8,
     status: 'TERSEDIA',
+    condition: 'Prima',
+    accessories: ['Pedal Servo', 'Jarum Organ DBx1 (10 pcs)', 'Minyak Pelumas 100ml', 'Spool Cadangan'],
+    deliveryMethods: ['PICKUP', 'COURIER'],
+    isDeleted: false,
     images: [
       'https://images.unsplash.com/photo-1528458876885-5b6eacdd3671?auto=format&fit=crop&w=800&q=80'
     ]
@@ -110,10 +136,15 @@ const EQUIPMENTS = [
     powerWatt: 1100,
     weightKg: 24,
     dimensions: '40 × 30 × 55 cm',
+    minRentDays: 1,
     maintenanceBufferDays: 1,
     location: 'Kec. Kebayoran Baru, Jakarta Selatan',
     distance: 4.0,
     status: 'TERSEDIA',
+    condition: 'Prima',
+    accessories: ['Spiral Dough Hook', 'Whisk Ball', 'Flat Beater', 'Bowl Stainless 20L'],
+    deliveryMethods: ['PICKUP', 'COURIER'],
+    isDeleted: false,
     images: [
       'https://images.unsplash.com/photo-1556911220-e15b29be8c8f?auto=format&fit=crop&w=800&q=80'
     ]
@@ -129,12 +160,18 @@ const EQUIPMENTS = [
     powerWatt: 2200,
     weightKg: 34,
     dimensions: '40 × 53 × 35 cm',
+    minRentDays: 1,
     maintenanceBufferDays: 1,
     location: 'Kec. Cilandak, Jakarta Selatan',
     distance: 6.5,
     status: 'DISEWA',
+    condition: 'Terawat',
+    accessories: ['Portafilter Double Spout (2 pcs)', 'Tamper 58mm', 'Knock Box', 'Pitcher Susu 600ml'],
+    deliveryMethods: ['PICKUP', 'COURIER'],
+    isDeleted: false,
     images: [
-      'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=800&q=80'
+      'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1517668808822-9ebb02f2a0e6?auto=format&fit=crop&w=800&q=80'
     ]
   }
 ]
@@ -372,10 +409,15 @@ async function main() {
         powerWatt: item.powerWatt,
         weightKg: item.weightKg,
         dimensions: item.dimensions,
+        minRentDays: item.minRentDays,
         maintenanceBufferDays: item.maintenanceBufferDays,
         location: item.location,
         distance: item.distance,
         status: item.status,
+        condition: item.condition,
+        accessories: item.accessories,
+        deliveryMethods: item.deliveryMethods,
+        isDeleted: item.isDeleted,
         images: item.images
       },
       create: {
