@@ -36,7 +36,7 @@ export default function PesananSaya() {
   const [error, setError] = useState(null)
 
   // Filters & search
-  const [activeTab, setActiveTab] = useState('Semua') // 'Semua' | 'Menunggu' | 'Sedang Disewa' | 'Selesai' | 'Dibatalkan'
+  const [activeTab, setActiveTab] = useState('Semua') // 'Semua' | 'Menunggu' | 'Sedang Disewa' | 'Selesai' | 'Ditolak'
   const [searchQuery, setSearchQuery] = useState('')
 
   // Toast notification
@@ -93,9 +93,9 @@ export default function PesananSaya() {
       (o) => o.status === 'DIKIRIM' || o.status === 'SEWA_AKTIF' || o.status === 'INSPEKSI'
     ).length
     const selesai = orders.filter((o) => o.status === 'SELESAI').length
-    const dibatalkan = orders.filter((o) => o.status === 'DIBATALKAN').length
+    const ditolak = orders.filter((o) => o.status === 'DITOLAK' || o.status === 'DIBATALKAN').length
 
-    return { total, menunggu, menungguBayar, sedangDisewa, selesai, dibatalkan }
+    return { total, menunggu, menungguBayar, sedangDisewa, selesai, ditolak }
   }, [orders])
 
   // Filter list pesanan berdasarkan tab aktif dan search query
@@ -118,7 +118,7 @@ export default function PesananSaya() {
       if (activeTab === 'Selesai' && order.status !== 'SELESAI') {
         return false
       }
-      if (activeTab === 'Dibatalkan' && order.status !== 'DIBATALKAN') {
+      if (activeTab === 'Ditolak' && order.status !== 'DITOLAK' && order.status !== 'DIBATALKAN') {
         return false
       }
 
@@ -285,23 +285,23 @@ export default function PesananSaya() {
               </span>
             </button>
 
-            {/* Tab: Dibatalkan */}
+            {/* Tab: Ditolak */}
             <button
               type="button"
-              onClick={() => setActiveTab('Dibatalkan')}
+              onClick={() => setActiveTab('Ditolak')}
               className={`py-2 px-3.5 rounded-full text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer whitespace-nowrap ${
-                activeTab === 'Dibatalkan'
+                activeTab === 'Ditolak'
                   ? 'bg-blue-600 text-white shadow-xs'
                   : 'bg-white text-slate-600 hover:bg-slate-100 ring-1 ring-slate-200'
               }`}
             >
-              <span>Dibatalkan</span>
+              <span>Ditolak</span>
               <span
                 className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold ${
-                  activeTab === 'Dibatalkan' ? 'bg-blue-700 text-white' : 'bg-slate-100 text-slate-500'
+                  activeTab === 'Ditolak' ? 'bg-blue-700 text-white' : 'bg-slate-100 text-slate-500'
                 }`}
               >
-                {counts.dibatalkan}
+                {counts.ditolak}
               </span>
             </button>
           </div>

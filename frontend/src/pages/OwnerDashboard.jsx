@@ -552,12 +552,12 @@ export default function OwnerDashboard() {
       }
 
       setOrders((prev) =>
-        prev.map((o) => (o.id === id ? { ...o, status: 'DIBATALKAN' } : o))
+        prev.map((o) => (o.id === id ? { ...o, status: 'DITOLAK' } : o))
       )
 
-      showToast(`Pesanan ${targetOrder?.invoiceNumber || id} telah DITOLAK dan dibatalkan.`)
+      showToast(`Pesanan ${targetOrder?.invoiceNumber || id} telah DITOLAK.`)
     } catch {
-      showToast('Gagal membatalkan pesanan.')
+      showToast('Gagal menolak pesanan.')
     } finally {
       setActionLoadingId(null)
     }

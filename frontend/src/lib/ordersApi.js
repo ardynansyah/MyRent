@@ -209,7 +209,7 @@ export async function acceptOrder(id) {
 }
 
 /**
- * Tolak pesanan masuk oleh pemilik alat (MENUNGGU_KONFIRMASI → DIBATALKAN).
+ * Tolak pesanan masuk oleh pemilik alat (MENUNGGU_KONFIRMASI → DITOLAK).
  */
 export async function rejectOrder(id) {
   const res = await fetch(`${API_BASE}/orders/${id}/reject`, {

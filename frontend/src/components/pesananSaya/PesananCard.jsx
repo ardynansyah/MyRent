@@ -110,10 +110,11 @@ export default function PesananCard({
             Dispute / Klaim
           </span>
         )
+      case 'DITOLAK':
       case 'DIBATALKAN':
         return (
           <span className="px-2.5 py-1 text-[11px] font-semibold rounded-full bg-red-50 text-red-700 ring-1 ring-red-200">
-            Dibatalkan
+            Ditolak
           </span>
         )
       default:
@@ -250,6 +251,20 @@ export default function PesananCard({
             </div>
             <div className="text-[10px] text-slate-500">
               Pemilik alat memiliki waktu maksimal 12 jam untuk menyetujui pengajuan sewa ini.
+            </div>
+          </div>
+        </div>
+      )}
+
+      {(status === 'DITOLAK' || status === 'DIBATALKAN') && (
+        <div className="flex items-center gap-3 p-3 bg-red-50/70 border border-red-200/60 rounded-xl">
+          <AlertCircle className="w-4 h-4 text-red-700 shrink-0" />
+          <div className="flex-1 min-w-0">
+            <div className="text-xs font-bold text-red-900">
+              Pengajuan sewa ditolak pemilik
+            </div>
+            <div className="text-[10px] text-red-800">
+              {order.disputeNote || 'Dana pembayaran dan security deposit telah dikembalikan ke saldo dompet Anda.'}
             </div>
           </div>
         </div>
@@ -413,8 +428,8 @@ export default function PesananCard({
             </>
           )}
 
-          {/* Status: DIBATALKAN */}
-          {status === 'DIBATALKAN' && (
+          {/* Status: DITOLAK / DIBATALKAN */}
+          {(status === 'DITOLAK' || status === 'DIBATALKAN') && (
             <button
               type="button"
               onClick={() => navigate('/beranda-sewa')}

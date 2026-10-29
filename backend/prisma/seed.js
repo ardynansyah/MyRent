@@ -31,7 +31,7 @@ const EQUIPMENTS = [
       'Mesin espresso single group dengan boiler stainless, PID presisi, dan steam wand ganda untuk susu. Stabil untuk produksi 80-120 cangkir per hari. Sudah termasuk portafilter 58 mm, tamper, dan pitcher susu.',
     pricePerDay: 150000,
     deposit: 500000,
-    powerWatt: 1300,
+    powerWatt: 1500,
     weightKg: 45,
     dimensions: '58 × 49 × 41 cm',
     minRentDays: 1,
@@ -262,6 +262,46 @@ async function main() {
     }
   })
 
+  // 3b. Akun Pemilik dummy alternatif (owner@myrent.com)
+  const ownerAlt = await prisma.user.upsert({
+    where: { email: 'owner@myrent.com' },
+    update: {
+      password: hashedPemilikPassword,
+      role: 'PEMILIK',
+      fullName: 'Mitra Owner MyRent',
+      phone: '081299887766',
+      verificationStatus: 'DISETUJUI',
+      submissionCode: 'VR-1005',
+      kycData: {
+        businessName: 'Mitra Owner MyRent',
+        businessSector: 'Peralatan Usaha & Mesin',
+        city: 'Jakarta Selatan',
+        district: 'Kec. Cilandak',
+        address: 'Jl. TB Simatupang No. 15, Jakarta Selatan',
+        startYear: '2020',
+        dayaListrik: 5500
+      }
+    },
+    create: {
+      email: 'owner@myrent.com',
+      password: hashedPemilikPassword,
+      role: 'PEMILIK',
+      fullName: 'Mitra Owner MyRent',
+      phone: '081299887766',
+      verificationStatus: 'DISETUJUI',
+      submissionCode: 'VR-1005',
+      kycData: {
+        businessName: 'Mitra Owner MyRent',
+        businessSector: 'Peralatan Usaha & Mesin',
+        city: 'Jakarta Selatan',
+        district: 'Kec. Cilandak',
+        address: 'Jl. TB Simatupang No. 15, Jakarta Selatan',
+        startYear: '2020',
+        dayaListrik: 5500
+      }
+    }
+  })
+
   // 4. Akun PENYEWA dummy — dipakai untuk mencoba alur beranda sewa & detail alat.
   const hashedPenyewaPassword = await bcrypt.hash(PENYEWA_PASSWORD, 10)
   const penyewa = await prisma.user.upsert({
@@ -427,25 +467,119 @@ async function main() {
     })
   }
 
-  // 6. Data Order awal untuk penyewa — variasi status agar seluruh tab Pesanan
-  //    Saya langsung memiliki data nyata dari MySQL.
+  // 6. Reset seluruh pesanan milik akun default penyewa@myrent.com
+  //    Hapus terlebih dahulu ulasan terkait agar aman dari constraint foreign key
+  await prisma.review.deleteMany({
+    where: {
+      OR: [
+        { userId: penyewa.id },
+        { order: { userId: penyewa.id } }
+      ]
+    }
+  })
+  await prisma.order.deleteMany({
+    where: { userId: penyewa.id }
+  })
+
+  // 7. Data Order awal:
+  //    - 4 data pesanan spesifik untuk penyewa@myrent.com mewakili 4 siklus status:
+  //      1. MENUNGGU_KONFIRMASI (Baru checkout, menunggu ACC pemilik)
+  //      2. SEWA_AKTIF (Pemilik sudah ACC, alat sedang digunakan + countdown timer)
+  //      3. SELESAI (Masa sewa habis, BAST akhir tervalidasi)
+  //      4. DITOLAK (Pemilik menolak pengajuan, deposit dikembalikan)
+  //    - Pesanan pendukung untuk penyewa 2 & 3 agar katalog dan toko pemilik hidup.
   const now = new Date()
   const ORDER_SEEDS = [
+    // ── 4 Pesanan Siklus Status Penyewa Default (penyewa@myrent.com) ───────────
     {
-      id: 'b2000000-0000-4000-8000-000000000001',
-      invoiceNumber: 'INV-2406-018',
-      userId: PENYEWA_ID,
+      id: 'b2000000-0000-4000-8000-000000000011',
+      invoiceNumber: 'INV-2610-001',
+      userId: penyewa.id,
       equipmentId: 'a1000000-0000-4000-8000-000000000001',
-      startDate: new Date(now.getTime() - 2 * 86400000),
-      endDate: new Date(now.getTime() + 5 * 86400000),
-      rentalDays: 7,
+      startDate: new Date(now.getTime() + 1 * 86400000),
+      endDate: new Date(now.getTime() + 4 * 86400000),
+      rentalDays: 3,
       deliveryMethod: 'COURIER',
-      rentalCost: 1050000,
+      rentalCost: 450000,
       shippingCost: 45000,
       depositAmount: 500000,
-      totalPaid: 1595000,
-      status: 'SEWA_AKTIF'
+      totalPaid: 995000,
+      status: 'MENUNGGU_KONFIRMASI',
+      paymentMethod: 'VA_BCA',
+      paidAt: new Date(now.getTime() - 2 * 3600000),
+      contractAgreedAt: new Date(now.getTime() - 2 * 3600000),
+      renterNotes: 'Mohon konfirmasi ketersediaan unit untuk persiapan event pop-up kafe weekend ini.'
     },
+    {
+      id: 'b2000000-0000-4000-8000-000000000012',
+      invoiceNumber: 'INV-2610-002',
+      userId: penyewa.id,
+      equipmentId: 'a1000000-0000-4000-8000-000000000002',
+      startDate: new Date(now.getTime() - 2 * 86400000),
+      endDate: new Date(now.getTime() + 2 * 86400000),
+      rentalDays: 4,
+      deliveryMethod: 'PICKUP',
+      rentalCost: 840000,
+      shippingCost: 0,
+      depositAmount: 750000,
+      totalPaid: 1590000,
+      status: 'SEWA_AKTIF',
+      paymentMethod: 'QRIS',
+      paidAt: new Date(now.getTime() - 3 * 86400000),
+      contractAgreedAt: new Date(now.getTime() - 3 * 86400000),
+      renterNotes: 'Unit diambil langsung di gudang pemilik oleh tim operasional kami.'
+    },
+    {
+      id: 'b2000000-0000-4000-8000-000000000013',
+      invoiceNumber: 'INV-2610-003',
+      userId: penyewa.id,
+      equipmentId: 'a1000000-0000-4000-8000-000000000003',
+      startDate: new Date(now.getTime() - 10 * 86400000),
+      endDate: new Date(now.getTime() - 5 * 86400000),
+      rentalDays: 5,
+      deliveryMethod: 'COURIER',
+      rentalCost: 475000,
+      shippingCost: 35000,
+      depositAmount: 300000,
+      totalPaid: 810000,
+      status: 'SELESAI',
+      paymentMethod: 'VA_BCA',
+      paidAt: new Date(now.getTime() - 11 * 86400000),
+      contractAgreedAt: new Date(now.getTime() - 11 * 86400000),
+      returnData: {
+        checklist: { bodyClean: true, powerFunctional: true, accessoriesComplete: true },
+        condition: 'BAIK',
+        handoverPin: '782194',
+        bastSubmittedAt: new Date(now.getTime() - 5 * 86400000).toISOString(),
+        unitReceivedAt: new Date(now.getTime() - 5 * 86400000).toISOString(),
+        inspectionApprovedAt: new Date(now.getTime() - 5 * 86400000 + 3600000).toISOString(),
+        refundAmount: 300000,
+        notes: 'Unit dikembalikan dalam kondisi prima dan bersih sesuai BAST awal.'
+      },
+      renterNotes: 'Digunakan untuk pengemasan batch produk kopi bubuk festival UMKM.'
+    },
+    {
+      id: 'b2000000-0000-4000-8000-000000000014',
+      invoiceNumber: 'INV-2610-004',
+      userId: penyewa.id,
+      equipmentId: 'a1000000-0000-4000-8000-000000000004',
+      startDate: new Date(now.getTime() - 3 * 86400000),
+      endDate: new Date(now.getTime() + 1 * 86400000),
+      rentalDays: 4,
+      deliveryMethod: 'COURIER',
+      rentalCost: 300000,
+      shippingCost: 40000,
+      depositAmount: 400000,
+      totalPaid: 740000,
+      status: 'DITOLAK',
+      paymentMethod: 'EWALLET',
+      paidAt: new Date(now.getTime() - 4 * 86400000),
+      contractAgreedAt: new Date(now.getTime() - 4 * 86400000),
+      disputeNote: 'Jadwal sewa bertabrakan dengan jadwal perawatan berkala unit mesin jahit. Seluruh pembayaran sewa dan deposit telah dikembalikan utuh ke saldo dompet.',
+      renterNotes: 'Pengajuan sewa untuk kebutuhan mendesak produksi seragam.'
+    },
+
+    // ── Pesanan Pendukung (Penyewa 2 & 3) untuk riwayat katalog alat ─────────
     {
       id: 'b2000000-0000-4000-8000-000000000002',
       invoiceNumber: 'INV-2406-021',
@@ -477,52 +611,6 @@ async function main() {
       status: 'DIKIRIM'
     },
     {
-      id: 'b2000000-0000-4000-8000-000000000004',
-      invoiceNumber: 'INV-2406-030',
-      userId: PENYEWA_ID,
-      equipmentId: 'a1000000-0000-4000-8000-000000000004',
-      startDate: new Date(now.getTime() - 10 * 86400000),
-      endDate: new Date(now.getTime() - 3 * 86400000),
-      rentalDays: 7,
-      deliveryMethod: 'COURIER',
-      rentalCost: 525000,
-      shippingCost: 40000,
-      depositAmount: 400000,
-      totalPaid: 965000,
-      status: 'DISPUTE',
-      disputeNote: 'Penyewa melaporkan kerusakan pada pedal elektronik saat penggunaan hari ke-5.'
-    },
-    {
-      id: 'b2000000-0000-4000-8000-000000000005',
-      invoiceNumber: 'INV-2406-012',
-      userId: PENYEWA_ID,
-      equipmentId: 'a1000000-0000-4000-8000-000000000001',
-      startDate: new Date(now.getTime() - 15 * 86400000),
-      endDate: new Date(now.getTime() - 8 * 86400000),
-      rentalDays: 7,
-      deliveryMethod: 'COURIER',
-      rentalCost: 1050000,
-      shippingCost: 45000,
-      depositAmount: 500000,
-      totalPaid: 1595000,
-      status: 'SELESAI'
-    },
-    {
-      id: 'b2000000-0000-4000-8000-000000000006',
-      invoiceNumber: 'INV-2406-015',
-      userId: PENYEWA_ID,
-      equipmentId: 'a1000000-0000-4000-8000-000000000002',
-      startDate: new Date(now.getTime() - 7 * 86400000),
-      endDate: new Date(now.getTime() - 3 * 86400000),
-      rentalDays: 4,
-      deliveryMethod: 'PICKUP',
-      rentalCost: 840000,
-      shippingCost: 0,
-      depositAmount: 750000,
-      totalPaid: 1590000,
-      status: 'SELESAI'
-    },
-    {
       id: 'b2000000-0000-4000-8000-000000000007',
       invoiceNumber: 'INV-2405-082',
       userId: PENYEWA_3_ID,
@@ -551,21 +639,6 @@ async function main() {
       depositAmount: 750000,
       totalPaid: 1800000,
       status: 'SELESAI'
-    },
-    {
-      id: 'b2000000-0000-4000-8000-000000000009',
-      invoiceNumber: 'INV-2405-071',
-      userId: PENYEWA_ID,
-      equipmentId: 'a1000000-0000-4000-8000-000000000004',
-      startDate: new Date(now.getTime() - 30 * 86400000),
-      endDate: new Date(now.getTime() - 24 * 86400000),
-      rentalDays: 6,
-      deliveryMethod: 'COURIER',
-      rentalCost: 450000,
-      shippingCost: 40000,
-      depositAmount: 400000,
-      totalPaid: 890000,
-      status: 'SELESAI'
     }
   ]
 
@@ -585,24 +658,19 @@ async function main() {
         depositAmount: order.depositAmount,
         totalPaid: order.totalPaid,
         status: order.status,
+        paymentMethod: order.paymentMethod ?? null,
+        paidAt: order.paidAt ?? null,
+        contractAgreedAt: order.contractAgreedAt ?? null,
+        returnData: order.returnData ?? null,
+        renterNotes: order.renterNotes ?? null,
         disputeNote: order.disputeNote ?? null
       },
       create: order
     })
   }
 
-  // 7. Data Ulasan (Reviews) untuk toko Pemilik
+  // 8. Data Ulasan (Reviews) untuk toko Pemilik
   const REVIEW_SEEDS = [
-    {
-      id: 'c3000000-0000-4000-8000-000000000001',
-      orderId: 'b2000000-0000-4000-8000-000000000005',
-      equipmentId: 'a1000000-0000-4000-8000-000000000001',
-      userId: PENYEWA_ID,
-      rating: 5,
-      comment:
-        'Alat sangat terawat, pemilik ramah dan responsif saat setup di toko. Deposit dikembalikan cepat di hari yang sama.',
-      createdAt: new Date(now.getTime() - 7 * 86400000)
-    },
     {
       id: 'c3000000-0000-4000-8000-000000000002',
       orderId: 'b2000000-0000-4000-8000-000000000008',
@@ -622,16 +690,6 @@ async function main() {
       comment:
         'Mesin vakum food grade berkualitas dan pompa kering bersih. Membantu kemasan keripik kami jadi lebih higienis.',
       createdAt: new Date(now.getTime() - 20 * 86400000)
-    },
-    {
-      id: 'c3000000-0000-4000-8000-000000000004',
-      orderId: 'b2000000-0000-4000-8000-000000000009',
-      equipmentId: 'a1000000-0000-4000-8000-000000000004',
-      userId: PENYEWA_ID,
-      rating: 5,
-      comment:
-        'Mesin jahit Jack direct drive sangat halus, hemat listrik 400W. Pengiriman tepat waktu dan instruksi pemilik sangat jelas.',
-      createdAt: new Date(now.getTime() - 23 * 86400000)
     }
   ]
 
@@ -654,15 +712,16 @@ async function main() {
   console.log(`  - Admin Utama   : ${defaultAdmin.email} (Role: ${defaultAdmin.role})`)
   console.log(`  - Admin Template: ${templateAdmin.email} (Role: ${templateAdmin.role})`)
   console.log(`  - Pemilik Katalog: ${pemilik.email} (Role: ${pemilik.role})`)
-  console.log(`  - Penyewa Demo 1 : ${penyewa.email} (Role: ${penyewa.role}, daya ${penyewa.kycData?.dayaListrik} W)`)
-  console.log(`  - Penyewa Demo 2 : ${penyewa2.email} (${penyewa2.kycData?.businessName})`)
-  console.log(`  - Penyewa Demo 3 : ${penyewa3.email} (${penyewa3.kycData?.businessName})`)
+  console.log(`  - Pemilik Dummy : ${ownerAlt.email} (Role: ${ownerAlt.role})`)
+  console.log(`  - Penyewa Demo  : ${penyewa.email} (Role: ${penyewa.role}) [4 Order Siklus Status]`)
+  console.log(`  - Penyewa Demo 2: ${penyewa2.email} (${penyewa2.kycData?.businessName})`)
+  console.log(`  - Penyewa Demo 3: ${penyewa3.email} (${penyewa3.kycData?.businessName})`)
   console.log(`  - Password Admin : ${adminPassword}`)
   console.log(`  - Password Pemilik: ${PEMILIK_PASSWORD}`)
   console.log(`  - Password Penyewa: ${PENYEWA_PASSWORD}`)
-  console.log(`  - Equipment      : ${EQUIPMENTS.length} unit (${EQUIPMENTS.filter((e) => e.status === 'TERSEDIA').length} TERSEDIA)`)
-  console.log(`  - Orders         : ${ORDER_SEEDS.length} pesanan demo (termasuk pesanan SELESAI siap diulas)`)
-  console.log(`  - Reviews        : ${REVIEW_SEEDS.length} ulasan pelanggan realistik`)
+  console.log(`  - Equipment     : ${EQUIPMENTS.length} unit (${EQUIPMENTS.filter((e) => e.status === 'TERSEDIA').length} TERSEDIA)`)
+  console.log(`  - Orders Total  : ${ORDER_SEEDS.length} pesanan (4 pesanan khusus penyewa default)`)
+  console.log(`  - Reviews       : ${REVIEW_SEEDS.length} ulasan pelanggan realistik`)
 }
 
 main()

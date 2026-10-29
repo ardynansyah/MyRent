@@ -346,7 +346,7 @@ ordersRouter.patch('/:id/accept', async (req, res, next) => {
 })
 
 // ─── PATCH /api/orders/:id/reject ─────────────────────────────────────────────
-// Pemilik menolak pesanan masuk (MENUNGGU_KONFIRMASI → DIBATALKAN).
+// Pemilik menolak pesanan masuk (MENUNGGU_KONFIRMASI → DITOLAK).
 ordersRouter.patch('/:id/reject', async (req, res, next) => {
   try {
     const order = await prisma.order.findUnique({
@@ -374,7 +374,7 @@ ordersRouter.patch('/:id/reject', async (req, res, next) => {
 
     const updated = await prisma.order.update({
       where: { id: order.id },
-      data: { status: 'DIBATALKAN' },
+      data: { status: 'DITOLAK' },
       include: {
         equipment: true,
         user: { select: { id: true, fullName: true, email: true, phone: true, kycData: true } }
@@ -383,7 +383,7 @@ ordersRouter.patch('/:id/reject', async (req, res, next) => {
 
     return res.json({
       data: updated,
-      message: 'Pesanan telah ditolak dan dibatalkan.'
+      message: 'Pesanan telah ditolak.'
     })
   } catch (error) {
     next(error)
@@ -413,7 +413,7 @@ ordersRouter.patch('/:id/cancel', async (req, res, next) => {
 
     const updated = await prisma.order.update({
       where: { id: order.id },
-      data: { status: 'DIBATALKAN' }
+      data: { status: 'DITOLAK' }
     })
 
     return res.json({ data: updated })

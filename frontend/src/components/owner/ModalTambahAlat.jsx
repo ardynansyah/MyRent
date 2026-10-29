@@ -178,7 +178,7 @@ export default function ModalTambahAlat({ isOpen, onClose, onSubmit }) {
                 className="text-xs font-bold text-blue-600 hover:text-blue-700 flex items-center gap-1 cursor-pointer transition-colors"
               >
                 <Plus className="w-3.5 h-3.5" />
-                <span>+ Tambah foto URL</span>
+                <span>Tambah foto URL</span>
               </button>
             </div>
 

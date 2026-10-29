@@ -125,7 +125,7 @@ model Equipment {
  * - INSPEKSI            : penyewa sudah submit BAST akhir, menunggu inspeksi pemilik
  * - SELESAI             : sewa selesai, deposit dikembalikan
  * - DISPUTE             : ada klaim / sengketa
- * - DIBATALKAN          : pesanan dibatalkan
+ * - DITOLAK             : pesanan ditolak
  */
 enum OrderStatus {
   MENUNGGU_PEMBAYARAN
@@ -135,7 +135,7 @@ enum OrderStatus {
   INSPEKSI
   SELESAI
   DISPUTE
-  DIBATALKAN
+  DITOLAK
 }
 
 model Order {
