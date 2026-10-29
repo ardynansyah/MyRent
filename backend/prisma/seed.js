@@ -578,6 +578,67 @@ async function main() {
       disputeNote: 'Jadwal sewa bertabrakan dengan jadwal perawatan berkala unit mesin jahit. Seluruh pembayaran sewa dan deposit telah dikembalikan utuh ke saldo dompet.',
       renterNotes: 'Pengajuan sewa untuk kebutuhan mendesak produksi seragam.'
     },
+    {
+      id: 'b2000000-0000-4000-8000-000000000015',
+      invoiceNumber: 'INV-2610-005',
+      userId: penyewa.id,
+      equipmentId: 'a1000000-0000-4000-8000-000000000005',
+      startDate: new Date(now.getTime() - 4 * 86400000),
+      endDate: new Date(now.getTime() - 1 * 86400000),
+      rentalDays: 3,
+      deliveryMethod: 'COURIER',
+      rentalCost: 360000,
+      shippingCost: 35000,
+      depositAmount: 350000,
+      totalPaid: 745000,
+      status: 'INSPEKSI',
+      paymentMethod: 'VA_BCA',
+      paidAt: new Date(now.getTime() - 5 * 86400000),
+      contractAgreedAt: new Date(now.getTime() - 5 * 86400000),
+      returnData: {
+        handoverPin: '849201',
+        bastSubmittedAt: new Date(now.getTime() - 18 * 3600000).toISOString(),
+        handedOverAt: new Date(now.getTime() - 12 * 3600000).toISOString(),
+        unitReceivedAt: new Date(now.getTime() - 6 * 3600000).toISOString(),
+        inspectionDeadline: new Date(now.getTime() + 42 * 3600000).toISOString(),
+        checklist: { bodyClean: true, powerFunctional: true, accessoriesComplete: true },
+        condition: 'BAIK',
+        notes: 'Penyewa telah submit BAST Akhir dan menyerahkan unit fisik. Menunggu pemilik menyelesaikan inspeksi.'
+      },
+      renterNotes: 'Digunakan untuk adonan roti manis batch festival UMKM.'
+    },
+    {
+      id: 'b2000000-0000-4000-8000-000000000016',
+      invoiceNumber: 'INV-2610-006',
+      userId: penyewa.id,
+      equipmentId: 'a1000000-0000-4000-8000-000000000006',
+      startDate: new Date(now.getTime() - 7 * 86400000),
+      endDate: new Date(now.getTime() - 3 * 86400000),
+      rentalDays: 4,
+      deliveryMethod: 'PICKUP',
+      rentalCost: 1280000,
+      shippingCost: 0,
+      depositAmount: 1200000,
+      damageFee: 450000,
+      totalPaid: 2480000,
+      status: 'DISPUTE',
+      paymentMethod: 'QRIS',
+      paidAt: new Date(now.getTime() - 8 * 86400000),
+      contractAgreedAt: new Date(now.getTime() - 8 * 86400000),
+      disputeReason: 'Kabel power mesin kopi hilang dan bodi samping penyok parah',
+      disputeNote: 'Kabel power mesin kopi hilang dan bodi samping penyok parah',
+      returnData: {
+        handoverPin: '528194',
+        bastSubmittedAt: new Date(now.getTime() - 3 * 86400000).toISOString(),
+        unitReceivedAt: new Date(now.getTime() - 2 * 86400000).toISOString(),
+        inspectedAt: new Date(now.getTime() - 1 * 86400000).toISOString(),
+        disputedAt: new Date(now.getTime() - 1 * 86400000).toISOString(),
+        ownerNotes: 'Kabel power mesin kopi hilang dan bodi samping penyok parah',
+        damageFeeClaimed: 450000,
+        notes: 'Pemilik menolak BAST akhir karena unit mengalami kerusakan fisik dan kehilangan aksesoris.'
+      },
+      renterNotes: 'Digunakan untuk stan kopi pop-up.'
+    },
 
     // ── Pesanan Pendukung (Penyewa 2 & 3) untuk riwayat katalog alat ─────────
     {
@@ -656,6 +717,8 @@ async function main() {
         rentalCost: order.rentalCost,
         shippingCost: order.shippingCost,
         depositAmount: order.depositAmount,
+        damageFee: order.damageFee ?? 0,
+        lateFee: order.lateFee ?? 0,
         totalPaid: order.totalPaid,
         status: order.status,
         paymentMethod: order.paymentMethod ?? null,
@@ -663,7 +726,8 @@ async function main() {
         contractAgreedAt: order.contractAgreedAt ?? null,
         returnData: order.returnData ?? null,
         renterNotes: order.renterNotes ?? null,
-        disputeNote: order.disputeNote ?? null
+        disputeNote: order.disputeNote ?? null,
+        disputeReason: order.disputeReason ?? null
       },
       create: order
     })
@@ -713,14 +777,14 @@ async function main() {
   console.log(`  - Admin Template: ${templateAdmin.email} (Role: ${templateAdmin.role})`)
   console.log(`  - Pemilik Katalog: ${pemilik.email} (Role: ${pemilik.role})`)
   console.log(`  - Pemilik Dummy : ${ownerAlt.email} (Role: ${ownerAlt.role})`)
-  console.log(`  - Penyewa Demo  : ${penyewa.email} (Role: ${penyewa.role}) [4 Order Siklus Status]`)
+  console.log(`  - Penyewa Demo  : ${penyewa.email} (Role: ${penyewa.role}) [6 Order Siklus Status]`)
   console.log(`  - Penyewa Demo 2: ${penyewa2.email} (${penyewa2.kycData?.businessName})`)
   console.log(`  - Penyewa Demo 3: ${penyewa3.email} (${penyewa3.kycData?.businessName})`)
   console.log(`  - Password Admin : ${adminPassword}`)
   console.log(`  - Password Pemilik: ${PEMILIK_PASSWORD}`)
   console.log(`  - Password Penyewa: ${PENYEWA_PASSWORD}`)
   console.log(`  - Equipment     : ${EQUIPMENTS.length} unit (${EQUIPMENTS.filter((e) => e.status === 'TERSEDIA').length} TERSEDIA)`)
-  console.log(`  - Orders Total  : ${ORDER_SEEDS.length} pesanan (4 pesanan khusus penyewa default)`)
+  console.log(`  - Orders Total  : ${ORDER_SEEDS.length} pesanan (6 pesanan khusus penyewa default)`)
   console.log(`  - Reviews       : ${REVIEW_SEEDS.length} ulasan pelanggan realistik`)
 }
 

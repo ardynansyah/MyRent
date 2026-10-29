@@ -180,6 +180,7 @@ model Order {
   // Data pengembalian Step 1-4 (jadwal, checklist, foto, tanda tangan, BAST).
   returnData     Json?
   disputeNote    String?     @db.Text
+  disputeReason  String?     @db.Text
 
   createdAt      DateTime    @default(now())
   updatedAt      DateTime    @updatedAt

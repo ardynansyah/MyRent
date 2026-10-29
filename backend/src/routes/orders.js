@@ -717,11 +717,13 @@ ordersRouter.patch('/:id/complete-inspection', async (req, res, next) => {
 
     const now = new Date()
     const currentReturnData = (order.returnData && typeof order.returnData === 'object') ? order.returnData : {}
+    const finalDisputeReason = !approveRefund ? (disputeReason || ownerNotes || 'Klaim diajukan oleh pemilik alat.') : null
     const updatedReturnData = {
       ...currentReturnData,
       inspectedAt: now.toISOString(),
       ownerNotes,
-      damageFeeClaimed: Number(damageFee) || 0
+      damageFeeClaimed: Number(damageFee) || 0,
+      ...(!approveRefund ? { disputedAt: now.toISOString(), disputeReason: finalDisputeReason } : {})
     }
 
     const updated = await prisma.order.update({
@@ -729,6 +731,8 @@ ordersRouter.patch('/:id/complete-inspection', async (req, res, next) => {
       data: {
         status: approveRefund ? 'SELESAI' : 'DISPUTE',
         damageFee: Number(damageFee) || 0,
+        disputeReason: finalDisputeReason,
+        disputeNote: finalDisputeReason,
         returnData: updatedReturnData
       }
     })
@@ -738,6 +742,66 @@ ordersRouter.patch('/:id/complete-inspection', async (req, res, next) => {
       message: approveRefund
         ? 'Inspeksi fisik disetujui. Dana deposit telah diteruskan ke dompet penyewa.'
         : 'Klaim diajukan ke status dispute untuk mediasi admin.'
+    })
+  } catch (error) {
+    next(error)
+  }
+})
+
+// ─── PATCH /api/orders/:id/dispute ──────────────────────────────────────────
+// Dipanggil oleh Pemilik Alat (atau Admin) untuk mengajukan klaim / sengketa,
+// memicu status DISPUTE disertai alasan klaim (disputeReason).
+ordersRouter.patch('/:id/dispute', async (req, res, next) => {
+  try {
+    const { disputeReason, reason, damageFee } = req.body ?? {}
+    const finalReason = (disputeReason || reason || '').trim()
+
+    if (!finalReason) {
+      return res.status(400).json({
+        error: { code: 'VALIDATION_ERROR', message: 'Alasan klaim (disputeReason) wajib diisi' }
+      })
+    }
+
+    const order = await prisma.order.findUnique({
+      where: { id: req.params.id },
+      include: { equipment: true }
+    })
+
+    if (!order) {
+      return res.status(404).json({
+        error: { code: 'ORDER_NOT_FOUND', message: 'Pesanan tidak ditemukan' }
+      })
+    }
+
+    if (order.equipment.ownerId !== req.userId && req.userRole !== 'ADMIN') {
+      return res.status(403).json({
+        error: { code: 'FORBIDDEN', message: 'Hanya pemilik alat yang berhak mengajukan klaim dispute' }
+      })
+    }
+
+    const now = new Date()
+    const currentReturnData = (order.returnData && typeof order.returnData === 'object') ? order.returnData : {}
+    const updatedReturnData = {
+      ...currentReturnData,
+      disputedAt: now.toISOString(),
+      disputeReason: finalReason,
+      damageFeeClaimed: damageFee !== undefined ? Number(damageFee) || 0 : (currentReturnData.damageFeeClaimed || 0)
+    }
+
+    const updated = await prisma.order.update({
+      where: { id: order.id },
+      data: {
+        status: 'DISPUTE',
+        disputeReason: finalReason,
+        disputeNote: finalReason,
+        ...(damageFee !== undefined ? { damageFee: Number(damageFee) || 0 } : {}),
+        returnData: updatedReturnData
+      }
+    })
+
+    return res.json({
+      data: updated,
+      message: 'Klaim dispute berhasil diajukan. Status pesanan diubah ke DISPUTE.'
     })
   } catch (error) {
     next(error)

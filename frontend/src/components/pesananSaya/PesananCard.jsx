@@ -25,11 +25,15 @@ export default function PesananCard({
   onViewDetail,
   onTrack,
   onViewContract,
-  onReview
+  onReview,
+  onViewDispute
 }) {
   const navigate = useNavigate()
   const equipment = order.equipment || {}
   const status = order.status
+
+  // Accordion state untuk toggle inline Detail Klaim (jika tidak via modal)
+  const [isDisputeExpanded, setIsDisputeExpanded] = useState(false)
 
   // Live countdown timer untuk SEWA_AKTIF
   const [timeLeft, setTimeLeft] = useState('')
@@ -94,7 +98,7 @@ export default function PesananCard({
         )
       case 'INSPEKSI':
         return (
-          <span className="px-2.5 py-1 text-[11px] font-semibold rounded-full bg-amber-50 text-amber-700 ring-1 ring-amber-200">
+          <span className="px-2.5 py-1 text-[11px] font-semibold rounded-full bg-amber-50 text-amber-700 ring-1 ring-amber-300">
             Inspeksi
           </span>
         )
@@ -106,8 +110,8 @@ export default function PesananCard({
         )
       case 'DISPUTE':
         return (
-          <span className="px-2.5 py-1 text-[11px] font-semibold rounded-full bg-red-50 text-red-700 ring-1 ring-red-200">
-            Dispute / Klaim
+          <span className="px-2.5 py-1 text-[11px] font-semibold rounded-full bg-rose-50 text-rose-700 ring-1 ring-rose-300">
+            Dispute (Klaim)
           </span>
         )
       case 'DITOLAK':
@@ -242,6 +246,23 @@ export default function PesananCard({
         </div>
       )}
 
+      {status === 'DISPUTE' && (
+        <div className="flex items-start sm:items-center gap-3 p-3 bg-rose-50/80 border border-rose-200 rounded-xl">
+          <AlertCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5 sm:mt-0" />
+          <div className="flex-1 min-w-0">
+            <div className="text-xs font-bold text-rose-900 flex items-center gap-2">
+              <span>Klaim Kerusakan / Sengketa Diajukan Pemilik</span>
+              <span className="text-[10px] font-semibold px-1.5 py-0.2 bg-rose-200/70 text-rose-800 rounded">
+                Mediasi
+              </span>
+            </div>
+            <div className="text-[10px] text-rose-800 mt-0.5 line-clamp-2">
+              {order.disputeReason || order.disputeNote || 'Pemilik alat mengajukan klaim kerusakan atau ketidaksesuaian unit saat inspeksi.'}
+            </div>
+          </div>
+        </div>
+      )}
+
       {status === 'MENUNGGU_KONFIRMASI' && (
         <div className="flex items-center gap-3 p-3 bg-slate-50 border border-slate-200 rounded-xl">
           <Clock className="w-4 h-4 text-slate-500 shrink-0" />
@@ -282,10 +303,28 @@ export default function PesananCard({
           <button
             type="button"
             onClick={() => onChatOwner(order)}
-            className="py-2 px-3 text-xs font-semibold text-slate-700 bg-white hover:bg-slate-50 ring-1 ring-slate-200 rounded-xl transition-all"
+            className="py-2 px-3 text-xs font-semibold text-slate-700 bg-white hover:bg-slate-50 ring-1 ring-slate-200 rounded-xl transition-all cursor-pointer"
           >
             Hubungi Pemilik
           </button>
+
+          {/* Khusus kartu berstatus DISPUTE: Tombol Detail Klaim bersebelahan dengan Hubungi Pemilik */}
+          {status === 'DISPUTE' && (
+            <button
+              type="button"
+              onClick={() => {
+                if (onViewDispute) {
+                  onViewDispute(order)
+                } else {
+                  setIsDisputeExpanded((prev) => !prev)
+                }
+              }}
+              className="py-2 px-3 text-xs font-semibold text-rose-700 bg-rose-50 hover:bg-rose-100 ring-1 ring-rose-300 rounded-xl transition-all flex items-center gap-1.5 cursor-pointer"
+            >
+              <AlertCircle className="w-3.5 h-3.5 text-rose-600" />
+              <span>Detail Klaim</span>
+            </button>
+          )}
 
           {/* Tombol Lihat Kontrak Sewa jika sudah disetujui */}
           {order.contractAgreedAt && (
@@ -440,6 +479,28 @@ export default function PesananCard({
           )}
         </div>
       </div>
+
+      {/* 5. Expandable Section: Detail Alasan Klaim Pemilik Alat */}
+      {status === 'DISPUTE' && isDisputeExpanded && (
+        <div className="p-4 bg-rose-50/80 border border-rose-200/90 rounded-xl text-xs space-y-2 animate-in fade-in zoom-in-98 duration-150">
+          <div className="flex items-center justify-between font-bold text-rose-900">
+            <span className="flex items-center gap-1.5">
+              <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
+              Detail Alasan Klaim Pemilik Alat:
+            </span>
+            <button
+              type="button"
+              onClick={() => setIsDisputeExpanded(false)}
+              className="text-[11px] text-rose-600 hover:text-rose-800 font-semibold underline cursor-pointer"
+            >
+              Tutup
+            </button>
+          </div>
+          <p className="p-3 bg-white text-rose-950 font-semibold rounded-lg border border-rose-200 m-0 leading-relaxed shadow-2xs">
+            "{order.disputeReason || order.disputeNote || 'Tidak ada catatan klaim terperinci.'}"
+          </p>
+        </div>
+      )}
     </div>
   )
 }

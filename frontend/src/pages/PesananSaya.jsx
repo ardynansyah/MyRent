@@ -19,6 +19,7 @@ import ModalBatalPesanan from '../components/pesananSaya/ModalBatalPesanan'
 import ModalDompet from '../components/pesananSaya/ModalDompet'
 import ModalKontrakSewa from '../components/checkout/ModalKontrakSewa'
 import ModalBeriUlasan from '../components/pesananSaya/ModalBeriUlasan'
+import ModalDetailKlaim from '../components/pesananSaya/ModalDetailKlaim'
 import {
   listOrders,
   cancelOrder,
@@ -52,6 +53,7 @@ export default function PesananSaya() {
   const [isWalletOpen, setIsWalletOpen] = useState(false)
   const [isKontrakOpen, setIsKontrakOpen] = useState(false)
   const [isReviewOpen, setIsReviewOpen] = useState(false)
+  const [isDisputeOpen, setIsDisputeOpen] = useState(false)
 
 
   const showToast = (message) => {
@@ -93,7 +95,7 @@ export default function PesananSaya() {
       (o) => o.status === 'DIKIRIM' || o.status === 'SEWA_AKTIF' || o.status === 'INSPEKSI'
     ).length
     const selesai = orders.filter((o) => o.status === 'SELESAI').length
-    const ditolak = orders.filter((o) => o.status === 'DITOLAK' || o.status === 'DIBATALKAN').length
+    const ditolak = orders.filter((o) => o.status === 'DITOLAK' || o.status === 'DIBATALKAN' || o.status === 'DISPUTE').length
 
     return { total, menunggu, menungguBayar, sedangDisewa, selesai, ditolak }
   }, [orders])
@@ -118,7 +120,7 @@ export default function PesananSaya() {
       if (activeTab === 'Selesai' && order.status !== 'SELESAI') {
         return false
       }
-      if (activeTab === 'Ditolak' && order.status !== 'DITOLAK' && order.status !== 'DIBATALKAN') {
+      if (activeTab === 'Ditolak' && order.status !== 'DITOLAK' && order.status !== 'DIBATALKAN' && order.status !== 'DISPUTE') {
         return false
       }
 
@@ -396,6 +398,10 @@ export default function PesananSaya() {
                   setSelectedOrder(ord)
                   setIsReviewOpen(true)
                 }}
+                onViewDispute={(ord) => {
+                  setSelectedOrder(ord)
+                  setIsDisputeOpen(true)
+                }}
               />
             ))}
           </div>
@@ -466,6 +472,21 @@ export default function PesananSaya() {
       <ModalDompet
         isOpen={isWalletOpen}
         onClose={() => setIsWalletOpen(false)}
+      />
+
+      {/* Modal Detail Klaim / Dispute */}
+      <ModalDetailKlaim
+        isOpen={isDisputeOpen}
+        onClose={() => {
+          setIsDisputeOpen(false)
+          setSelectedOrder(null)
+        }}
+        order={selectedOrder}
+        onChatOwner={(ord) => {
+          setIsDisputeOpen(false)
+          setSelectedOrder(ord)
+          setIsChatOpen(true)
+        }}
       />
 
       {/* Modal Lihat Kontrak Sewa */}

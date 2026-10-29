@@ -253,6 +253,8 @@ export default function Step4RefundDeposit({ order, returnData }) {
                     className={`text-[10px] font-semibold px-2 py-0.5 rounded-md ${
                       order.status === 'SELESAI'
                         ? 'bg-emerald-50 text-emerald-700'
+                        : order.status === 'DISPUTE'
+                        ? 'bg-rose-50 text-rose-700 ring-1 ring-rose-200'
                         : isUnitReceived
                         ? 'bg-amber-50 text-amber-700 ring-1 ring-amber-200'
                         : 'bg-slate-100 text-slate-500'
@@ -260,6 +262,8 @@ export default function Step4RefundDeposit({ order, returnData }) {
                   >
                     {order.status === 'SELESAI'
                       ? 'Disetujui'
+                      : order.status === 'DISPUTE'
+                      ? 'Klaim / Dispute Diajukan'
                       : isUnitReceived
                       ? 'Sedang Berlangsung'
                       : 'Aktif Setelah PIN Diinput'}
@@ -268,6 +272,17 @@ export default function Step4RefundDeposit({ order, returnData }) {
                 <p className="text-xs text-slate-500 m-0 leading-relaxed">
                   Pemilik alat memiliki waktu maksimal 2×24 jam kerja untuk memeriksa kelengkapan &amp; fungsi mesin sesuai checklist BAST.
                 </p>
+                {order.status === 'DISPUTE' && (order.disputeReason || order.disputeNote) && (
+                  <div className="mt-2 p-3 bg-rose-50 border border-rose-200 rounded-xl space-y-1">
+                    <div className="flex items-center gap-1.5 text-xs font-bold text-rose-900">
+                      <AlertCircle className="w-3.5 h-3.5 text-rose-600" />
+                      <span>Alasan Klaim dari Pemilik Alat:</span>
+                    </div>
+                    <p className="text-xs text-rose-950 font-medium m-0 bg-white/80 p-2 rounded border border-rose-200">
+                      "{order.disputeReason || order.disputeNote}"
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
 

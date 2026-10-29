@@ -168,6 +168,20 @@ export async function completeInspection(id, { damageFee = 0, ownerNotes = '', a
 }
 
 /**
+ * Ajukan dispute / klaim oleh pemilik alat atas pesanan (Owner side).
+ */
+export async function claimDispute(id, { disputeReason, damageFee = 0 } = {}) {
+  const res = await fetch(`${API_BASE}/orders/${id}/dispute`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...authHeaders() },
+    body: JSON.stringify({ disputeReason, damageFee })
+  })
+  const body = await res.json().catch(() => ({}))
+  if (!res.ok) throw new Error(body?.error?.message || 'Gagal mengajukan klaim dispute')
+  return body
+}
+
+/**
  * Validasi kode promo.
  */
 export async function validatePromo(code, subtotal = 0) {

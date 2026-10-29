@@ -14,6 +14,7 @@ const TEST_EQUIPMENT_ID = 'cccccccc-cccc-4ccc-8ccc-cccccccccccc'
 let server
 let baseUrl
 let renterToken
+let ownerToken
 let renterId
 let equipmentId
 let createdOrderId
@@ -50,6 +51,7 @@ before(async () => {
       verificationStatus: 'DISETUJUI'
     }
   })
+  ownerToken = jwt.sign({ userId: owner.id, role: owner.role }, config.jwtSecret, { expiresIn: '1h' })
 
   const equipment = await prisma.equipment.upsert({
     where: { id: TEST_EQUIPMENT_ID },
@@ -191,4 +193,67 @@ test('PATCH /api/orders/:id/mock-pay simulasi mock payment', async () => {
     body: JSON.stringify({ paymentMethod: 'VA_BCA' })
   })
   assert.equal(resRetry.status, 400)
+})
+
+test('Siklus alur SEWA_AKTIF -> INSPEKSI -> DISPUTE dengan disputeReason', async () => {
+  // 1. Pemilik menyetujui pesanan (MENUNGGU_KONFIRMASI -> DIKIRIM)
+  const resAccept = await fetch(`${baseUrl}/api/orders/${createdOrderId}/accept`, {
+    method: 'PATCH',
+    headers: { Authorization: `Bearer ${ownerToken}` }
+  })
+  assert.equal(resAccept.status, 200)
+
+  // 2. Penyewa konfirmasi terima (DIKIRIM -> SEWA_AKTIF)
+  const resConfirmDelivery = await fetch(`${baseUrl}/api/orders/${createdOrderId}/confirm-delivery`, {
+    method: 'PATCH',
+    headers: { Authorization: `Bearer ${renterToken}` }
+  })
+  assert.equal(resConfirmDelivery.status, 200)
+
+  // 3. Penyewa submit pengembalian / BAST Akhir (SEWA_AKTIF -> INSPEKSI)
+  const resReturn = await fetch(`${baseUrl}/api/orders/${createdOrderId}/return-submit`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${renterToken}`
+    },
+    body: JSON.stringify({
+      returnData: {
+        notes: 'Penyewa mengembalikan alat dan submit BAST akhir',
+        checklist: { bodyClean: true, powerFunctional: true, accessoriesComplete: true }
+      }
+    })
+  })
+  const jsonReturn = await resReturn.json()
+  assert.equal(resReturn.status, 200)
+  assert.equal(jsonReturn.data.status, 'INSPEKSI')
+  assert.ok(jsonReturn.data.returnData.handoverPin)
+
+  // 4. Pemilik mengajukan klaim dispute (INSPEKSI -> DISPUTE)
+  const disputePayload = {
+    disputeReason: 'Kabel power mesin kopi hilang dan bodi samping penyok parah',
+    damageFee: 350000
+  }
+  const resDispute = await fetch(`${baseUrl}/api/orders/${createdOrderId}/dispute`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${ownerToken}`
+    },
+    body: JSON.stringify(disputePayload)
+  })
+  const jsonDispute = await resDispute.json()
+  assert.equal(resDispute.status, 200)
+  assert.equal(jsonDispute.data.status, 'DISPUTE')
+  assert.equal(jsonDispute.data.disputeReason, disputePayload.disputeReason)
+  assert.equal(jsonDispute.data.damageFee, 350000)
+
+  // 5. Validasi detail order mencakup disputeReason
+  const resDetail = await fetch(`${baseUrl}/api/orders/${createdOrderId}`, {
+    headers: { Authorization: `Bearer ${renterToken}` }
+  })
+  const jsonDetail = await resDetail.json()
+  assert.equal(resDetail.status, 200)
+  assert.equal(jsonDetail.data.status, 'DISPUTE')
+  assert.equal(jsonDetail.data.disputeReason, disputePayload.disputeReason)
 })

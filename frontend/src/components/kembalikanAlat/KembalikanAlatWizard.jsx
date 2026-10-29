@@ -93,8 +93,8 @@ export default function KembalikanAlatWizard() {
         if (!orderData) throw new Error('Pesanan tidak ditemukan')
         setOrder(orderData)
 
-        // Jika status sudah INSPEKSI atau SELESAI, langsung buka Step 4
-        if (orderData.status === 'INSPEKSI' || orderData.status === 'SELESAI') {
+        // Jika status sudah INSPEKSI, SELESAI, atau DISPUTE, langsung buka Step 4
+        if (orderData.status === 'INSPEKSI' || orderData.status === 'SELESAI' || orderData.status === 'DISPUTE') {
           setStep(4)
           setMaxStepReached(4)
         }
