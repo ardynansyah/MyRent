@@ -246,6 +246,23 @@ export default function PesananCard({
         </div>
       )}
 
+      {status === 'SELESAI' && order.isResolvedByAdmin && (
+        <div className="flex items-start sm:items-center gap-3 p-3 bg-emerald-50/80 border border-emerald-200 rounded-xl">
+          <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5 sm:mt-0" />
+          <div className="flex-1 min-w-0">
+            <div className="text-xs font-bold text-emerald-900 flex items-center gap-2">
+              <span>Pesanan Selesai Melalui Putusan Mediasi Admin</span>
+              <span className="text-[10px] font-semibold px-1.5 py-0.2 bg-emerald-200/70 text-emerald-800 rounded">
+                Mediasi Selesai
+              </span>
+            </div>
+            <div className="text-[10px] text-emerald-800 mt-0.5">
+              Ganti rugi Rp {(order.finalDamageFee || 0).toLocaleString('id-ID')} dipotong. Sisa deposit Rp {Math.max(0, (order.depositAmount || 0) - (order.finalDamageFee || 0)).toLocaleString('id-ID')} telah dikembalikan ke dompet.
+            </div>
+          </div>
+        </div>
+      )}
+
       {status === 'DISPUTE' && (
         <div className="flex items-start sm:items-center gap-3 p-3 bg-rose-50/80 border border-rose-200 rounded-xl">
           <AlertCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5 sm:mt-0" />
@@ -323,6 +340,18 @@ export default function PesananCard({
             >
               <AlertCircle className="w-3.5 h-3.5 text-rose-600" />
               <span>Detail Klaim</span>
+            </button>
+          )}
+
+          {/* Tombol Detail Putusan Mediasi jika pesanan diselesaikan via mediasi */}
+          {status === 'SELESAI' && order.isResolvedByAdmin && (
+            <button
+              type="button"
+              onClick={() => onViewDispute && onViewDispute(order)}
+              className="py-2 px-3 text-xs font-semibold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 ring-1 ring-emerald-300 rounded-xl transition-all flex items-center gap-1.5 cursor-pointer"
+            >
+              <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+              <span>Hasil Putusan Mediasi</span>
             </button>
           )}
 

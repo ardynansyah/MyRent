@@ -47,6 +47,7 @@ function presentUser(user) {
     fullName: user.fullName,
     phone: user.phone,
     role: user.role,
+    walletBalance: user.walletBalance ?? 0,
     submissionCode: user.submissionCode ?? null,
     verificationStatus: user.verificationStatus ?? 'MENUNGGU',
     revisionSteps: Array.isArray(user.revisionSteps) ? user.revisionSteps : [],

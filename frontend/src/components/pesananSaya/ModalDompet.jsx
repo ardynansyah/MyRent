@@ -7,6 +7,7 @@ export default function ModalDompet({ isOpen, onClose }) {
 
   const user = getSessionUser()
   const kyc = user?.kycData || {}
+  const walletBalance = user?.walletBalance !== undefined ? user.walletBalance : 1250000
 
   const bankName = kyc.bankName || 'BCA'
   const bankAccount = kyc.bankAccountNumber || '8830-1928-44'
@@ -40,7 +41,9 @@ export default function ModalDompet({ isOpen, onClose }) {
             <div className="flex justify-between items-start">
               <div>
                 <span className="text-[11px] text-blue-200">Saldo Tersedia</span>
-                <h2 className="text-2xl font-extrabold text-white mt-0.5 tracking-tight">Rp 1.250.000</h2>
+                <h2 className="text-2xl font-extrabold text-white mt-0.5 tracking-tight">
+                  Rp {Number(walletBalance).toLocaleString('id-ID')}
+                </h2>
               </div>
               <span className="text-[10px] bg-blue-500/40 text-blue-100 px-2.5 py-1 rounded-full font-semibold">
                 Aktif

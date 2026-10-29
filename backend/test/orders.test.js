@@ -9,13 +9,16 @@ import { config } from '../src/config.js'
 
 const TEST_RENTER_EMAIL = 'renter_orders_test@myrent.id'
 const TEST_OWNER_EMAIL = 'owner_orders_test@myrent.id'
+const TEST_ADMIN_EMAIL = 'admin_orders_test@myrent.id'
 const TEST_EQUIPMENT_ID = 'cccccccc-cccc-4ccc-8ccc-cccccccccccc'
 
 let server
 let baseUrl
 let renterToken
 let ownerToken
+let adminToken
 let renterId
+let ownerId
 let equipmentId
 let createdOrderId
 
@@ -51,7 +54,22 @@ before(async () => {
       verificationStatus: 'DISETUJUI'
     }
   })
+  ownerId = owner.id
   ownerToken = jwt.sign({ userId: owner.id, role: owner.role }, config.jwtSecret, { expiresIn: '1h' })
+
+  const admin = await prisma.user.upsert({
+    where: { email: TEST_ADMIN_EMAIL },
+    update: {},
+    create: {
+      email: TEST_ADMIN_EMAIL,
+      password: 'Password123!',
+      role: 'ADMIN',
+      fullName: 'Admin Uji Coba Orders',
+      phone: '081299990003',
+      verificationStatus: 'DISETUJUI'
+    }
+  })
+  adminToken = jwt.sign({ userId: admin.id, role: admin.role }, config.jwtSecret, { expiresIn: '1h' })
 
   const equipment = await prisma.equipment.upsert({
     where: { id: TEST_EQUIPMENT_ID },
@@ -81,7 +99,7 @@ after(async () => {
     await prisma.order.deleteMany({ where: { id: createdOrderId } })
   }
   await prisma.equipment.deleteMany({ where: { id: TEST_EQUIPMENT_ID } })
-  await prisma.user.deleteMany({ where: { email: { in: [TEST_RENTER_EMAIL, TEST_OWNER_EMAIL] } } })
+  await prisma.user.deleteMany({ where: { email: { in: [TEST_RENTER_EMAIL, TEST_OWNER_EMAIL, TEST_ADMIN_EMAIL] } } })
   if (server) {
     server.close()
   }
@@ -232,7 +250,8 @@ test('Siklus alur SEWA_AKTIF -> INSPEKSI -> DISPUTE dengan disputeReason', async
   // 4. Pemilik mengajukan klaim dispute (INSPEKSI -> DISPUTE)
   const disputePayload = {
     disputeReason: 'Kabel power mesin kopi hilang dan bodi samping penyok parah',
-    damageFee: 350000
+    damageFee: 200000,
+    ownerInspectionPhotos: ['https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=600&q=80']
   }
   const resDispute = await fetch(`${baseUrl}/api/orders/${createdOrderId}/dispute`, {
     method: 'PATCH',
@@ -246,9 +265,10 @@ test('Siklus alur SEWA_AKTIF -> INSPEKSI -> DISPUTE dengan disputeReason', async
   assert.equal(resDispute.status, 200)
   assert.equal(jsonDispute.data.status, 'DISPUTE')
   assert.equal(jsonDispute.data.disputeReason, disputePayload.disputeReason)
-  assert.equal(jsonDispute.data.damageFee, 350000)
+  assert.equal(jsonDispute.data.damageFee, 200000)
+  assert.ok(jsonDispute.data.ownerInspectionPhotos)
 
-  // 5. Validasi detail order mencakup disputeReason
+  // 5. Validasi detail order mencakup disputeReason dan ownerInspectionPhotos
   const resDetail = await fetch(`${baseUrl}/api/orders/${createdOrderId}`, {
     headers: { Authorization: `Bearer ${renterToken}` }
   })
@@ -256,4 +276,71 @@ test('Siklus alur SEWA_AKTIF -> INSPEKSI -> DISPUTE dengan disputeReason', async
   assert.equal(resDetail.status, 200)
   assert.equal(jsonDetail.data.status, 'DISPUTE')
   assert.equal(jsonDetail.data.disputeReason, disputePayload.disputeReason)
+  assert.equal(jsonDetail.data.damageFee, 200000)
+})
+
+test('PATCH /api/orders/:id/resolve-dispute putusan mediasi admin dan pencairan escrow', async () => {
+  // Simpan BAST awal terlebih dahulu untuk kelengkapan data komparasi
+  const bastAwalPayload = {
+    initialBast: {
+      photos: {
+        front: 'https://images.unsplash.com/photo-1517668808822-9ebb02f2a0e6?auto=format&fit=crop&w=600&q=80',
+        side: 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=600&q=80'
+      },
+      notes: 'Unit diterima dalam kondisi prima, bodi mulus tanpa cacat.',
+      checklist: { kabelLengkap: true, bodiMulus: true, mesinMenyala: true }
+    }
+  }
+
+  const resBast = await fetch(`${baseUrl}/api/orders/${createdOrderId}/initial-bast`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${renterToken}`
+    },
+    body: JSON.stringify(bastAwalPayload)
+  })
+  assert.equal(resBast.status, 200)
+
+  // Non-admin harus ditolak mengakses endpoint mediasi
+  const resForbidden = await fetch(`${baseUrl}/api/orders/${createdOrderId}/resolve-dispute`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${renterToken}`
+    },
+    body: JSON.stringify({ finalDamageFee: 100000, adminResolutionNote: 'Test non-admin' })
+  })
+  assert.equal(resForbidden.status, 403)
+
+  // Admin memutuskan sengketa: ganti rugi Rp 120.000 (dari deposit Rp 300.000)
+  const resolutionPayload = {
+    finalDamageFee: 120000,
+    adminResolutionNote: 'Berdasarkan bukti BAST awal dan pengembalian, disepakati kompensasi kabel dan bodi Rp 120.000.'
+  }
+
+  const resResolve = await fetch(`${baseUrl}/api/orders/${createdOrderId}/resolve-dispute`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${adminToken}`
+    },
+    body: JSON.stringify(resolutionPayload)
+  })
+
+  const jsonResolve = await resResolve.json()
+  assert.equal(resResolve.status, 200)
+  assert.equal(jsonResolve.data.status, 'SELESAI')
+  assert.equal(jsonResolve.data.isResolvedByAdmin, true)
+  assert.equal(jsonResolve.data.finalDamageFee, 120000)
+  assert.equal(jsonResolve.data.adminResolutionNote, resolutionPayload.adminResolutionNote)
+  assert.equal(jsonResolve.breakdown.depositAmount, 300000)
+  assert.equal(jsonResolve.breakdown.finalDamageFee, 120000)
+  assert.equal(jsonResolve.breakdown.refundToRenter, 180000) // 300.000 - 120.000
+
+  // Periksa wallet penyewa dan pemilik terupdate secara riil di database
+  const renterDb = await prisma.user.findUnique({ where: { id: renterId } })
+  const ownerDb = await prisma.user.findUnique({ where: { id: ownerId } })
+  assert.equal(renterDb.walletBalance, 180000)
+  assert.ok(ownerDb.walletBalance >= 120000)
 })

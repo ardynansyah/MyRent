@@ -345,6 +345,23 @@ export default function App() {
             </AdminProtectedRoute>
           }
         />
+        {/* Route Cepat Admin / Dashboard Admin */}
+        <Route
+          path="/admin"
+          element={
+            <AdminProtectedRoute>
+              <Navigate to="/portal-internal-hq/dashboard?tab=mediasi" replace />
+            </AdminProtectedRoute>
+          }
+        />
+        <Route
+          path="/dashboard-admin"
+          element={
+            <AdminProtectedRoute>
+              <Navigate to="/portal-internal-hq/dashboard?tab=mediasi" replace />
+            </AdminProtectedRoute>
+          }
+        />
 
         {/* Fallback jika route tidak ditemukan */}
         <Route path="*" element={<Navigate to="/" replace />} />

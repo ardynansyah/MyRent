@@ -595,14 +595,40 @@ async function main() {
       paymentMethod: 'VA_BCA',
       paidAt: new Date(now.getTime() - 5 * 86400000),
       contractAgreedAt: new Date(now.getTime() - 5 * 86400000),
+      initialBast: {
+        photos: {
+          front: 'https://images.unsplash.com/photo-1556911220-e15b29be8c8f?auto=format&fit=crop&w=800&q=80',
+          side: 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=800&q=80',
+          panel: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=800&q=80'
+        },
+        notes: 'Serah terima awal unit Mixer Planetary 20L: unit mulus tanpa goresan, mangkok stainless dan 3 mata pengaduk lengkap.',
+        checklist: {
+          mesinMenyala: true,
+          bodiMulus: true,
+          mangkokStainless: true,
+          pengadukLengkap: true
+        },
+        signedAt: new Date(now.getTime() - 4 * 86400000).toISOString()
+      },
       returnData: {
         handoverPin: '849201',
         bastSubmittedAt: new Date(now.getTime() - 18 * 3600000).toISOString(),
         handedOverAt: new Date(now.getTime() - 12 * 3600000).toISOString(),
         unitReceivedAt: new Date(now.getTime() - 6 * 3600000).toISOString(),
         inspectionDeadline: new Date(now.getTime() + 42 * 3600000).toISOString(),
-        checklist: { bodyClean: true, powerFunctional: true, accessoriesComplete: true },
+        photos: {
+          front: 'https://images.unsplash.com/photo-1556911220-e15b29be8c8f?auto=format&fit=crop&w=800&q=80',
+          side: 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=800&q=80',
+          panel: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=800&q=80'
+        },
+        checklist: {
+          mesinMenyala: true,
+          bodiUtuh: true,
+          komponenLengkap: true,
+          kebersihanOk: true
+        },
         condition: 'BAIK',
+        conditionNotes: 'Unit bersih dan seluruh pengaduk dikembalikan lengkap. Siap diinspeksi pemilik.',
         notes: 'Penyewa telah submit BAST Akhir dan menyerahkan unit fisik. Menunggu pemilik menyelesaikan inspeksi.'
       },
       renterNotes: 'Digunakan untuk adonan roti manis batch festival UMKM.'
@@ -627,15 +653,45 @@ async function main() {
       contractAgreedAt: new Date(now.getTime() - 8 * 86400000),
       disputeReason: 'Kabel power mesin kopi hilang dan bodi samping penyok parah',
       disputeNote: 'Kabel power mesin kopi hilang dan bodi samping penyok parah',
+      ownerInspectionPhotos: [
+        'https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=800&q=80',
+        'https://images.unsplash.com/photo-1517668808822-9ebb02f2a0e6?auto=format&fit=crop&w=800&q=80'
+      ],
+      initialBast: {
+        photos: {
+          front: 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=800&q=80',
+          side: 'https://images.unsplash.com/photo-1517668808822-9ebb02f2a0e6?auto=format&fit=crop&w=800&q=80',
+          panel: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=800&q=80'
+        },
+        notes: 'Kondisi mesin espresso 2 grup mulus 100%, bodi samping tanpa cacat, kabel power orisinal terpasang rapi, dan tekanan boiler stabil 9 bar.',
+        checklist: {
+          bodiMulus: true,
+          kabelPowerAda: true,
+          portafilterLengkap: true,
+          tekananNormal: true
+        },
+        signedAt: new Date(now.getTime() - 7 * 86400000).toISOString()
+      },
       returnData: {
         handoverPin: '528194',
         bastSubmittedAt: new Date(now.getTime() - 3 * 86400000).toISOString(),
         unitReceivedAt: new Date(now.getTime() - 2 * 86400000).toISOString(),
         inspectedAt: new Date(now.getTime() - 1 * 86400000).toISOString(),
         disputedAt: new Date(now.getTime() - 1 * 86400000).toISOString(),
-        ownerNotes: 'Kabel power mesin kopi hilang dan bodi samping penyok parah',
+        ownerNotes: 'Kabel power mesin kopi hilang dan bodi samping penyok parah saat dibongkar di stan event.',
         damageFeeClaimed: 450000,
-        notes: 'Pemilik menolak BAST akhir karena unit mengalami kerusakan fisik dan kehilangan aksesoris.'
+        photos: {
+          front: 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=800&q=80',
+          side: 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=800&q=80'
+        },
+        checklist: {
+          mesinMenyala: true,
+          bodiUtuh: false,
+          komponenLengkap: false,
+          kebersihanOk: true
+        },
+        conditionNotes: 'Mesin dipakai selama 4 hari event stan. Kabel power tertinggal di lokasi pameran dan bodi tersenggol saat loading.',
+        notes: 'Pemilik menolak BAST akhir karena unit mengalami kerusakan fisik dan kehilangan aksesoris kabel power.'
       },
       renterNotes: 'Digunakan untuk stan kopi pop-up.'
     },

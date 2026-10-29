@@ -65,6 +65,9 @@ model User {
   // Catatan admin: alasan perbaikan atau penolakan.
   adminNote String? @db.Text
 
+  // Saldo dompet digital / escrow payout
+  walletBalance Int @default(0)
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -177,10 +180,21 @@ model Order {
   // Batas waktu pembayaran (24 jam dari createdAt)
   paymentDeadline DateTime?
 
-  // Data pengembalian Step 1-4 (jadwal, checklist, foto, tanda tangan, BAST).
+  // Data serah terima awal (BAST Awal: foto awal alat, checklist, catatan)
+  initialBast    Json?
+
+  // Data pengembalian Step 1-4 (jadwal, checklist, foto, tanda tangan, BAST Akhir).
   returnData     Json?
   disputeNote    String?     @db.Text
   disputeReason  String?     @db.Text
+  // Foto bukti kerusakan dari pemilik saat mengajukan klaim / menolak BAST
+  ownerInspectionPhotos Json?
+
+  // Data putusan mediasi admin MyRent
+  finalDamageFee      Int?
+  adminResolutionNote String?     @db.Text
+  resolvedAt          DateTime?
+  isResolvedByAdmin   Boolean     @default(false)
 
   createdAt      DateTime    @default(now())
   updatedAt      DateTime    @updatedAt

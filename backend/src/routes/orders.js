@@ -52,16 +52,27 @@ const PROMO_CODES = {
 }
 
 // ─── GET /api/orders ──────────────────────────────────────────────────────────
-// Daftar pesanan milik user yang sedang login (sebagai penyewa atau pemilik).
+// Daftar pesanan milik user yang sedang login (sebagai penyewa atau pemilik, atau semua untuk admin).
 ordersRouter.get('/', async (req, res, next) => {
   try {
+    const isAdmin = req.userRole === 'ADMIN'
     const isOwner = req.userRole === 'PEMILIK' || req.query.as === 'owner' || req.query.role === 'owner'
-    const where = isOwner
-      ? { equipment: { ownerId: req.userId } }
-      : { userId: req.userId }
 
-    if (req.query.status) {
-      where.status = String(req.query.status)
+    let where = {}
+    if (isAdmin && (req.query.all === 'true' || req.query.status || !req.query.as)) {
+      if (req.query.status) {
+        where.status = String(req.query.status)
+      }
+    } else if (isOwner) {
+      where = { equipment: { ownerId: req.userId } }
+      if (req.query.status) {
+        where.status = String(req.query.status)
+      }
+    } else {
+      where = { userId: req.userId }
+      if (req.query.status) {
+        where.status = String(req.query.status)
+      }
     }
 
     const orders = await prisma.order.findMany({
@@ -78,20 +89,24 @@ ordersRouter.get('/', async (req, res, next) => {
     // Sort di level aplikasi (JavaScript) agar aman dari batas sort_buffer_size MySQL saat ada field JSON besar
     orders.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
 
-    // Jangan kirim base64 photos raksasa di daftar ringkasan pesanan (hemat bandwidth & memory)
+    // Jangan kirim base64 photos raksasa di daftar ringkasan pesanan jika bukan detail
     const sanitized = orders.map((o) => {
-      if (o.returnData && typeof o.returnData === 'object' && o.returnData.photos) {
-        const { photos, ...restReturnData } = o.returnData
-        return {
-          ...o,
-          returnData: {
+      let returnData = o.returnData
+      if (returnData && typeof returnData === 'object' && returnData.photos) {
+        const rawPhotos = returnData.photos
+        const hasLargeBase64 = Object.values(rawPhotos || {}).some(
+          (p) => typeof p === 'string' && p.startsWith('data:') && p.length > 500
+        )
+        if (hasLargeBase64) {
+          const { photos, ...restReturnData } = returnData
+          returnData = {
             ...restReturnData,
             hasPhotos: true,
             photoCount: Object.values(photos || {}).filter(Boolean).length
           }
         }
       }
-      return o
+      return { ...o, returnData }
     })
 
     return res.json({ data: sanitized })
@@ -101,20 +116,15 @@ ordersRouter.get('/', async (req, res, next) => {
 })
 
 // ─── GET /api/orders/:id ──────────────────────────────────────────────────────
-// Detail pesanan berdasarkan id ATAU invoiceNumber.
+// Detail pesanan berdasarkan id ATAU invoiceNumber (dapat diakses oleh Penyewa, Pemilik Alat, atau Admin).
 ordersRouter.get('/:id', async (req, res, next) => {
   try {
     const identifier = req.params.id
     const order = await prisma.order.findFirst({
       where: {
-        AND: [
-          { userId: req.userId },
-          {
-            OR: [
-              { id: identifier },
-              { invoiceNumber: identifier }
-            ]
-          }
+        OR: [
+          { id: identifier },
+          { invoiceNumber: identifier }
         ]
       },
       include: {
@@ -129,6 +139,12 @@ ordersRouter.get('/:id', async (req, res, next) => {
     if (!order) {
       return res.status(404).json({
         error: { code: 'ORDER_NOT_FOUND', message: 'Pesanan tidak ditemukan' }
+      })
+    }
+
+    if (req.userRole !== 'ADMIN' && order.userId !== req.userId && order.equipment?.ownerId !== req.userId) {
+      return res.status(403).json({
+        error: { code: 'FORBIDDEN', message: 'Anda tidak memiliki hak akses untuk pesanan ini' }
       })
     }
 
@@ -442,12 +458,62 @@ ordersRouter.patch('/:id/confirm-delivery', async (req, res, next) => {
       })
     }
 
+    const { initialBast } = req.body ?? {}
     const updated = await prisma.order.update({
       where: { id: order.id },
-      data: { status: 'SEWA_AKTIF' }
+      data: {
+        status: 'SEWA_AKTIF',
+        ...(initialBast ? { initialBast } : {})
+      }
     })
 
     return res.json({ data: updated })
+  } catch (error) {
+    next(error)
+  }
+})
+
+// ─── PATCH /api/orders/:id/initial-bast ─────────────────────────────────────
+// Simpan atau perbarui data BAST Awal (foto kondisi serah terima, checklist, catatan).
+ordersRouter.patch('/:id/initial-bast', async (req, res, next) => {
+  try {
+    const { initialBast } = req.body ?? {}
+    if (!initialBast || typeof initialBast !== 'object') {
+      return res.status(400).json({
+        error: { code: 'VALIDATION_ERROR', message: 'Data initialBast wajib diisi' }
+      })
+    }
+
+    const order = await prisma.order.findUnique({
+      where: { id: req.params.id },
+      include: { equipment: true }
+    })
+
+    if (!order) {
+      return res.status(404).json({
+        error: { code: 'ORDER_NOT_FOUND', message: 'Pesanan tidak ditemukan' }
+      })
+    }
+
+    if (req.userRole !== 'ADMIN' && order.userId !== req.userId && order.equipment?.ownerId !== req.userId) {
+      return res.status(403).json({
+        error: { code: 'FORBIDDEN', message: 'Tidak memiliki izin untuk memperbarui BAST awal' }
+      })
+    }
+
+    const now = new Date()
+    const finalInitialBast = {
+      ...(order.initialBast && typeof order.initialBast === 'object' ? order.initialBast : {}),
+      ...initialBast,
+      updatedAt: now.toISOString()
+    }
+
+    const updated = await prisma.order.update({
+      where: { id: order.id },
+      data: { initialBast: finalInitialBast }
+    })
+
+    return res.json({ data: updated, message: 'Data BAST Awal berhasil disimpan' })
   } catch (error) {
     next(error)
   }
@@ -693,14 +759,24 @@ ordersRouter.patch('/:id/confirm-return-receipt', async (req, res, next) => {
 
 // ─── PATCH /api/orders/:id/complete-inspection ───────────────────────────────
 // Dipanggil oleh Pemilik Alat setelah selesai melakukan inspeksi fisik
-// untuk menyetujui pelepasan refund deposit (mengubah status ke SELESAI).
+// untuk menyetujui pelepasan refund deposit (mengubah status ke SELESAI),
+// atau menolak BAST dan mengajukan klaim kerusakan (mengubah status ke DISPUTE).
 ordersRouter.patch('/:id/complete-inspection', async (req, res, next) => {
   try {
-    const { damageFee = 0, ownerNotes = '', approveRefund = true } = req.body ?? {}
+    const {
+      damageFee = 0,
+      ownerNotes = '',
+      approveRefund = true,
+      disputeReason = '',
+      ownerInspectionPhotos = null
+    } = req.body ?? {}
 
     const order = await prisma.order.findUnique({
       where: { id: req.params.id },
-      include: { equipment: true }
+      include: {
+        equipment: { include: { owner: true } },
+        user: true
+      }
     })
 
     if (!order) {
@@ -717,32 +793,78 @@ ordersRouter.patch('/:id/complete-inspection', async (req, res, next) => {
 
     const now = new Date()
     const currentReturnData = (order.returnData && typeof order.returnData === 'object') ? order.returnData : {}
-    const finalDisputeReason = !approveRefund ? (disputeReason || ownerNotes || 'Klaim diajukan oleh pemilik alat.') : null
-    const updatedReturnData = {
-      ...currentReturnData,
-      inspectedAt: now.toISOString(),
-      ownerNotes,
-      damageFeeClaimed: Number(damageFee) || 0,
-      ...(!approveRefund ? { disputedAt: now.toISOString(), disputeReason: finalDisputeReason } : {})
+
+    if (approveRefund) {
+      // ─── LULUS INSPEKSI: Pelepasan Escrow & Refund Deposit 100% ─────────────
+      const refundToRenter = order.depositAmount
+      const payoutToOwner = (order.rentalCost || 0) + (order.shippingCost || 0) + (order.addonsCost || 0)
+
+      const [updatedOrder] = await prisma.$transaction([
+        prisma.order.update({
+          where: { id: order.id },
+          data: {
+            status: 'SELESAI',
+            damageFee: 0,
+            returnData: {
+              ...currentReturnData,
+              inspectedAt: now.toISOString(),
+              ownerNotes,
+              inspectionStatus: 'APPROVED',
+              payoutSummary: {
+                renterRefund: refundToRenter,
+                ownerPayout: payoutToOwner,
+                completedAt: now.toISOString()
+              }
+            }
+          }
+        }),
+        prisma.user.update({
+          where: { id: order.userId },
+          data: { walletBalance: { increment: refundToRenter } }
+        }),
+        prisma.user.update({
+          where: { id: order.equipment.ownerId },
+          data: { walletBalance: { increment: payoutToOwner } }
+        }),
+        prisma.equipment.update({
+          where: { id: order.equipmentId },
+          data: { status: 'TERSEDIA' }
+        })
+      ])
+
+      return res.json({
+        data: updatedOrder,
+        message: 'Inspeksi fisik disetujui. Dana deposit telah diteruskan ke dompet penyewa dan dana sewa dicairkan ke pemilik.'
+      })
+    } else {
+      // ─── TOLAK BAST & AJUKAN KLAIM KERUSAKAN (DISPUTE) ──────────────────────
+      const finalDisputeReason = (disputeReason || ownerNotes || 'Klaim kerusakan diajukan oleh pemilik alat.').trim()
+      const claimedFee = Math.max(0, Math.min(Number(damageFee) || 0, order.depositAmount))
+
+      const updated = await prisma.order.update({
+        where: { id: order.id },
+        data: {
+          status: 'DISPUTE',
+          damageFee: claimedFee,
+          disputeReason: finalDisputeReason,
+          disputeNote: finalDisputeReason,
+          ownerInspectionPhotos: ownerInspectionPhotos || null,
+          returnData: {
+            ...currentReturnData,
+            inspectedAt: now.toISOString(),
+            disputedAt: now.toISOString(),
+            ownerNotes,
+            disputeReason: finalDisputeReason,
+            damageFeeClaimed: claimedFee
+          }
+        }
+      })
+
+      return res.json({
+        data: updated,
+        message: 'Klaim diajukan ke status dispute untuk mediasi admin. Dana deposit dan sewa dibekukan di escrow.'
+      })
     }
-
-    const updated = await prisma.order.update({
-      where: { id: order.id },
-      data: {
-        status: approveRefund ? 'SELESAI' : 'DISPUTE',
-        damageFee: Number(damageFee) || 0,
-        disputeReason: finalDisputeReason,
-        disputeNote: finalDisputeReason,
-        returnData: updatedReturnData
-      }
-    })
-
-    return res.json({
-      data: updated,
-      message: approveRefund
-        ? 'Inspeksi fisik disetujui. Dana deposit telah diteruskan ke dompet penyewa.'
-        : 'Klaim diajukan ke status dispute untuk mediasi admin.'
-    })
   } catch (error) {
     next(error)
   }
@@ -750,10 +872,10 @@ ordersRouter.patch('/:id/complete-inspection', async (req, res, next) => {
 
 // ─── PATCH /api/orders/:id/dispute ──────────────────────────────────────────
 // Dipanggil oleh Pemilik Alat (atau Admin) untuk mengajukan klaim / sengketa,
-// memicu status DISPUTE disertai alasan klaim (disputeReason).
+// memicu status DISPUTE disertai alasan klaim (disputeReason) dan bukti foto.
 ordersRouter.patch('/:id/dispute', async (req, res, next) => {
   try {
-    const { disputeReason, reason, damageFee } = req.body ?? {}
+    const { disputeReason, reason, damageFee, ownerInspectionPhotos } = req.body ?? {}
     const finalReason = (disputeReason || reason || '').trim()
 
     if (!finalReason) {
@@ -781,11 +903,15 @@ ordersRouter.patch('/:id/dispute', async (req, res, next) => {
 
     const now = new Date()
     const currentReturnData = (order.returnData && typeof order.returnData === 'object') ? order.returnData : {}
+    const claimedFee = damageFee !== undefined
+      ? Math.max(0, Math.min(Number(damageFee) || 0, order.depositAmount))
+      : (currentReturnData.damageFeeClaimed || 0)
+
     const updatedReturnData = {
       ...currentReturnData,
       disputedAt: now.toISOString(),
       disputeReason: finalReason,
-      damageFeeClaimed: damageFee !== undefined ? Number(damageFee) || 0 : (currentReturnData.damageFeeClaimed || 0)
+      damageFeeClaimed: claimedFee
     }
 
     const updated = await prisma.order.update({
@@ -794,7 +920,8 @@ ordersRouter.patch('/:id/dispute', async (req, res, next) => {
         status: 'DISPUTE',
         disputeReason: finalReason,
         disputeNote: finalReason,
-        ...(damageFee !== undefined ? { damageFee: Number(damageFee) || 0 } : {}),
+        damageFee: claimedFee,
+        ownerInspectionPhotos: ownerInspectionPhotos !== undefined ? ownerInspectionPhotos : (order.ownerInspectionPhotos || null),
         returnData: updatedReturnData
       }
     })
@@ -802,6 +929,101 @@ ordersRouter.patch('/:id/dispute', async (req, res, next) => {
     return res.json({
       data: updated,
       message: 'Klaim dispute berhasil diajukan. Status pesanan diubah ke DISPUTE.'
+    })
+  } catch (error) {
+    next(error)
+  }
+})
+
+// ─── PATCH /api/orders/:id/resolve-dispute ──────────────────────────────────
+// Endpoint Putusan Mediasi Admin MyRent:
+// Menerima input nominal ganti rugi final (finalDamageFee) dan catatan putusan admin (adminResolutionNote).
+// Otomatis melakukan kalkulasi escrow, memotong deposit, dan mengupdate wallet pemilik & penyewa.
+ordersRouter.patch('/:id/resolve-dispute', async (req, res, next) => {
+  try {
+    if (req.userRole !== 'ADMIN') {
+      return res.status(403).json({
+        error: { code: 'FORBIDDEN', message: 'Hanya Admin MyRent yang berwenang memberikan putusan mediasi sengketa' }
+      })
+    }
+
+    const order = await prisma.order.findUnique({
+      where: { id: req.params.id },
+      include: {
+        equipment: { include: { owner: true } },
+        user: true
+      }
+    })
+
+    if (!order) {
+      return res.status(404).json({
+        error: { code: 'ORDER_NOT_FOUND', message: 'Pesanan tidak ditemukan' }
+      })
+    }
+
+    if (order.status !== 'DISPUTE') {
+      return res.status(400).json({
+        error: { code: 'INVALID_STATUS', message: 'Pesanan tidak dalam status DISPUTE' }
+      })
+    }
+
+    const { finalDamageFee = 0, adminResolutionNote = '' } = req.body ?? {}
+    const cleanNote = String(adminResolutionNote || '').trim() || 'Putusan resmi mediasi sengketa oleh Admin MyRent.'
+
+    // Nominal ganti rugi dibatasi antara Rp 0 sampai maksimal senilai deposit yang ditahan di escrow
+    const resolvedDamageFee = Math.max(0, Math.min(Number(finalDamageFee) || 0, order.depositAmount))
+    const refundToRenter = order.depositAmount - resolvedDamageFee
+    const payoutToOwner = (order.rentalCost || 0) + (order.shippingCost || 0) + (order.addonsCost || 0) + resolvedDamageFee
+
+    const now = new Date()
+    const currentReturnData = (order.returnData && typeof order.returnData === 'object') ? order.returnData : {}
+
+    const [updatedOrder] = await prisma.$transaction([
+      prisma.order.update({
+        where: { id: order.id },
+        data: {
+          status: 'SELESAI',
+          damageFee: resolvedDamageFee,
+          finalDamageFee: resolvedDamageFee,
+          adminResolutionNote: cleanNote,
+          resolvedAt: now,
+          isResolvedByAdmin: true,
+          returnData: {
+            ...currentReturnData,
+            resolvedAt: now.toISOString(),
+            adminResolution: {
+              finalDamageFee: resolvedDamageFee,
+              refundToRenter,
+              payoutToOwner,
+              adminResolutionNote: cleanNote,
+              resolvedAt: now.toISOString()
+            }
+          }
+        }
+      }),
+      prisma.user.update({
+        where: { id: order.userId },
+        data: { walletBalance: { increment: refundToRenter } }
+      }),
+      prisma.user.update({
+        where: { id: order.equipment.ownerId },
+        data: { walletBalance: { increment: payoutToOwner } }
+      }),
+      prisma.equipment.update({
+        where: { id: order.equipmentId },
+        data: { status: 'TERSEDIA' }
+      })
+    ])
+
+    return res.json({
+      data: updatedOrder,
+      breakdown: {
+        depositAmount: order.depositAmount,
+        finalDamageFee: resolvedDamageFee,
+        refundToRenter,
+        payoutToOwner
+      },
+      message: `Putusan mediasi berhasil diterapkan. Kompensasi ${resolvedDamageFee} dialokasikan ke pemilik, sisa deposit ${refundToRenter} dikembalikan ke penyewa.`
     })
   } catch (error) {
     next(error)
