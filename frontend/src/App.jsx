@@ -9,6 +9,7 @@ import DetailAlat from './components/detailAlat/DetailAlat'
 import Pesan from './pages/Pesan'
 import PesananSaya from './pages/PesananSaya'
 import KembalikanAlatWizard from './components/kembalikanAlat/KembalikanAlatWizard'
+import DompetPage from './pages/DompetPage'
 import AdminAuthWrapper from './components/adminAuth/AdminAuthWrapper'
 import AdminDashboardPlaceholder from './components/adminAuth/AdminDashboardPlaceholder'
 import AdminProtectedRoute from './components/adminAuth/AdminProtectedRoute'
@@ -331,7 +332,14 @@ export default function App() {
             </UserProtectedRoute>
           }
         />
-        <Route path="/dompet" element={<Navigate to="/pesanan-saya" replace />} />
+        <Route
+          path="/dompet"
+          element={
+            <UserProtectedRoute>
+              <DompetPage />
+            </UserProtectedRoute>
+          }
+        />
 
         {/* Dashboard Pemilik Placeholder
             Dilindungi `PemilikProtectedRoute`: setelah logout, halaman ini

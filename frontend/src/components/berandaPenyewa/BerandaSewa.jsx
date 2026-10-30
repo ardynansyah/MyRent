@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react'
-import { Check, ChevronDown, Loader2, TriangleAlert } from 'lucide-react'
+import { Check, ChevronDown, Loader2, MapPin, TriangleAlert } from 'lucide-react'
 import NavbarPenyewa from '../common/NavbarPenyewa'
 import SidebarFilter from './SidebarFilter'
 import ProductCard from './ProductCard'
@@ -81,6 +81,11 @@ export default function BerandaSewa({
   const user = getSessionUser()
   const powerLimit = getUserPowerLimit(user)
   const powerMatchLabel = powerLimit ? `Sesuai Listrik Saya (${powerLimit}W)` : ALL_CATEGORY
+  const userLocation =
+    user?.kycData?.district ||
+    user?.kycData?.city ||
+    (user?.kycData?.address ? user.kycData.address.split(',')[0].trim() : '') ||
+    'Lokasi Anda'
 
   const [selectedCategory, setSelectedCategory] = useState(powerMatchLabel)
 
@@ -272,7 +277,6 @@ export default function BerandaSewa({
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
         dateRange={dateRangeLabel}
-        walletBalance="Rp 1.250.000"
         onNavigateHome={onNavigateHome}
       />
 
@@ -285,9 +289,18 @@ export default function BerandaSewa({
             <h1 className="text-lg sm:text-xl lg:text-2xl text-slate-900 font-bold text-left tracking-tight m-0">
               Alat tersedia untuk <span className="tabular-nums">{dateRangeLabel}</span>
             </h1>
-            <div className="text-xs sm:text-sm text-slate-600 font-normal text-left tabular-nums">
-              {loading ? 'Memuat katalog…' : `${sortedProducts.length} alat · `}
-              {powerMatch && powerLimit ? `semua sesuai daya ${powerLimit} W` : 'semua kapasitas daya'}
+            <div className="text-xs sm:text-sm text-slate-600 font-normal text-left tabular-nums flex items-center gap-1.5 flex-wrap">
+              <span>{loading ? 'Memuat katalog…' : `${sortedProducts.length} alat · `}</span>
+              <span>{powerMatch && powerLimit ? `semua sesuai daya ${powerLimit} W` : 'semua kapasitas daya'}</span>
+              {userLocation && (
+                <>
+                  <span className="text-slate-300">•</span>
+                  <span className="inline-flex items-center gap-1 text-slate-500">
+                    <MapPin className="w-3.5 h-3.5 text-blue-600 shrink-0" />
+                    Jarak dihitung dari <strong className="text-slate-700 font-medium">{userLocation}</strong>
+                  </span>
+                </>
+              )}
             </div>
           </div>
 
@@ -467,6 +480,7 @@ export default function BerandaSewa({
                     <ProductCard
                       key={product.id}
                       {...product}
+                      userLocation={userLocation}
                       onClick={() => onSelectProduct && onSelectProduct(product, filters.dateRange)}
                       onSelectDate={() => onSelectProduct && onSelectProduct(product, filters.dateRange)}
                     />

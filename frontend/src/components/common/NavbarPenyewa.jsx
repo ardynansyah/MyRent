@@ -1,8 +1,20 @@
 import React, { useEffect, useRef, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
-import { Search, CalendarDays, Wallet, LogOut, ChevronDown, ChevronRight, MessageSquare } from 'lucide-react'
+import { Link, useNavigate, useLocation } from 'react-router-dom'
+import {
+  Search,
+  Wallet,
+  LogOut,
+  ChevronDown,
+  ChevronRight,
+  MessageSquare,
+  ArrowDownLeft,
+  ArrowUpRight,
+  Rocket,
+  ShoppingBag
+} from 'lucide-react'
 import ModalDompet from '../pesananSaya/ModalDompet'
 import { getUnreadCount } from '../../lib/chatsApi'
+import { getWalletInfo } from '../../lib/walletApi'
 import {
   getSessionUser,
   getUserInitials,
@@ -14,17 +26,86 @@ export default function NavbarPenyewa({
   activeTab = 'jelajahi',
   searchQuery = '',
   onSearchChange,
-  dateRange = '12 – 15 Jun',
-  walletBalance = 'Rp 1.250.000',
+  dateRange: _dateRange,
+  walletBalance: propWalletBalance,
   onNavigateTab,
-  onNavigateHome
+  onNavigateHome: _onNavigateHome
 }) {
   const navigate = useNavigate()
+  const location = useLocation()
   const [localSearch, setLocalSearch] = useState(searchQuery)
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isWalletModalOpen, setIsWalletModalOpen] = useState(false)
+  const [walletInitialView, setWalletInitialView] = useState('OVERVIEW')
   const [unreadCount, setUnreadCount] = useState(0)
   const menuRef = useRef(null)
+
+  // Resolusi tab aktif yang presisi (hindari bug startsWith('/pesan') pada URL /pesanan-saya)
+  const resolvedActiveTab = activeTab || (
+    location.pathname === '/pesan' || location.pathname.startsWith('/pesan/')
+      ? 'pesan'
+      : location.pathname.startsWith('/pesanan-saya')
+      ? 'pesanan'
+      : location.pathname.startsWith('/dompet')
+      ? 'dompet'
+      : (location.pathname === '/beranda-sewa' || location.pathname === '/')
+      ? 'jelajahi'
+      : ''
+  )
+
+  const isChatPage = resolvedActiveTab === 'pesan' || location.pathname === '/pesan' || location.pathname.startsWith('/pesan/')
+
+  const handleNavJelajahi = () => {
+    if (onNavigateTab) onNavigateTab('jelajahi')
+    navigate('/beranda-sewa')
+  }
+
+  const handleNavPesanan = () => {
+    if (onNavigateTab) onNavigateTab('pesanan')
+    navigate('/pesanan-saya')
+  }
+
+  const handleNavPesan = () => {
+    if (onNavigateTab) onNavigateTab('pesan')
+    navigate('/pesan')
+  }
+
+  const handleNavDompet = () => {
+    if (onNavigateTab) {
+      onNavigateTab('dompet')
+    } else {
+      navigate('/dompet')
+    }
+  }
+
+  // Saldo live terhubung langsung ke backend database
+  const [liveBalance, setLiveBalance] = useState(() => {
+    const u = getSessionUser()
+    return u?.walletBalance ?? 0
+  })
+
+  useEffect(() => {
+    let isMounted = true
+    getWalletInfo()
+      .then((data) => {
+        if (isMounted && data?.walletBalance !== undefined) {
+          setLiveBalance(data.walletBalance)
+        }
+      })
+      .catch(() => {})
+
+    const handleWalletUpdated = (e) => {
+      if (e.detail?.newBalance !== undefined) {
+        setLiveBalance(e.detail.newBalance)
+      }
+    }
+    window.addEventListener('myrent:wallet-updated', handleWalletUpdated)
+
+    return () => {
+      isMounted = false
+      window.removeEventListener('myrent:wallet-updated', handleWalletUpdated)
+    }
+  }, [])
 
   useEffect(() => {
     let isMounted = true
@@ -85,12 +166,9 @@ export default function NavbarPenyewa({
       <nav className="box-border w-fit shrink-0 h-fit hidden md:flex flex-row gap-2 lg:gap-5 justify-start items-center">
         <button
           type="button"
-          onClick={() => {
-            if (onNavigateTab) onNavigateTab('jelajahi')
-            else navigate('/beranda-sewa')
-          }}
+          onClick={handleNavJelajahi}
           className={`box-border w-fit shrink-0 h-fit flex flex-col gap-1.5 py-[7px] px-3 justify-start items-center rounded-lg cursor-pointer transition-all border-0 ${
-            activeTab === 'jelajahi'
+            resolvedActiveTab === 'jelajahi'
               ? 'bg-blue-50 text-blue-700 font-bold'
               : 'bg-transparent text-slate-600 hover:bg-slate-50 font-medium'
           }`}
@@ -100,12 +178,9 @@ export default function NavbarPenyewa({
 
         <button
           type="button"
-          onClick={() => {
-            if (onNavigateTab) onNavigateTab('pesanan')
-            else navigate('/pesanan-saya')
-          }}
+          onClick={handleNavPesanan}
           className={`box-border w-fit shrink-0 h-fit flex flex-col gap-1.5 py-[7px] px-3 justify-start items-center rounded-lg cursor-pointer transition-all border-0 ${
-            activeTab === 'pesanan'
+            resolvedActiveTab === 'pesanan'
               ? 'bg-blue-50 text-blue-700 font-bold'
               : 'bg-transparent text-slate-600 hover:bg-slate-50 font-medium'
           }`}
@@ -115,12 +190,9 @@ export default function NavbarPenyewa({
 
         <button
           type="button"
-          onClick={() => {
-            if (onNavigateTab) onNavigateTab('pesan')
-            else navigate('/pesan')
-          }}
+          onClick={handleNavPesan}
           className={`box-border w-fit shrink-0 h-fit flex flex-row gap-1.5 py-[7px] px-3 justify-start items-center rounded-lg cursor-pointer transition-all border-0 ${
-            activeTab === 'pesan'
+            resolvedActiveTab === 'pesan'
               ? 'bg-blue-50 text-blue-700 font-bold'
               : 'bg-transparent text-slate-600 hover:bg-slate-50 font-medium'
           }`}
@@ -134,6 +206,19 @@ export default function NavbarPenyewa({
             )}
           </div>
           <span className="text-[13px] whitespace-nowrap">Pesan</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={handleNavDompet}
+          className={`box-border w-fit shrink-0 h-fit flex flex-row gap-1.5 py-[7px] px-3 justify-start items-center rounded-lg cursor-pointer transition-all border-0 ${
+            resolvedActiveTab === 'dompet'
+              ? 'bg-blue-50 text-blue-700 font-bold'
+              : 'bg-transparent text-slate-600 hover:bg-slate-50 font-medium'
+          }`}
+        >
+          <Wallet className="w-3.5 h-3.5" />
+          <span className="text-[13px] whitespace-nowrap">Dompet</span>
         </button>
       </nav>
 
@@ -159,17 +244,6 @@ export default function NavbarPenyewa({
 
       {/* Right Controls */}
       <div className="box-border w-fit shrink-0 h-fit flex flex-row gap-2 sm:gap-3 justify-start items-center">
-        {/* Date Selector Badge */}
-        <div
-          title="Rentang Tanggal Sewa Aktif"
-          className="box-border w-fit shrink-0 h-fit hidden sm:flex flex-row gap-2 py-[9px] px-3 justify-start items-center bg-white ring-1 ring-slate-200 rounded-[10px] cursor-pointer hover:bg-slate-50 transition-colors"
-        >
-          <CalendarDays className="w-[15px] h-[15px] text-slate-600" />
-          <span className="text-xs text-slate-900 font-semibold tabular-nums whitespace-nowrap">
-            {dateRange}
-          </span>
-        </div>
-
         {/* User Profile Button with Integrated Wallet Indicator */}
         <div ref={menuRef} className="relative box-border w-fit shrink-0 h-fit flex flex-row justify-start items-center">
           <button
@@ -184,13 +258,15 @@ export default function NavbarPenyewa({
             </div>
             <div className="hidden sm:flex flex-col text-left leading-none pr-1">
               <span className="text-[9px] text-slate-500 font-bold uppercase tracking-wider">Dompet</span>
-              <span className="text-xs text-blue-700 font-extrabold tabular-nums mt-0.5">{walletBalance}</span>
+              <span className="text-xs text-blue-700 font-extrabold tabular-nums mt-0.5">
+                {propWalletBalance || `Rp ${Number(liveBalance).toLocaleString('id-ID')}`}
+              </span>
             </div>
             <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
           </button>
 
           {isMenuOpen && (
-            <div className="absolute right-0 top-[46px] z-50 w-[260px] box-border flex flex-col gap-2 p-3 bg-white ring-1 ring-slate-200 rounded-[14px] shadow-xl animate-in fade-in zoom-in-95 duration-100">
+            <div className="absolute right-0 top-[46px] z-50 w-[270px] box-border flex flex-col gap-2 p-3 bg-white ring-1 ring-slate-200 rounded-[14px] shadow-xl animate-in fade-in zoom-in-95 duration-100">
               {/* User Info Header */}
               <div className="box-border flex flex-col gap-0.5 p-1 justify-start items-start">
                 <span className="text-xs text-slate-900 font-bold truncate w-full">
@@ -203,11 +279,32 @@ export default function NavbarPenyewa({
 
               <div className="box-border w-full h-px bg-slate-100"></div>
 
+              {/* Quick Jump Menu: Jelajahi & Pesanan */}
+              <div className="grid grid-cols-2 gap-1.5 pb-0.5">
+                <Link
+                  to="/beranda-sewa"
+                  onClick={() => setIsMenuOpen(false)}
+                  className="py-1.5 px-2 bg-slate-50 hover:bg-slate-100 text-slate-700 font-semibold rounded-lg flex items-center justify-center gap-1.5 text-[11px] no-underline transition-colors"
+                >
+                  <Rocket className="w-3 h-3 text-blue-600" />
+                  <span>Jelajahi</span>
+                </Link>
+                <Link
+                  to="/pesanan-saya"
+                  onClick={() => setIsMenuOpen(false)}
+                  className="py-1.5 px-2 bg-slate-50 hover:bg-slate-100 text-slate-700 font-semibold rounded-lg flex items-center justify-center gap-1.5 text-[11px] no-underline transition-colors"
+                >
+                  <ShoppingBag className="w-3 h-3 text-blue-600" />
+                  <span>Pesanan</span>
+                </Link>
+              </div>
+
               {/* Dompet Card Trigger */}
               <button
                 type="button"
                 onClick={() => {
                   setIsMenuOpen(false)
+                  setWalletInitialView('OVERVIEW')
                   setIsWalletModalOpen(true)
                 }}
                 className="w-full flex items-center justify-between p-2.5 bg-gradient-to-r from-blue-50 to-indigo-50/70 hover:from-blue-100/80 hover:to-indigo-100/80 text-slate-900 rounded-xl transition-all border border-blue-100 cursor-pointer text-left shadow-2xs"
@@ -218,11 +315,50 @@ export default function NavbarPenyewa({
                   </div>
                   <div className="flex flex-col">
                     <span className="text-xs font-bold text-slate-900 leading-tight">Dompet &amp; Escrow</span>
-                    <span className="text-[10px] text-blue-700 font-extrabold">{walletBalance}</span>
+                    <span className="text-[10px] text-blue-700 font-extrabold tabular-nums">
+                      {propWalletBalance || `Rp ${Number(liveBalance).toLocaleString('id-ID')}`}
+                    </span>
                   </div>
                 </div>
                 <ChevronRight className="w-3.5 h-3.5 text-blue-600 shrink-0" />
               </button>
+
+              {/* Quick Actions: Top Up & Tarik Saldo */}
+              <div className="grid grid-cols-2 gap-1.5 pt-0.5">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsMenuOpen(false)
+                    setWalletInitialView('TOPUP')
+                    setIsWalletModalOpen(true)
+                  }}
+                  className="py-1.5 px-2 bg-blue-50 hover:bg-blue-100 text-blue-700 font-bold rounded-lg flex items-center justify-center gap-1 transition-colors text-[11px] cursor-pointer"
+                >
+                  <ArrowDownLeft className="w-3 h-3 text-blue-600" />
+                  <span>Top Up</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsMenuOpen(false)
+                    setWalletInitialView('WITHDRAW')
+                    setIsWalletModalOpen(true)
+                  }}
+                  className="py-1.5 px-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-lg flex items-center justify-center gap-1 transition-colors text-[11px] cursor-pointer"
+                >
+                  <ArrowUpRight className="w-3 h-3 text-emerald-600" />
+                  <span>Tarik Saldo</span>
+                </button>
+              </div>
+
+              {/* Link to Dedicated Dompet Page */}
+              <Link
+                to="/dompet"
+                onClick={() => setIsMenuOpen(false)}
+                className="w-full py-1.5 px-2 text-center text-[10.5px] text-slate-500 hover:text-blue-600 hover:underline font-semibold block no-underline transition-colors"
+              >
+                Halaman Dompet Lengkap →
+              </Link>
 
               <div className="box-border w-full h-px bg-slate-100"></div>
 
@@ -244,8 +380,82 @@ export default function NavbarPenyewa({
       {/* Global Wallet Modal */}
       <ModalDompet
         isOpen={isWalletModalOpen}
+        initialView={walletInitialView}
         onClose={() => setIsWalletModalOpen(false)}
       />
+
+      {/* Floating Mobile Bottom Navigation Dock (Disembunyikan di halaman chat agar kolom input dan tombol kirim tidak tertimpa) */}
+      {!isChatPage && (
+        <div className="fixed bottom-5 inset-x-0 flex justify-center z-40 md:hidden pointer-events-none px-4 animate-in fade-in duration-200">
+          <nav
+            aria-label="Navigasi Menu Mobile"
+            className="pointer-events-auto flex items-center gap-1.5 p-1.5 bg-white/60 hover:bg-white/80 border border-white/70 backdrop-blur-xl shadow-xl shadow-slate-900/15 rounded-full transition-all"
+          >
+            {/* 1. Jelajahi Alat (Simbol Roket) */}
+            <button
+              type="button"
+              onClick={handleNavJelajahi}
+              title="Jelajahi Alat"
+              aria-label="Jelajahi Alat"
+              className={`w-11 h-11 rounded-full flex items-center justify-center transition-all cursor-pointer border-0 select-none ${
+                resolvedActiveTab === 'jelajahi'
+                  ? 'bg-blue-600 text-white shadow-md shadow-blue-500/40 ring-2 ring-white/80 active:scale-95'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-white/50 active:scale-90'
+              }`}
+            >
+              <Rocket className="w-5 h-5" />
+            </button>
+
+            {/* 2. Pesanan Saya (Simbol Keranjang) */}
+            <button
+              type="button"
+              onClick={handleNavPesanan}
+              title="Pesanan Saya"
+              aria-label="Pesanan Saya"
+              className={`w-11 h-11 rounded-full flex items-center justify-center transition-all cursor-pointer border-0 select-none ${
+                resolvedActiveTab === 'pesanan'
+                  ? 'bg-blue-600 text-white shadow-md shadow-blue-500/40 ring-2 ring-white/80 active:scale-95'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-white/50 active:scale-90'
+              }`}
+            >
+              <ShoppingBag className="w-5 h-5" />
+            </button>
+
+            {/* 3. Pesan (Simbol Logo Chat) */}
+            <button
+              type="button"
+              onClick={handleNavPesan}
+              title="Pesan"
+              aria-label="Pesan"
+              className={`w-11 h-11 rounded-full flex items-center justify-center transition-all cursor-pointer border-0 select-none relative ${
+                resolvedActiveTab === 'pesan'
+                  ? 'bg-blue-600 text-white shadow-md shadow-blue-500/40 ring-2 ring-white/80 active:scale-95'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-white/50 active:scale-90'
+              }`}
+            >
+              <MessageSquare className="w-5 h-5" />
+              {unreadCount > 0 && (
+                <span className="absolute top-2 right-2 w-2 h-2 bg-blue-600 rounded-full ring-1.5 ring-white" />
+              )}
+            </button>
+
+            {/* 4. Dompet (Simbol Logo Dompet) */}
+            <button
+              type="button"
+              onClick={handleNavDompet}
+              title="Dompet & Saldo"
+              aria-label="Dompet & Saldo"
+              className={`w-11 h-11 rounded-full flex items-center justify-center transition-all cursor-pointer border-0 select-none ${
+                resolvedActiveTab === 'dompet'
+                  ? 'bg-blue-600 text-white shadow-md shadow-blue-500/40 ring-2 ring-white/80 active:scale-95'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-white/50 active:scale-90'
+              }`}
+            >
+              <Wallet className="w-5 h-5" />
+            </button>
+          </nav>
+        </div>
+      )}
     </header>
   )
 }

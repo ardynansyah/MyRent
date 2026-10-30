@@ -11,7 +11,8 @@ import {
   Loader2,
   Check,
   CheckCheck,
-  AlertCircle
+  AlertCircle,
+  ArrowLeft
 } from 'lucide-react'
 import ChatContextCard from './ChatContextCard'
 import { listChats, getChatMessages, sendMessage, checkPartnerChat } from '../../lib/chatsApi'
@@ -122,8 +123,11 @@ export default function ChatPanel({
           }
         }
       } else if (chatsList.length > 0 && !selectedChat) {
-        // Default: buka percakapan pertama jika tidak membawa state partner
-        setSelectedChat(chatsList[0])
+        // Desktop: otomatis buka percakapan pertama
+        // Mobile: biarkan null agar menampilkan daftar percakapan terlebih dahulu
+        if (typeof window !== 'undefined' && window.innerWidth >= 768) {
+          setSelectedChat(chatsList[0])
+        }
       }
     }
 
@@ -266,7 +270,11 @@ export default function ChatPanel({
       }`}
     >
       {/* ── SIDEBAR KIRI: Daftar Percakapan Tersimpan ──────────────────────────── */}
-      <aside className="w-full md:w-80 lg:w-96 shrink-0 border-r border-slate-200 bg-white flex flex-col h-full">
+      <aside
+        className={`w-full md:w-80 lg:w-96 shrink-0 border-r border-slate-200 bg-white flex flex-col h-full ${
+          selectedChat ? 'hidden md:flex' : 'flex'
+        }`}
+      >
         {/* Header Sidebar */}
         <div className="p-4 border-b border-slate-100 flex flex-col gap-3">
           <div className="flex items-center justify-between">
@@ -391,12 +399,27 @@ export default function ChatPanel({
       </aside>
 
       {/* ── PANEL KANAN: Ruang Obrolan Aktif ───────────────────────────────────── */}
-      <main className="flex-1 flex flex-col h-full bg-slate-50 min-w-0 relative">
+      <main
+        className={`flex-1 flex flex-col h-full bg-slate-50 min-w-0 relative ${
+          !selectedChat ? 'hidden md:flex' : 'flex'
+        }`}
+      >
         {selectedChat ? (
           <>
             {/* Header Ruang Obrolan */}
-            <div className="px-5 py-3.5 bg-white border-b border-slate-200 flex items-center justify-between shrink-0 shadow-2xs">
-              <div className="flex items-center gap-3 min-w-0">
+            <div className="px-4 sm:px-5 py-3.5 bg-white border-b border-slate-200 flex items-center justify-between shrink-0 shadow-2xs">
+              <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+                {/* Tombol Kembali ke Daftar Percakapan (Mobile) */}
+                <button
+                  type="button"
+                  onClick={() => setSelectedChat(null)}
+                  className="flex md:hidden items-center justify-center w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors cursor-pointer border-0 shrink-0"
+                  title="Kembali ke Daftar Obrolan"
+                  aria-label="Kembali ke Daftar Obrolan"
+                >
+                  <ArrowLeft className="w-4 h-4" />
+                </button>
+
                 <div className="w-10 h-10 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-xs shrink-0 ring-1 ring-slate-200">
                   {getUserInitials(selectedChat.partner)}
                 </div>

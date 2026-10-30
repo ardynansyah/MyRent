@@ -78,6 +78,9 @@ model User {
   renterConversations Conversation[] @relation("RenterConversations")
   ownerConversations  Conversation[] @relation("OwnerConversations")
   sentMessages        Message[]      @relation("SentMessages")
+
+  withdrawalAccounts  WithdrawalAccount[]
+  walletTransactions  WalletTransaction[]
 }
 
 model Equipment {
@@ -263,6 +266,52 @@ model Message {
 
   @@index([conversationId])
   @@index([senderId])
+  @@index([createdAt])
+}
+
+model WithdrawalAccount {
+  id            String   @id @default(uuid())
+  userId        String
+  bankName      String   // 'BCA', 'Mandiri', 'BRI', 'BNI', 'GoPay', 'OVO', 'DANA', dll
+  accountNumber String
+  accountHolder String
+  isPrimary     Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+enum WalletTransactionType {
+  TOPUP
+  WITHDRAW
+  SEWA_PAYMENT
+  DEPOSIT_HOLD
+  DEPOSIT_REFUND
+}
+
+enum WalletTransactionStatus {
+  BERHASIL
+  MENUNGGU
+  GAGAL
+}
+
+model WalletTransaction {
+  id            String                  @id @default(uuid())
+  userId        String
+  type          WalletTransactionType
+  amount        Int
+  description   String
+  status        WalletTransactionStatus @default(BERHASIL)
+  reference     String?
+  paymentMethod String?
+  createdAt     DateTime                @default(now())
+
+  user          User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
   @@index([createdAt])
 }
 

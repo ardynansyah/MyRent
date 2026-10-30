@@ -215,6 +215,7 @@ export default function PesananSaya() {
         onNavigateTab={(tab) => {
           if (tab === 'jelajahi') navigate('/beranda-sewa')
           else if (tab === 'pesanan') navigate('/pesanan-saya')
+          else if (tab === 'pesan') navigate('/pesan')
           else if (tab === 'dompet') setIsWalletOpen(true)
         }}
       />

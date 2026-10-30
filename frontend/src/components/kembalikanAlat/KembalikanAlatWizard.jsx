@@ -284,6 +284,8 @@ export default function KembalikanAlatWizard() {
         onNavigateTab={(tab) => {
           if (tab === 'jelajahi') navigate('/beranda-sewa')
           else if (tab === 'pesanan') navigate('/pesanan-saya')
+          else if (tab === 'pesan') navigate('/pesan')
+          else if (tab === 'dompet') navigate('/dompet')
         }}
       />
 

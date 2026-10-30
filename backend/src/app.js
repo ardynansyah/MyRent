@@ -15,6 +15,7 @@ import { equipmentsRouter } from './routes/equipments.js'
 import { ordersRouter } from './routes/orders.js'
 import { reviewsRouter } from './routes/reviews.js'
 import { chatsRouter } from './routes/chats.js'
+import { walletRouter } from './routes/wallet.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
@@ -68,7 +69,19 @@ export function createApp() {
   app.disable('x-powered-by')
   app.use(requestId)
   app.use(requestLogger)
-  app.use(cors({ origin: config.corsOrigins }))
+  app.use(
+    cors({
+      origin: (origin, callback) => {
+        if (!origin) return callback(null, true)
+        if (config.corsOrigins.includes(origin)) return callback(null, true)
+        if (config.nodeEnv === 'development' && /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) {
+          return callback(null, true)
+        }
+        return callback(null, false)
+      },
+      credentials: true
+    })
+  )
   // Batas body 12mb supaya unggahan foto (data URL base64) tetap diterima utuh.
   app.use(express.json({ limit: '12mb' }))
 
@@ -92,6 +105,7 @@ export function createApp() {
   app.use('/api/reviews', reviewsRouter)
   app.use('/api/chats', chatsRouter)
   app.use('/api/stats', statsRouter)
+  app.use('/api/wallet', walletRouter)
 
 
 

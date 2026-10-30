@@ -1,4 +1,5 @@
 import React from 'react'
+import { MapPin } from 'lucide-react'
 import { formatRupiah } from '../../lib/equipmentsApi'
 import fallbackImage from '../../assets/beranda/item_1.jpg'
 
@@ -17,6 +18,9 @@ export default function ProductCard({
   images = [],
   imageUrl,
   image: customImage,
+  location = '',
+  distance,
+  userLocation = '',
   onSelectDate,
   onClick
 }) {
@@ -41,6 +45,12 @@ export default function ProductCard({
   const minHari = minRentDays ?? maintenanceBufferDays ?? 1
   const displayWatt = powerWatt ? `${Number(powerWatt).toLocaleString('id-ID')} Watt` : '0 Watt'
   const displayCategory = (category || 'Alat').toUpperCase()
+  const displayDistance =
+    distance != null && !isNaN(Number(distance))
+      ? `${Number(distance).toLocaleString('id-ID', { minimumFractionDigits: 0, maximumFractionDigits: 1 })} km`
+      : null
+  const displayUserLocation = userLocation || 'lokasi Anda'
+  const locationShort = location ? location.split(',')[0].trim() : ''
 
   return (
     <div
@@ -65,6 +75,19 @@ export default function ProductCard({
             {displayCategory}
           </span>
         </div>
+
+        {/* Badge Jarak ke Lokasi Pengguna di Atas Foto */}
+        {displayDistance && (
+          <div
+            title={`Jarak alat: ${displayDistance} dari ${displayUserLocation}${location ? ` (${location})` : ''}`}
+            className="box-border w-fit max-w-[62%] h-fit absolute right-[12px] top-[12px] flex flex-row gap-1 items-center px-2.5 py-1 bg-slate-950/75 backdrop-blur-md rounded-[999px] z-10 border border-white/20 text-white shadow-sm"
+          >
+            <MapPin className="w-3 h-3 text-emerald-400 shrink-0" />
+            <span className="text-[10px] font-medium tracking-tight truncate whitespace-nowrap">
+              {displayDistance} dari {displayUserLocation}
+            </span>
+          </div>
+        )}
       </div>
 
       {/* Konten Informasi Produk */}
@@ -78,22 +101,43 @@ export default function ProductCard({
             {name || 'Tanpa Nama'}
           </h3>
 
-          {/* Baris 1: Ikon Petir + Daya Listrik */}
-          <div className="box-border w-fit h-fit shrink-0 flex flex-row gap-[5px] pt-[6px] pb-[12px] justify-start items-center">
-            <svg
-              viewBox="0 0 14 14"
-              preserveAspectRatio="xMidYMid meet"
-              xmlns="http://www.w3.org/2000/svg"
-              className="box-border w-[12px] shrink-0 h-[12px] text-gray-400"
-            >
-              <path
-                d="M7.7417 0.60156q-0.16748 0.02734-0.33496 0.1128-0.09912 0.06836-2.81641 2.87109l-2.88135 2.98047q-0.35205 0.36572-0.39306 0.44775l-0.01367 0.01367q-0.09912 0.21191-0.12647 0.44776-0.04102 0.37939 0.14014 0.68701 0.18115 0.30762 0.50244 0.46143l0.04443 0.02734q0.0957 0.04443 0.19483 0.0581 0.12646 0.02734 0.51953 0.02735l3.83496 0.02734-0.57422 1.79102q-0.57422 1.79443-0.57422 1.89013-0.04102 0.25293 0.09912 0.50586 0.14014 0.25293 0.37598 0.37598 0.39307 0.18457 0.77246 0 0.12646-0.06836 0.32129-0.24951l5.59863-5.7832q0.22559-0.22559 0.30762-0.42041 0.08545-0.19482 0.08545-0.4751 0-0.32129-0.16748-0.59473-0.16748-0.27344-0.46143-0.42725l-0.04443-0.01367q-0.0957-0.05811-0.19483-0.07177-0.14014-0.02734-0.51953-0.02735l-3.84863-0.02734 0.57422-1.79102q0.57422-1.79443 0.57422-1.89013 0.04102-0.25293-0.09912-0.50586-0.14014-0.25293-0.39307-0.37598-0.24951-0.12646-0.50244-0.07178z m-0.92285 3.19239q-0.37939 1.20313-0.39307 1.32959-0.02734 0.19482 0.02051 0.3999 0.05127 0.20166 0.16064 0.36914 0.07178 0.09912 0.20508 0.21875 0.1333 0.11963 0.24268 0.17431l0.04443 0.02735q0.10938 0.05811 0.2085 0.07178 0.14014 0.01367 0.51953 0.02734l3.82129 0.01367-2.42334 2.50537q-2.41992 2.4917-2.42676 2.4917-0.00684 0 0.37598-1.20996 0.38623-1.20996 0.3999-1.33643 0.02734-0.19482-0.02393-0.39648-0.04785-0.20508-0.15722-0.35889-0.05811-0.08545-0.16407-0.19482-0.10254-0.11279-0.18798-0.15723-0.16748-0.10938-0.37598-0.16748-0.07178-0.01367-2.19775-0.02734l-2.11573 0 2.42334-2.50537q2.41992-2.4917 2.42676-2.4917 0.00684 0-0.38281 1.2168z"
-                fill="currentColor"
-              />
-            </svg>
-            <div className="text-[11px]/[normal] box-border text-gray-500 font-normal text-left whitespace-nowrap">
-              {displayWatt}
+          {/* Baris 1: Ikon Petir + Daya Listrik & Lokasi Alat */}
+          <div className="box-border w-full h-fit shrink-0 flex flex-row justify-between items-center pt-[6px] pb-[12px] gap-2">
+            {/* Daya Listrik */}
+            <div className="flex flex-row gap-[5px] items-center text-gray-500 shrink-0">
+              <svg
+                viewBox="0 0 14 14"
+                preserveAspectRatio="xMidYMid meet"
+                xmlns="http://www.w3.org/2000/svg"
+                className="box-border w-[12px] shrink-0 h-[12px] text-gray-400"
+              >
+                <path
+                  d="M7.7417 0.60156q-0.16748 0.02734-0.33496 0.1128-0.09912 0.06836-2.81641 2.87109l-2.88135 2.98047q-0.35205 0.36572-0.39306 0.44775l-0.01367 0.01367q-0.09912 0.21191-0.12647 0.44776-0.04102 0.37939 0.14014 0.68701 0.18115 0.30762 0.50244 0.46143l0.04443 0.02734q0.0957 0.04443 0.19483 0.0581 0.12646 0.02734 0.51953 0.02735l3.83496 0.02734-0.57422 1.79102q-0.57422 1.79443-0.57422 1.89013-0.04102 0.25293 0.09912 0.50586 0.14014 0.25293 0.37598 0.37598 0.39307 0.18457 0.77246 0 0.12646-0.06836 0.32129-0.24951l5.59863-5.7832q0.22559-0.22559 0.30762-0.42041 0.08545-0.19482 0.08545-0.4751 0-0.32129-0.16748-0.59473-0.16748-0.27344-0.46143-0.42725l-0.04443-0.01367q-0.0957-0.05811-0.19483-0.07177-0.14014-0.02734-0.51953-0.02735l-3.84863-0.02734 0.57422-1.79102q0.57422-1.79443 0.57422-1.89013 0.04102-0.25293-0.09912-0.50586-0.14014-0.25293-0.39307-0.37598-0.24951-0.12646-0.50244-0.07178z m-0.92285 3.19239q-0.37939 1.20313-0.39307 1.32959-0.02734 0.19482 0.02051 0.3999 0.05127 0.20166 0.16064 0.36914 0.07178 0.09912 0.20508 0.21875 0.1333 0.11963 0.24268 0.17431l0.04443 0.02735q0.10938 0.05811 0.2085 0.07178 0.14014 0.01367 0.51953 0.02734l3.82129 0.01367-2.42334 2.50537q-2.41992 2.4917-2.42676 2.4917-0.00684 0 0.37598-1.20996 0.38623-1.20996 0.3999-1.33643 0.02734-0.19482-0.02393-0.39648-0.04785-0.20508-0.15722-0.35889-0.05811-0.08545-0.16407-0.19482-0.10254-0.11279-0.18798-0.15723-0.16748-0.10938-0.37598-0.16748-0.07178-0.01367-2.19775-0.02734l-2.11573 0 2.42334-2.50537q2.41992-2.4917 2.42676-2.4917 0.00684 0-0.38281 1.2168z"
+                  fill="currentColor"
+                />
+              </svg>
+              <div className="text-[11px]/[normal] box-border text-gray-500 font-normal text-left whitespace-nowrap">
+                {displayWatt}
+              </div>
             </div>
+
+            {/* Lokasi & Jarak Singkat */}
+            {(locationShort || displayDistance) && (
+              <div
+                title={`${location || ''}${displayDistance ? ` • ${displayDistance} dari ${displayUserLocation}` : ''}`}
+                className="flex flex-row gap-1 items-center text-gray-500 text-[11px] min-w-0 justify-end"
+              >
+                <MapPin className="w-3 h-3 text-blue-600 shrink-0" />
+                <span className="truncate">
+                  {locationShort || 'Lokasi'}
+                  {displayDistance && (
+                    <span className="font-semibold text-gray-700 ml-1">
+                      • {displayDistance}
+                    </span>
+                  )}
+                </span>
+              </div>
+            )}
           </div>
 
           {/* Pembatas 1 */}

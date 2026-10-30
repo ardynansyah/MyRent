@@ -247,7 +247,6 @@ export default function DetailAlat({
       <NavbarPenyewa
         activeTab="jelajahi"
         dateRange="12 – 15 Jun"
-        walletBalance="Rp 1.250.000"
         onNavigateHome={onNavigateHome}
       />
 
