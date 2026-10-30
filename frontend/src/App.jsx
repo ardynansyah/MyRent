@@ -6,6 +6,7 @@ import RegisterPenyewaAlat from './components/registerPenyewaAlat'
 import RegisterPemilikAlat from './components/registerPemilikAlat/RegisterPemilikAlat'
 import BerandaSewa from './components/berandaPenyewa/BerandaSewa'
 import DetailAlat from './components/detailAlat/DetailAlat'
+import Pesan from './pages/Pesan'
 import PesananSaya from './pages/PesananSaya'
 import KembalikanAlatWizard from './components/kembalikanAlat/KembalikanAlatWizard'
 import AdminAuthWrapper from './components/adminAuth/AdminAuthWrapper'
@@ -239,7 +240,7 @@ export default function App() {
             <UserProtectedRoute>
               <BerandaSewa
                 onSelectProduct={(product, dateRange) => {
-                  navigate(`/detail-alat/${product.id}`, { state: { dateRange } })
+                  navigate(`/alat/${product.id}`, { state: { dateRange } })
                 }}
                 onNavigateHome={() => navigate('/')}
               />
@@ -247,7 +248,18 @@ export default function App() {
           }
         />
 
-        {/* Detail Alat (Exported Design) — ID alat diambil dari URL. */}
+        {/* Detail Alat — Jalur rute resmi /alat/:id dan alias /detail-alat/:id */}
+        <Route
+          path="/alat/:id"
+          element={
+            <UserProtectedRoute>
+              <DetailAlat
+                onBack={() => navigate('/beranda-sewa')}
+                onNavigateHome={() => navigate('/')}
+              />
+            </UserProtectedRoute>
+          }
+        />
         <Route
           path="/detail-alat/:id"
           element={
@@ -261,7 +273,18 @@ export default function App() {
         />
 
         {/* Tanpa ID alat tidak ada detail yang bisa ditampilkan → kembali ke katalog. */}
+        <Route path="/alat" element={<Navigate to="/beranda-sewa" replace />} />
         <Route path="/detail-alat" element={<Navigate to="/beranda-sewa" replace />} />
+
+        {/* Halaman Chat Fullscreen (/pesan) */}
+        <Route
+          path="/pesan"
+          element={
+            <UserProtectedRoute>
+              <Pesan />
+            </UserProtectedRoute>
+          }
+        />
 
         {/* ── Checkout Wizard (3 Langkah) ─────────────────────────────────
             Step 1 & 2 berbagi state wizard di URL nested.

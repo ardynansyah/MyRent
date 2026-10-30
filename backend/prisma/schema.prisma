@@ -74,6 +74,10 @@ model User {
   equipments Equipment[]
   orders     Order[]
   reviews    Review[]
+
+  renterConversations Conversation[] @relation("RenterConversations")
+  ownerConversations  Conversation[] @relation("OwnerConversations")
+  sentMessages        Message[]      @relation("SentMessages")
 }
 
 model Equipment {
@@ -224,5 +228,41 @@ model Review {
 
   @@index([equipmentId])
   @@index([userId])
+}
+
+model Conversation {
+  id            String    @id @default(uuid())
+  renterId      String
+  ownerId       String
+  lastMessageAt DateTime  @default(now())
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  renter        User      @relation("RenterConversations", fields: [renterId], references: [id], onDelete: Cascade)
+  owner         User      @relation("OwnerConversations", fields: [ownerId], references: [id], onDelete: Cascade)
+  messages      Message[]
+
+  @@unique([renterId, ownerId])
+  @@index([renterId])
+  @@index([ownerId])
+  @@index([lastMessageAt])
+}
+
+model Message {
+  id             String        @id @default(uuid())
+  conversationId String
+  senderId       String
+  content        String        @db.Text
+  contextType    String?       // 'EQUIPMENT' | 'ORDER'
+  contextData    Json?         // snapshot data alat / invoice pesanan
+  isRead         Boolean       @default(false)
+  createdAt      DateTime      @default(now())
+
+  conversation   Conversation  @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender         User          @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId])
+  @@index([senderId])
+  @@index([createdAt])
 }
 

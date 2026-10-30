@@ -39,6 +39,8 @@ import ModalTambahAlat from '../components/owner/ModalTambahAlat'
 import ModalKelolaAlat from '../components/owner/ModalKelolaAlat'
 import ModalVerifikasiInspeksi from '../components/owner/ModalVerifikasiInspeksi'
 import AlatSayaTab from '../components/owner/AlatSayaTab'
+import ChatPanel from '../components/chat/ChatPanel'
+import { getUnreadCount } from '../lib/chatsApi'
 
 // Helper untuk mengelompokkan data pesanan (Orders) ke format mingguan dalam bulan berjalan
 function calculateWeeklyRevenue(orders) {
@@ -212,13 +214,15 @@ export default function OwnerDashboard() {
   })
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
-  const [activeTab, setActiveTab] = useState('ringkasan') // 'ringkasan' | 'alat' | 'pesanan' | 'dompet' | 'profil' | 'ulasan' | 'pengaturan'
+  const [activeTab, setActiveTab] = useState('ringkasan') // 'ringkasan' | 'alat' | 'pesanan' | 'chat' | 'dompet' | 'profil' | 'ulasan' | 'pengaturan'
   const [toastMessage, setToastMessage] = useState('')
   const [actionLoadingId, setActionLoadingId] = useState(null)
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
   const [selectedEquipmentToManage, setSelectedEquipmentToManage] = useState(null)
   const [selectedInspectionOrder, setSelectedInspectionOrder] = useState(null)
   const [orderFilterTab, setOrderFilterTab] = useState('ALL')
+  const [chatUnreadCount, setChatUnreadCount] = useState(0)
+  const [selectedChatPartner, setSelectedChatPartner] = useState(null)
 
   // Notification Popover state (Task 2)
   const [isNotificationOpen, setIsNotificationOpen] = useState(false)
@@ -303,7 +307,8 @@ export default function OwnerDashboard() {
 
   useEffect(() => {
     fetchData()
-  }, [])
+    getUnreadCount().then(setChatUnreadCount).catch(() => {})
+  }, [activeTab])
 
   // Kalkulasi statistik dari data Orders dan Equipment
   const stats = useMemo(() => {
@@ -715,6 +720,29 @@ export default function OwnerDashboard() {
 
             <button
               type="button"
+              onClick={() => {
+                setActiveTab('chat')
+                setSelectedChatPartner(null)
+              }}
+              className={`w-full flex items-center justify-between px-2.5 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                activeTab === 'chat'
+                  ? 'bg-blue-50 text-blue-700 shadow-2xs'
+                  : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+              }`}
+            >
+              <div className="flex items-center gap-2.5">
+                <MessageSquare className="w-4 h-4" />
+                <span>Pesan Masuk</span>
+              </div>
+              {chatUnreadCount > 0 && (
+                <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-blue-600 text-white font-extrabold shadow-2xs">
+                  {chatUnreadCount}
+                </span>
+              )}
+            </button>
+
+            <button
+              type="button"
               onClick={() => setActiveTab('dompet')}
               className={`w-full flex items-center justify-between px-2.5 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                 activeTab === 'dompet'
@@ -849,6 +877,7 @@ export default function OwnerDashboard() {
               {activeTab === 'ulasan' && 'Ulasan & Rating'}
               {activeTab === 'alat' && 'Katalog Alat Saya'}
               {activeTab === 'pesanan' && 'Daftar Semua Pesanan'}
+              {activeTab === 'chat' && 'Pesan Masuk & Obrolan Penyewa'}
               {activeTab === 'dompet' && 'Dompet & Escrow'}
               {activeTab === 'profil' && 'Profil Toko'}
               {activeTab === 'pengaturan' && 'Pengaturan'}
@@ -1701,6 +1730,34 @@ export default function OwnerDashboard() {
                               Diputus Admin
                             </span>
                           )}
+
+                          {/* Action Button: Hubungi Penyewa */}
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setSelectedChatPartner({
+                                id: o.userId,
+                                name: o.user?.fullName || 'Penyewa UMKM',
+                                contextType: 'ORDER',
+                                contextData: {
+                                  id: o.id,
+                                  invoiceNumber: o.invoiceNumber,
+                                  status: o.status,
+                                  equipmentName: o.equipment?.name,
+                                  startDate: o.startDate,
+                                  endDate: o.endDate,
+                                  totalPaid: o.totalPaid,
+                                  depositAmount: o.depositAmount,
+                                  disputeReason: o.disputeReason || o.disputeNote
+                                }
+                              })
+                              setActiveTab('chat')
+                            }}
+                            className="px-3 py-2 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 rounded-xl text-xs font-semibold transition flex items-center gap-1.5 cursor-pointer shadow-2xs"
+                          >
+                            <MessageSquare className="w-3.5 h-3.5 text-blue-600" />
+                            <span>Hubungi Penyewa</span>
+                          </button>
                         </div>
                       </div>
                     ))}
@@ -1708,6 +1765,19 @@ export default function OwnerDashboard() {
                 )
               })()}
             </div>
+          </div>
+        )}
+
+        {/* ── TAB CONTENT: PESAN MASUK (CHAT) ──────────────────────────────── */}
+        {activeTab === 'chat' && (
+          <div className="w-full animate-in fade-in duration-200">
+            <ChatPanel
+              isEmbedded={true}
+              initialPartnerId={selectedChatPartner?.id || null}
+              initialPartnerName={selectedChatPartner?.name || null}
+              initialContextType={selectedChatPartner?.contextType || null}
+              initialContextData={selectedChatPartner?.contextData || null}
+            />
           </div>
         )}
 

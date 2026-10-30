@@ -161,6 +161,44 @@ export default function PesananSaya() {
     return res
   }
 
+  const handleChatOwner = (order) => {
+    if (!order) return
+    const ownerId = order.equipment?.ownerId || order.equipment?.owner?.id
+    if (!ownerId) {
+      alert('Informasi pemilik alat tidak ditemukan pada pesanan ini')
+      return
+    }
+
+    const equipmentImg =
+      Array.isArray(order.equipment?.images) && order.equipment.images.length > 0
+        ? typeof order.equipment.images[0] === 'string'
+          ? order.equipment.images[0]
+          : order.equipment.images[0]?.url
+        : null
+
+    navigate('/pesan', {
+      state: {
+        partnerId: ownerId,
+        partnerName: order.equipment?.owner?.fullName || order.equipment?.owner?.name || 'Pemilik Alat',
+        contextType: 'ORDER',
+        contextData: {
+          id: order.id,
+          invoiceNumber: order.invoiceNumber,
+          status: order.status,
+          equipmentId: order.equipmentId,
+          equipmentName: order.equipment?.name || 'Unit Alat',
+          equipmentImage: equipmentImg,
+          startDate: order.startDate,
+          endDate: order.endDate,
+          rentalDays: order.rentalDays,
+          totalPaid: order.totalPaid,
+          depositAmount: order.depositAmount,
+          disputeReason: order.disputeReason || order.disputeNote
+        }
+      }
+    })
+  }
+
   return (
     <div className="box-border w-full min-h-screen flex flex-col justify-start items-start bg-slate-50 font-sans">
       {/* Toast Notification */}
@@ -369,10 +407,7 @@ export default function PesananSaya() {
               <PesananCard
                 key={order.id}
                 order={order}
-                onChatOwner={(ord) => {
-                  setSelectedOrder(ord)
-                  setIsChatOpen(true)
-                }}
+                onChatOwner={handleChatOwner}
                 onExtend={(ord) => {
                   setSelectedOrder(ord)
                   setIsExtendOpen(true)
@@ -484,8 +519,7 @@ export default function PesananSaya() {
         order={selectedOrder}
         onChatOwner={(ord) => {
           setIsDisputeOpen(false)
-          setSelectedOrder(ord)
-          setIsChatOpen(true)
+          handleChatOwner(ord)
         }}
       />
 

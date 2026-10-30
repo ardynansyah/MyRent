@@ -14,6 +14,7 @@ import { adminRouter } from './routes/admin.js'
 import { equipmentsRouter } from './routes/equipments.js'
 import { ordersRouter } from './routes/orders.js'
 import { reviewsRouter } from './routes/reviews.js'
+import { chatsRouter } from './routes/chats.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
@@ -52,6 +53,11 @@ const ENDPOINTS = [
   'PATCH /api/orders/:id/resolve-dispute',
   'GET /api/reviews',
   'POST /api/reviews',
+  'GET /api/chats',
+  'GET /api/chats/unread-count',
+  'GET /api/chats/by-partner/:partnerId',
+  'GET /api/chats/:conversationId/messages',
+  'POST /api/chats/messages',
   'GET /api/stats',
   'GET /openapi.yaml'
 ]
@@ -84,6 +90,7 @@ export function createApp() {
   app.use('/api/categories', categoriesRouter)
   app.use('/api/orders', ordersRouter)
   app.use('/api/reviews', reviewsRouter)
+  app.use('/api/chats', chatsRouter)
   app.use('/api/stats', statsRouter)
 
 

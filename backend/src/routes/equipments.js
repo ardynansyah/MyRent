@@ -55,6 +55,7 @@ function presentEquipment(equipment, bookedRanges = []) {
     owner: equipment.owner
       ? {
           id: equipment.owner.id,
+          name: equipment.owner.fullName,
           fullName: equipment.owner.fullName,
           email: equipment.owner.email,
           phone: equipment.owner.phone,
@@ -492,6 +493,14 @@ equipmentsRouter.get('/:id', async (req, res, next) => {
       where: { id },
       include: {
         owner: true,
+        reviews: {
+          include: {
+            user: {
+              select: { id: true, fullName: true, email: true }
+            }
+          },
+          orderBy: { createdAt: 'desc' }
+        },
         orders: {
           where: {
             status: {
@@ -516,9 +525,27 @@ equipmentsRouter.get('/:id', async (req, res, next) => {
 
     const dayStatus = buildDayStatusFromOrders(equipment.orders, equipment.maintenanceBufferDays)
 
+    const reviews = (equipment.reviews || []).map((r) => ({
+      id: r.id,
+      orderId: r.orderId,
+      userId: r.userId,
+      rating: r.rating,
+      comment: r.comment,
+      createdAt: r.createdAt,
+      user: r.user ? { id: r.user.id, fullName: r.user.fullName } : null
+    }))
+    const ratingCount = reviews.length
+    const averageRating =
+      ratingCount > 0
+        ? Number((reviews.reduce((acc, r) => acc + r.rating, 0) / ratingCount).toFixed(1))
+        : 5.0
+
     const presented = {
       ...presentEquipment(equipment, bookedRanges),
-      dayStatus
+      dayStatus,
+      reviews,
+      averageRating,
+      ratingCount
     }
 
     res.json({ data: presented })

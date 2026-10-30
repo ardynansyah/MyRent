@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { Search, CalendarDays, Wallet, LogOut, ChevronDown, ChevronRight, MessageSquare } from 'lucide-react'
 import ModalDompet from '../pesananSaya/ModalDompet'
+import { getUnreadCount } from '../../lib/chatsApi'
 import {
   getSessionUser,
   getUserInitials,
@@ -22,7 +23,20 @@ export default function NavbarPenyewa({
   const [localSearch, setLocalSearch] = useState(searchQuery)
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isWalletModalOpen, setIsWalletModalOpen] = useState(false)
+  const [unreadCount, setUnreadCount] = useState(0)
   const menuRef = useRef(null)
+
+  useEffect(() => {
+    let isMounted = true
+    getUnreadCount()
+      .then((count) => {
+        if (isMounted) setUnreadCount(count)
+      })
+      .catch(() => {})
+    return () => {
+      isMounted = false
+    }
+  }, [activeTab])
 
   // Data pengguna dibaca dari localStorage (sesi login penyewa).
   const user = getSessionUser()
@@ -103,7 +117,7 @@ export default function NavbarPenyewa({
           type="button"
           onClick={() => {
             if (onNavigateTab) onNavigateTab('pesan')
-            else navigate('/pesanan-saya')
+            else navigate('/pesan')
           }}
           className={`box-border w-fit shrink-0 h-fit flex flex-row gap-1.5 py-[7px] px-3 justify-start items-center rounded-lg cursor-pointer transition-all border-0 ${
             activeTab === 'pesan'
@@ -111,7 +125,14 @@ export default function NavbarPenyewa({
               : 'bg-transparent text-slate-600 hover:bg-slate-50 font-medium'
           }`}
         >
-          <MessageSquare className="w-3.5 h-3.5" />
+          <div className="relative flex items-center">
+            <MessageSquare className="w-3.5 h-3.5" />
+            {unreadCount > 0 && (
+              <span className="absolute -top-1.5 -right-2 bg-blue-600 text-white text-[9px] font-bold px-1 rounded-full min-w-3.5 text-center leading-tight">
+                {unreadCount > 9 ? '9+' : unreadCount}
+              </span>
+            )}
+          </div>
           <span className="text-[13px] whitespace-nowrap">Pesan</span>
         </button>
       </nav>

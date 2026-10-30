@@ -18,6 +18,8 @@ const PEMILIK_ID = '11111111-1111-4111-8111-111111111111'
 const PEMILIK_EMAIL = 'pemilik@myrent.com'
 const PEMILIK_PASSWORD = 'Pemilik#Sewa2026'
 
+const OWNER_ALT_ID = '33333333-3333-4333-8333-333333333333'
+
 const PENYEWA_ID = '22222222-2222-4222-8222-222222222222'
 const PENYEWA_EMAIL = 'penyewa@myrent.com'
 const PENYEWA_PASSWORD = 'Penyewa#Sewa2026'
@@ -173,6 +175,32 @@ const EQUIPMENTS = [
       'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=800&q=80',
       'https://images.unsplash.com/photo-1517668808822-9ebb02f2a0e6?auto=format&fit=crop&w=800&q=80'
     ]
+  },
+  {
+    id: 'a1000000-0000-4000-8000-000000000007',
+    ownerId: 'OWNER_ALT',
+    name: 'Genset Silent Inverter 5000 Watt',
+    category: 'Kelengkapan Usaha',
+    description:
+      'Genset silent inverter hemat bahan bakar dengan peredam suara ganda (< 65 dB). Daya stabil untuk menopang booth event kopi, oven listrik, atau emergency backup UMKM.',
+    pricePerDay: 250000,
+    deposit: 800000,
+    powerWatt: 5000,
+    weightKg: 42,
+    dimensions: '60 × 45 × 50 cm',
+    minRentDays: 1,
+    maintenanceBufferDays: 1,
+    location: 'Kec. Cilandak, Jakarta Selatan',
+    distance: 1.8,
+    status: 'TERSEDIA',
+    condition: 'Prima',
+    accessories: ['Kabel Roll 25m', 'Corong Bensin', 'Kunci Busi', 'Manual Book'],
+    deliveryMethods: ['PICKUP', 'COURIER'],
+    isDeleted: false,
+    images: [
+      'https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1581092335397-9583fe92d232?auto=format&fit=crop&w=800&q=80'
+    ]
   }
 ]
 
@@ -269,7 +297,7 @@ async function main() {
       password: hashedPemilikPassword,
       role: 'PEMILIK',
       fullName: 'Mitra Owner MyRent',
-      phone: '081299887766',
+      phone: '081299887755',
       verificationStatus: 'DISETUJUI',
       submissionCode: 'VR-1005',
       kycData: {
@@ -283,11 +311,12 @@ async function main() {
       }
     },
     create: {
+      id: OWNER_ALT_ID,
       email: 'owner@myrent.com',
       password: hashedPemilikPassword,
       role: 'PEMILIK',
       fullName: 'Mitra Owner MyRent',
-      phone: '081299887766',
+      phone: '081299887755',
       verificationStatus: 'DISETUJUI',
       submissionCode: 'VR-1005',
       kycData: {
@@ -437,10 +466,11 @@ async function main() {
 
   // 5. Data alat milik akun PEMILIK di atas.
   for (const item of EQUIPMENTS) {
+    const targetOwnerId = item.ownerId === 'OWNER_ALT' ? ownerAlt.id : (item.ownerId || pemilik.id)
     await prisma.equipment.upsert({
       where: { id: item.id },
       update: {
-        ownerId: pemilik.id,
+        ownerId: targetOwnerId,
         name: item.name,
         category: item.category,
         description: item.description,
@@ -462,7 +492,7 @@ async function main() {
       },
       create: {
         ...item,
-        ownerId: pemilik.id
+        ownerId: targetOwnerId
       }
     })
   }
@@ -828,6 +858,92 @@ async function main() {
     })
   }
 
+  // 9. Sesi Percakapan Aktif Dua Arah (Penyewa <-> Pemilik) dengan Konteks Sengketa INV-2610-006
+  const CONVERSATION_ID = 'c1000000-0000-4000-8000-000000000001'
+  const activeConversation = await prisma.conversation.upsert({
+    where: {
+      renterId_ownerId: {
+        renterId: penyewa.id,
+        ownerId: pemilik.id
+      }
+    },
+    update: {
+      lastMessageAt: new Date(now.getTime() - 30 * 60000)
+    },
+    create: {
+      id: CONVERSATION_ID,
+      renterId: penyewa.id,
+      ownerId: pemilik.id,
+      lastMessageAt: new Date(now.getTime() - 30 * 60000)
+    }
+  })
+
+  // Pesan kontekstual seputar klaim/sengketa pesanan INV-2610-006 (Mesin Espresso Otomatis 2 Grup)
+  const CHAT_MESSAGES = [
+    {
+      id: 'm1000000-0000-4000-8000-000000000001',
+      conversationId: activeConversation.id,
+      senderId: penyewa.id,
+      content:
+        'Halo Pak, terkait klaim kerusakan kabel dan bodi pada pesanan INV-2610-006, apakah kita bisa diskusikan solusinya?',
+      contextType: 'ORDER',
+      contextData: {
+        id: 'b2000000-0000-4000-8000-000000000016',
+        invoiceNumber: 'INV-2610-006',
+        status: 'DISPUTE',
+        equipmentId: 'a1000000-0000-4000-8000-000000000006',
+        equipmentName: 'Mesin Espresso Otomatis 2 Grup',
+        equipmentImage:
+          'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=800&q=80',
+        startDate: new Date(now.getTime() - 7 * 86400000).toISOString(),
+        endDate: new Date(now.getTime() - 3 * 86400000).toISOString(),
+        rentalDays: 4,
+        totalPaid: 2480000,
+        depositAmount: 1200000,
+        damageFee: 450000,
+        disputeReason: 'Kabel power mesin kopi hilang dan bodi samping penyok parah'
+      },
+      isRead: true,
+      createdAt: new Date(now.getTime() - 120 * 60000)
+    },
+    {
+      id: 'm1000000-0000-4000-8000-000000000002',
+      conversationId: activeConversation.id,
+      senderId: pemilik.id,
+      content:
+        'Halo Mas Budi, kami sudah cek fisik saat pengembalian dan lampirkan foto inspeksi. Kabel power memang hilang dan ada penyok di cover kiri.',
+      contextType: null,
+      contextData: null,
+      isRead: true,
+      createdAt: new Date(now.getTime() - 75 * 60000)
+    },
+    {
+      id: 'm1000000-0000-4000-8000-000000000003',
+      conversationId: activeConversation.id,
+      senderId: penyewa.id,
+      content:
+        'Baik Pak, saya konfirmasi ke staf dapur saya. Untuk kabel kami siap ganti rugi, namun untuk penyok apakah bisa dicek kembali catatan BAST awal?',
+      contextType: null,
+      contextData: null,
+      isRead: false,
+      createdAt: new Date(now.getTime() - 30 * 60000)
+    }
+  ]
+
+  for (const msg of CHAT_MESSAGES) {
+    await prisma.message.upsert({
+      where: { id: msg.id },
+      update: {
+        content: msg.content,
+        contextType: msg.contextType,
+        contextData: msg.contextData,
+        isRead: msg.isRead,
+        createdAt: msg.createdAt
+      },
+      create: msg
+    })
+  }
+
   console.log('✅ Database Seeder Berhasil:')
   console.log(`  - Admin Utama   : ${defaultAdmin.email} (Role: ${defaultAdmin.role})`)
   console.log(`  - Admin Template: ${templateAdmin.email} (Role: ${templateAdmin.role})`)
@@ -842,6 +958,8 @@ async function main() {
   console.log(`  - Equipment     : ${EQUIPMENTS.length} unit (${EQUIPMENTS.filter((e) => e.status === 'TERSEDIA').length} TERSEDIA)`)
   console.log(`  - Orders Total  : ${ORDER_SEEDS.length} pesanan (6 pesanan khusus penyewa default)`)
   console.log(`  - Reviews       : ${REVIEW_SEEDS.length} ulasan pelanggan realistik`)
+  console.log(`  - Active Chat   : Percakapan INV-2610-006 (${CHAT_MESSAGES.length} pesan kontekstual)`)
+  console.log(`  - Lazy Chat Test: Pemilik ${ownerAlt.email} siap diuji untuk sesi lazy/ephemeral`)
 }
 
 main()
