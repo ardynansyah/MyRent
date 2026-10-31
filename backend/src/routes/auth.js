@@ -4,7 +4,7 @@ import jwt from 'jsonwebtoken'
 import { Prisma } from '@prisma/client'
 import { prisma } from '../lib/prisma.js'
 import { config } from '../config.js'
-import { buildKycData, extractFormPayload, resolvePowerLimit } from '../lib/kyc.js'
+import { buildKycData, extractFormPayload, resolvePowerLimit, normalizeFileValue } from '../lib/kyc.js'
 import { generateSubmissionCode } from '../lib/submissionCode.js'
 import {
   findUserByPhone,
@@ -68,6 +68,68 @@ function presentUser(user) {
       bankAccountName: kycData.bankAccountName ?? null
     },
     createdAt: user.createdAt
+  }
+}
+
+/**
+ * Bentuk profil lengkap pengguna untuk halaman penyesuaian / edit profil.
+ * Memuat seluruh data registrasi (Step 1-5):
+ *  - Data penting/legal yang terkunci (NIK, Nama KTP, Dokumen KYC)
+ *  - Data yang dapat disesuaikan (Profil UMKM, Daya Listrik, Alamat, Rekening Refund)
+ *
+ * @param {object} user - baris user dari Prisma
+ * @returns {object}
+ */
+function presentUserProfile(user) {
+  const kycData = user.kycData && typeof user.kycData === 'object' ? user.kycData : {}
+
+  return {
+    id: user.id,
+    email: user.email,
+    fullName: user.fullName,
+    phone: user.phone,
+    role: user.role,
+    submissionCode: user.submissionCode ?? null,
+    verificationStatus: user.verificationStatus ?? 'MENUNGGU',
+    walletBalance: user.walletBalance ?? 0,
+    adminNote: user.adminNote ?? null,
+    createdAt: user.createdAt,
+    updatedAt: user.updatedAt,
+
+    // 🔒 Identitas Kependudukan Resmi (Terkunci & Dilindungi)
+    nik: kycData.nik || kycData.nikKtp || '',
+    ktpName: kycData.ktpName || kycData.namaKtp || user.fullName || '',
+    birthPlace: kycData.birthPlace || kycData.tempatLahir || '',
+    birthDate: kycData.birthDate || kycData.tanggalLahir || '',
+    ktpFile: kycData.ktpFile || null,
+    selfieFile: kycData.selfieFile || null,
+
+    // ✏️ Profil Usaha / UMKM (Dapat Disesuaikan)
+    businessName: kycData.businessName || '',
+    businessSector: kycData.businessSector || 'Kuliner & Kopi',
+    customSector: kycData.customSector || '',
+    startYear: kycData.startYear || '',
+    nib: kycData.nib || '',
+    powerCapacity: kycData.powerCapacity || '1300 W',
+    customPower: kycData.customPower || '',
+    isManualPower: Boolean(kycData.isManualPower),
+    dayaListrik: resolvePowerLimit(kycData),
+    frontPhoto: kycData.frontPhoto || null,
+    productionPhoto: kycData.productionPhoto || null,
+    businessDesc: kycData.businessDesc || '',
+
+    // ✏️ Alamat Usaha & Operasional Pengiriman (Dapat Disesuaikan)
+    address: kycData.address || '',
+    city: kycData.city || '',
+    district: kycData.district || '',
+    postalCode: kycData.postalCode || '',
+    landmark: kycData.landmark || '',
+    gpsCoords: kycData.gpsCoords || '-6.2601, 106.8135',
+
+    // ✏️ Rekening Refund Deposit & Pencairan (Dapat Disesuaikan)
+    bankName: kycData.bankName || 'BCA — Bank Central Asia',
+    bankAccount: kycData.bankAccount || kycData.bankAccountNumber || '',
+    bankAccountHolder: kycData.bankAccountHolder || kycData.bankAccountName || user.fullName || ''
   }
 }
 
@@ -484,6 +546,220 @@ authRouter.get('/me', async (req, res, next) => {
 
     return res.json({
       user: presentUser(user)
+    })
+  } catch (error) {
+    next(error)
+  }
+})
+
+/**
+ * GET /api/auth/profile
+ * Memuat profil lengkap pengguna termasuk data KYC untuk halaman edit profil.
+ */
+authRouter.get('/profile', async (req, res, next) => {
+  try {
+    const authHeader = req.headers.authorization
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({
+        error: { code: 'UNAUTHORIZED', message: 'Token tidak disertakan' }
+      })
+    }
+
+    const token = authHeader.split(' ')[1]
+    let decoded
+    try {
+      decoded = jwt.verify(token, config.jwtSecret)
+    } catch {
+      return res.status(401).json({
+        error: { code: 'INVALID_TOKEN', message: 'Token tidak valid atau telah kedaluwarsa' }
+      })
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { id: decoded.userId }
+    })
+
+    if (!user) {
+      return res.status(404).json({
+        error: { code: 'USER_NOT_FOUND', message: 'Pengguna tidak ditemukan' }
+      })
+    }
+
+    return res.json({
+      profile: presentUserProfile(user),
+      user: presentUser(user)
+    })
+  } catch (error) {
+    next(error)
+  }
+})
+
+/**
+ * PUT /api/auth/profile
+ * Memperbarui data profil yang diizinkan untuk diubah oleh penyewa.
+ * Data legal / KYC (NIK, Nama KTP, Dokumen KTP, Status Verifikasi) dilindungi dan tidak dapat diubah di sini.
+ */
+authRouter.put('/profile', async (req, res, next) => {
+  try {
+    const authHeader = req.headers.authorization
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({
+        error: { code: 'UNAUTHORIZED', message: 'Token tidak disertakan' }
+      })
+    }
+
+    const token = authHeader.split(' ')[1]
+    let decoded
+    try {
+      decoded = jwt.verify(token, config.jwtSecret)
+    } catch {
+      return res.status(401).json({
+        error: { code: 'INVALID_TOKEN', message: 'Token tidak valid atau telah kedaluwarsa' }
+      })
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { id: decoded.userId }
+    })
+
+    if (!user) {
+      return res.status(404).json({
+        error: { code: 'USER_NOT_FOUND', message: 'Pengguna tidak ditemukan' }
+      })
+    }
+
+    const body = req.body ?? {}
+
+    // Validasi nomor telepon bila diubah
+    const phoneToSet = body.phone !== undefined ? String(body.phone).trim() : user.phone
+    if (phoneToSet && phoneToSet !== user.phone && phoneToSet !== '-') {
+      const existingPhoneUser = await findUserByPhone(phoneToSet, user.id)
+      if (existingPhoneUser) {
+        return res.status(409).json({
+          error: {
+            code: 'PHONE_ALREADY_EXISTS',
+            message: 'Nomor WhatsApp / telepon sudah terdaftar pada akun lain.'
+          }
+        })
+      }
+    }
+
+    // Validasi nomor rekening bila diubah
+    const bankAccountToSet = body.bankAccount !== undefined ? String(body.bankAccount).trim() : null
+    const currentKyc = (user.kycData && typeof user.kycData === 'object') ? user.kycData : {}
+    const currentAccount = currentKyc.bankAccount || currentKyc.bankAccountNumber || ''
+
+    if (bankAccountToSet && bankAccountToSet !== currentAccount) {
+      const cleanAcc = normalizeBankAccount(bankAccountToSet)
+      if (cleanAcc.length >= 5) {
+        const existingAccUser = await findUserByBankAccount(cleanAcc, user.id)
+        if (existingAccUser) {
+          return res.status(409).json({
+            error: {
+              code: 'BANK_ACCOUNT_ALREADY_EXISTS',
+              message: 'Nomor rekening bank ini sudah terdaftar pada akun lain.'
+            }
+          })
+        }
+      }
+    }
+
+    // Validasi perubahan kata sandi (opsional)
+    let hashedPassword = null
+    if (body.newPassword) {
+      if (!body.currentPassword) {
+        return res.status(400).json({
+          error: {
+            code: 'CURRENT_PASSWORD_REQUIRED',
+            message: 'Kata sandi saat ini wajib diisi untuk mengubah kata sandi'
+          }
+        })
+      }
+      const isCurrentValid = await bcrypt.compare(body.currentPassword, user.password)
+      if (!isCurrentValid) {
+        return res.status(400).json({
+          error: {
+            code: 'PASSWORD_MISMATCH',
+            message: 'Kata sandi saat ini tidak cocok'
+          }
+        })
+      }
+      if (String(body.newPassword).length < 6) {
+        return res.status(400).json({
+          error: {
+            code: 'INVALID_NEW_PASSWORD',
+            message: 'Kata sandi baru minimal terdiri dari 6 karakter'
+          }
+        })
+      }
+      hashedPassword = await bcrypt.hash(body.newPassword, 10)
+    }
+
+    // Bangun payload kycData baru dengan menjaga ketat integritas field yang terkunci
+    const updatedKyc = {
+      ...currentKyc,
+
+      // 🔒 Field yang WAJIB TERKUNCI (tidak boleh diubah sembarangan oleh penyewa)
+      nik: currentKyc.nik,
+      ktpName: currentKyc.ktpName,
+      birthPlace: currentKyc.birthPlace,
+      birthDate: currentKyc.birthDate,
+      ktpFile: currentKyc.ktpFile,
+      selfieFile: currentKyc.selfieFile,
+      agreeTruth: currentKyc.agreeTruth,
+      agreeTerms: currentKyc.agreeTerms,
+
+      // ✏️ Field yang DAPAT DIUBAH (profil usaha, alamat, rekening refund)
+      businessName: body.businessName !== undefined ? String(body.businessName).trim() : currentKyc.businessName,
+      businessSector: body.businessSector !== undefined ? String(body.businessSector).trim() : currentKyc.businessSector,
+      customSector: body.customSector !== undefined ? String(body.customSector).trim() : currentKyc.customSector,
+      startYear: body.startYear !== undefined ? String(body.startYear).trim() : currentKyc.startYear,
+      nib: body.nib !== undefined ? String(body.nib).trim() : currentKyc.nib,
+      powerCapacity: body.powerCapacity !== undefined ? String(body.powerCapacity).trim() : currentKyc.powerCapacity,
+      customPower: body.customPower !== undefined ? String(body.customPower).trim() : currentKyc.customPower,
+      isManualPower: body.isManualPower !== undefined ? Boolean(body.isManualPower) : currentKyc.isManualPower,
+      businessDesc: body.businessDesc !== undefined ? String(body.businessDesc).trim() : currentKyc.businessDesc,
+
+      address: body.address !== undefined ? String(body.address).trim() : currentKyc.address,
+      city: body.city !== undefined ? String(body.city).trim() : currentKyc.city,
+      district: body.district !== undefined ? String(body.district).trim() : currentKyc.district,
+      postalCode: body.postalCode !== undefined ? String(body.postalCode).trim() : currentKyc.postalCode,
+      landmark: body.landmark !== undefined ? String(body.landmark).trim() : currentKyc.landmark,
+      gpsCoords: body.gpsCoords !== undefined ? String(body.gpsCoords).trim() : currentKyc.gpsCoords,
+
+      bankName: body.bankName !== undefined ? String(body.bankName).trim() : currentKyc.bankName,
+      bankAccount: bankAccountToSet !== null ? bankAccountToSet : currentKyc.bankAccount,
+      bankAccountHolder: body.bankAccountHolder !== undefined ? String(body.bankAccountHolder).trim() : currentKyc.bankAccountHolder
+    }
+
+    // Tangani unggahan foto usaha (frontPhoto & productionPhoto) bila dikirim baru
+    if (body.frontPhoto !== undefined) {
+      updatedKyc.frontPhoto = normalizeFileValue(body.frontPhoto)
+    }
+    if (body.productionPhoto !== undefined) {
+      updatedKyc.productionPhoto = normalizeFileValue(body.productionPhoto)
+    }
+
+    // Recalculate batas daya listrik (Watt)
+    const dayaListrik = resolvePowerLimit(updatedKyc)
+    if (dayaListrik !== null) {
+      updatedKyc.dayaListrik = dayaListrik
+    }
+
+    const updatedUser = await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        fullName: body.fullName ? String(body.fullName).trim() : user.fullName,
+        phone: phoneToSet,
+        ...(hashedPassword ? { password: hashedPassword } : {}),
+        kycData: updatedKyc
+      }
+    })
+
+    return res.json({
+      message: 'Profil berhasil diperbarui',
+      profile: presentUserProfile(updatedUser),
+      user: presentUser(updatedUser)
     })
   } catch (error) {
     next(error)

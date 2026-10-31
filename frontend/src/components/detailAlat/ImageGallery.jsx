@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react'
+import React, { useMemo, useState, useEffect } from 'react'
 import { MapPin } from 'lucide-react'
 
 // Import extracted detail images
@@ -24,17 +24,20 @@ export default function ImageGallery({
   // Gambar yang sedang ditampilkan di panel utama.
   const [activeImage, setActiveImage] = useState(galleryImages[0])
 
-  // Indeks foto aktif dipakai untuk penomoran dan penanda sorotan.
-  // Bila `images` berubah dan foto aktif tidak ada lagi di daftar, otomatis
-  // kembali ke foto pertama tanpa perlu efek tambahan.
+  // Pastikan foto aktif selalu sinkron bila daftar foto berubah
+  useEffect(() => {
+    if (!galleryImages.includes(activeImage)) {
+      setActiveImage(galleryImages[0])
+    }
+  }, [galleryImages, activeImage])
+
   const activeIndex = galleryImages.indexOf(activeImage)
   const currentIndex = activeIndex >= 0 ? activeIndex : 0
-  const currentImage = galleryImages[currentIndex]
+  const currentImage = galleryImages[currentIndex] || galleryImages[0]
   const currentPosition = currentIndex + 1
 
   const handleImageError = (event) => {
     const fallback = DEFAULT_IMAGES[0]
-    // Hanya ganti sekali: bandingkan nilai atribut src (bukan .src absolut).
     if (event.currentTarget.getAttribute('src') !== fallback) {
       event.currentTarget.src = fallback
     }
@@ -42,7 +45,7 @@ export default function ImageGallery({
 
   return (
     <div className="box-border w-full h-fit shrink-0 flex flex-col gap-3 justify-start items-start">
-      {/* Main Large Photo */}
+      {/* Main Large Photo — Tampil full mengisi kontainer secara rapi dan bersih */}
       <div className="box-border w-full h-70 sm:h-95 shrink-0 rounded-2xl overflow-hidden relative bg-slate-100 shadow-2xs">
         <img
           src={currentImage}
@@ -74,9 +77,10 @@ export default function ImageGallery({
         </div>
       </div>
 
-      {/* Thumbnails Row — kotak persegi tetap (w-20 h-20) agar tidak ikut
-         melebar mengikuti lebar kontainer. Klik thumbnail mengganti gambar utama. */}
-      <div className="box-border w-full h-fit shrink-0 flex flex-row gap-2 justify-start items-start overflow-x-auto scrollbar-none py-2">
+      {/* Thumbnails Row
+          Diberi padding horizontal px-2 dan py-2 agar foto thumbnail paling kiri
+          memiliki ruang cukup dan ring seleksinya TIDAK terpotong oleh sisi kiri layar/wadah. */}
+      <div className="box-border w-full h-fit shrink-0 flex flex-row gap-2.5 justify-start items-center overflow-x-auto scrollbar-none px-2 py-2">
         {galleryImages.map((img, idx) => {
           const isActive = idx === currentIndex
           return (
@@ -86,9 +90,9 @@ export default function ImageGallery({
               onClick={() => setActiveImage(img)}
               aria-label={`Tampilkan foto ${idx + 1}`}
               aria-current={isActive}
-              className={`box-border w-20 h-20 shrink-0 rounded-md overflow-hidden cursor-pointer transition-all p-0 border-0 bg-slate-100 ${
+              className={`box-border w-20 h-20 shrink-0 rounded-xl overflow-hidden cursor-pointer transition-all p-0 border-0 bg-slate-100 ${
                 isActive
-                  ? 'ring-2 ring-blue-600 ring-offset-1 scale-[1.02]'
+                  ? 'ring-2 ring-blue-600 ring-offset-2'
                   : 'opacity-70 hover:opacity-100 hover:ring-1 hover:ring-slate-300'
               }`}
             >

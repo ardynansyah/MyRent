@@ -10,6 +10,7 @@ import Pesan from './pages/Pesan'
 import PesananSaya from './pages/PesananSaya'
 import KembalikanAlatWizard from './components/kembalikanAlat/KembalikanAlatWizard'
 import DompetPage from './pages/DompetPage'
+import ProfilSaya from './pages/ProfilSaya'
 import AdminAuthWrapper from './components/adminAuth/AdminAuthWrapper'
 import AdminDashboardPlaceholder from './components/adminAuth/AdminDashboardPlaceholder'
 import AdminProtectedRoute from './components/adminAuth/AdminProtectedRoute'
@@ -340,6 +341,17 @@ export default function App() {
             </UserProtectedRoute>
           }
         />
+
+        {/* Halaman Penyesuaian / Edit Profil Penyewa */}
+        <Route
+          path="/profil"
+          element={
+            <UserProtectedRoute>
+              <ProfilSaya />
+            </UserProtectedRoute>
+          }
+        />
+        <Route path="/edit-profil" element={<Navigate to="/profil" replace />} />
 
         {/* Dashboard Pemilik Placeholder
             Dilindungi `PemilikProtectedRoute`: setelah logout, halaman ini

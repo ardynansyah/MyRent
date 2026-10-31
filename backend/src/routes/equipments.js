@@ -7,6 +7,42 @@ import { config } from '../config.js'
 export const equipmentsRouter = Router()
 
 /**
+ * Ekstrak foto profil pemilik dari data akun atau kycData.
+ * Mendukung string URL langsung atau objek file { url, preview, dataUrl }.
+ * Prioritas: profilePhoto > avatarUrl > photo > selfieFile > frontPhoto.
+ *
+ * @param {object|null} owner
+ * @returns {string|null} URL foto atau data URL, atau null jika tidak ada
+ */
+function extractOwnerPhoto(owner) {
+  if (!owner) return null
+  const kyc = owner.kycData && typeof owner.kycData === 'object' ? owner.kycData : {}
+  const candidates = [
+    owner.profilePhoto,
+    owner.avatarUrl,
+    owner.photo,
+    kyc.profilePhoto,
+    kyc.avatarUrl,
+    kyc.photo,
+    kyc.selfieFile,
+    kyc.frontPhoto
+  ]
+  for (const candidate of candidates) {
+    if (!candidate) continue
+    if (typeof candidate === 'string' && candidate.trim()) {
+      return candidate.trim()
+    }
+    if (typeof candidate === 'object') {
+      const url = candidate.preview || candidate.url || candidate.dataUrl
+      if (url && typeof url === 'string' && url.trim()) {
+        return url.trim()
+      }
+    }
+  }
+  return null
+}
+
+/**
  * Bentuk alat yang dikembalikan ke frontend.
  *
  * `images` disimpan di database sebagai JSON array string, tetapi bisa juga
@@ -28,6 +64,16 @@ function presentEquipment(equipment, bookedRanges = []) {
 
   const rawDelivery = Array.isArray(equipment.deliveryMethods) ? equipment.deliveryMethods : []
   const deliveryMethods = rawDelivery.length > 0 ? rawDelivery : ['PICKUP', 'COURIER']
+  const deliveryFee = equipment.deliveryFee !== undefined && equipment.deliveryFee !== null
+    ? Number(equipment.deliveryFee)
+    : 45000
+
+  const ownerKyc = equipment.owner?.kycData && typeof equipment.owner.kycData === 'object'
+    ? equipment.owner.kycData
+    : {}
+  const ownerBusinessName = ownerKyc.businessName || null
+  const ownerPhoto = extractOwnerPhoto(equipment.owner)
+  const ownerDisplayName = ownerBusinessName || equipment.owner?.fullName || 'Pemilik Alat'
 
   return {
     id: equipment.id,
@@ -47,6 +93,7 @@ function presentEquipment(equipment, bookedRanges = []) {
     condition: equipment.condition || 'Prima',
     accessories,
     deliveryMethods,
+    deliveryFee,
     isDeleted: Boolean(equipment.isDeleted),
     images,
     stock: equipment.stock,
@@ -57,10 +104,13 @@ function presentEquipment(equipment, bookedRanges = []) {
           id: equipment.owner.id,
           name: equipment.owner.fullName,
           fullName: equipment.owner.fullName,
+          businessName: ownerBusinessName,
+          displayName: ownerDisplayName,
           email: equipment.owner.email,
           phone: equipment.owner.phone,
           role: equipment.owner.role,
-          verificationStatus: equipment.owner.verificationStatus
+          verificationStatus: equipment.owner.verificationStatus,
+          photo: ownerPhoto
         }
       : null,
     // Rentang tanggal yang sudah terisi oleh pesanan aktif/bayar
@@ -209,6 +259,7 @@ equipmentsRouter.post('/', async (req, res, next) => {
       condition = 'Prima',
       accessories = [],
       deliveryMethods = ['PICKUP', 'COURIER'],
+      deliveryFee = 45000,
       stock = 1,
       images = []
     } = req.body ?? {}
@@ -227,6 +278,12 @@ equipmentsRouter.post('/', async (req, res, next) => {
       Array.isArray(deliveryMethods) && deliveryMethods.length > 0
         ? deliveryMethods
         : ['PICKUP', 'COURIER']
+
+    if (formattedDelivery.length === 0) {
+      return res.status(400).json({
+        error: { code: 'VALIDATION_ERROR', message: 'Pilih minimal satu metode pengiriman' }
+      })
+    }
 
     const formattedImages =
       Array.isArray(images) && images.length > 0
@@ -254,6 +311,7 @@ equipmentsRouter.post('/', async (req, res, next) => {
         condition: String(condition || 'Prima'),
         accessories: formattedAccessories,
         deliveryMethods: formattedDelivery,
+        deliveryFee: Number(deliveryFee) >= 0 ? Number(deliveryFee) : 45000,
         stock: Number(stock) || 1,
         isDeleted: false,
         images: formattedImages
@@ -332,6 +390,7 @@ async function handleUpdateEquipment(req, res, next) {
       condition,
       accessories,
       deliveryMethods,
+      deliveryFee,
       stock,
       images,
       isActive,
@@ -357,6 +416,10 @@ async function handleUpdateEquipment(req, res, next) {
     if (stock !== undefined) data.stock = Math.max(0, Number(stock) || 1)
     if (isDeleted !== undefined) data.isDeleted = Boolean(isDeleted)
 
+    if (deliveryFee !== undefined && !isNaN(Number(deliveryFee))) {
+      data.deliveryFee = Math.max(0, Number(deliveryFee))
+    }
+
     if (status !== undefined) {
       data.status = status
     } else if (isActive !== undefined) {
@@ -370,6 +433,11 @@ async function handleUpdateEquipment(req, res, next) {
     }
 
     if (deliveryMethods !== undefined && Array.isArray(deliveryMethods)) {
+      if (deliveryMethods.length === 0) {
+        return res.status(400).json({
+          error: { code: 'VALIDATION_ERROR', message: 'Pilih minimal satu metode pengiriman' }
+        })
+      }
       data.deliveryMethods = deliveryMethods
     }
 

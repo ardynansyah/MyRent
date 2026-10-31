@@ -221,6 +221,38 @@ ordersRouter.post('/', async (req, res, next) => {
       })
     }
 
+    // Validasi metode serah terima yang diizinkan pemilik alat
+    const rawDelivery = Array.isArray(equipment.deliveryMethods) ? equipment.deliveryMethods : []
+    const allowedDeliveryMethods = (rawDelivery.length > 0 ? rawDelivery : ['PICKUP', 'COURIER']).map((m) =>
+      String(m).toUpperCase()
+    )
+    const normalizedMethod = String(
+      deliveryMethod || (allowedDeliveryMethods.includes('PICKUP') ? 'PICKUP' : 'COURIER')
+    ).toUpperCase()
+
+    if (!allowedDeliveryMethods.includes(normalizedMethod)) {
+      return res.status(400).json({
+        error: {
+          code: 'DELIVERY_METHOD_NOT_ALLOWED',
+          message: `Metode serah terima '${
+            normalizedMethod === 'COURIER' ? 'Diantar kurir toko' : 'Ambil di gudang'
+          }' tidak diaktifkan oleh pemilik alat.`
+        }
+      })
+    }
+
+    // Hitung ongkir kurir sesuai pengaturan pemilik alat
+    let calculatedShipping = 0
+    if (normalizedMethod === 'COURIER') {
+      const isPickupAddonIncluded =
+        Array.isArray(addons) && addons.some((a) => (typeof a === 'string' ? a : a.id) === 'pickup')
+      calculatedShipping = isPickupAddonIncluded
+        ? 0
+        : equipment.deliveryFee !== undefined && equipment.deliveryFee !== null
+        ? Number(equipment.deliveryFee)
+        : 45000
+    }
+
     const invoiceNumber = generateInvoiceNumber()
     // Deadline pembayaran: 24 jam dari sekarang
     const paymentDeadline = new Date(Date.now() + 24 * 60 * 60 * 1000)
@@ -233,9 +265,9 @@ ordersRouter.post('/', async (req, res, next) => {
         startDate: new Date(startDate),
         endDate: new Date(endDate),
         rentalDays: Number(rentalDays),
-        deliveryMethod: deliveryMethod || 'COURIER',
+        deliveryMethod: normalizedMethod,
         rentalCost: Number(rentalCost) || 0,
-        shippingCost: Number(shippingCost) || 0,
+        shippingCost: calculatedShipping,
         depositAmount: Number(depositAmount) || 0,
         totalPaid: Number(totalPaid) || 0,
         status: 'MENUNGGU_PEMBAYARAN',

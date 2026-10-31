@@ -108,6 +108,8 @@ model Equipment {
   accessories Json?
   // Metode pengiriman yang didukung (JSON array of string, mis. ["PICKUP", "COURIER"])
   deliveryMethods Json?
+  // Ongkos kirim jika menggunakan kurir toko (default 45.000)
+  deliveryFee Int      @default(45000)
   // Kondisi alat (mis. "Prima", "Terawat", "Sangat Baik")
   condition   String   @default("Prima")
   stock       Int      @default(1)

@@ -39,6 +39,10 @@ function formatPartner(conversation, currentUserId) {
   const partnerUser = isRenter ? conversation.owner : conversation.renter
   const partnerRole = isRenter ? 'PEMILIK' : 'PENYEWA'
 
+  const kyc = partnerUser?.kycData && typeof partnerUser.kycData === 'object' ? partnerUser.kycData : {}
+  const rawPhoto = kyc.profilePhoto || kyc.avatarUrl || kyc.photo || kyc.selfieFile || kyc.frontPhoto || null
+  const photo = typeof rawPhoto === 'string' ? rawPhoto : rawPhoto?.preview || rawPhoto?.url || null
+
   return {
     id: partnerUser?.id,
     fullName: partnerUser?.fullName || (partnerRole === 'PEMILIK' ? 'Pemilik Alat' : 'Penyewa UMKM'),
@@ -47,7 +51,8 @@ function formatPartner(conversation, currentUserId) {
     phone: partnerUser?.phone,
     role: partnerRole,
     verificationStatus: partnerUser?.verificationStatus || 'DISETUJUI',
-    businessName: partnerUser?.kycData?.businessName || null
+    businessName: kyc.businessName || null,
+    photo
   }
 }
 

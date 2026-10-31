@@ -53,6 +53,7 @@ export default function ModalTambahAlat({ isOpen, onClose, onSubmit }) {
   // Metode pengiriman
   const [deliveryPickup, setDeliveryPickup] = useState(true)
   const [deliveryCourier, setDeliveryCourier] = useState(true)
+  const [deliveryFee, setDeliveryFee] = useState(45000)
 
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -104,6 +105,10 @@ export default function ModalTambahAlat({ isOpen, onClose, onSubmit }) {
       setError('Pilih minimal satu metode pengiriman')
       return
     }
+    if (deliveryCourier && (isNaN(Number(deliveryFee)) || Number(deliveryFee) < 0)) {
+      setError('Tarif ongkos kirim kurir toko harus berupa angka non-negatif')
+      return
+    }
 
     const deliveryMethods = []
     if (deliveryPickup) deliveryMethods.push('PICKUP')
@@ -122,6 +127,7 @@ export default function ModalTambahAlat({ isOpen, onClose, onSubmit }) {
         stock: Math.max(1, Number(formData.stock) || 1),
         accessories,
         deliveryMethods,
+        deliveryFee: deliveryCourier ? Math.max(0, Number(deliveryFee) || 0) : 0,
         images: images.length > 0 ? images : [PRESET_IMAGES[0].url]
       })
       onClose()
@@ -525,11 +531,11 @@ export default function ModalTambahAlat({ isOpen, onClose, onSubmit }) {
             </div>
 
             {/* Delivery Methods Checkboxes */}
-            <div className="space-y-2">
+            <div className="space-y-2.5">
               <label className="text-xs font-bold text-slate-700">
                 Metode Pengiriman
               </label>
-              <div className="flex items-center gap-5">
+              <div className="flex flex-wrap items-center gap-5">
                 <label className="flex items-center gap-2 cursor-pointer select-none">
                   <input
                     type="checkbox"
@@ -554,6 +560,37 @@ export default function ModalTambahAlat({ isOpen, onClose, onSubmit }) {
                   </span>
                 </label>
               </div>
+
+              {/* Input custom ongkir jika Diantar Kurir Toko aktif */}
+              {deliveryCourier && (
+                <div className="p-3 bg-blue-50/60 border border-blue-200/80 rounded-xl space-y-1.5 transition-all animate-in fade-in">
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs font-bold text-slate-800">
+                      Tarif Ongkos Kirim Kurir Toko
+                    </label>
+                    <span className="text-[11px] text-blue-700 font-semibold">
+                      Rp {Number(deliveryFee || 0).toLocaleString('id-ID')}
+                    </span>
+                  </div>
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">
+                      Rp
+                    </span>
+                    <input
+                      type="number"
+                      min="0"
+                      step="1000"
+                      value={deliveryFee}
+                      onChange={(e) => setDeliveryFee(e.target.value)}
+                      placeholder="45000"
+                      className="w-full pl-9 pr-3 py-2 text-xs font-semibold bg-white rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+                  <p className="text-[11px] text-slate-500 m-0">
+                    Biaya kirim yang akan ditagihkan ke penyewa jika memilih diantar kurir.
+                  </p>
+                </div>
+              )}
             </div>
 
             {/* Notice Note */}

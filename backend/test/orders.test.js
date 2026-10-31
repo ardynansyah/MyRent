@@ -344,3 +344,112 @@ test('PATCH /api/orders/:id/resolve-dispute putusan mediasi admin dan pencairan 
   assert.equal(renterDb.walletBalance, 180000)
   assert.ok(ownerDb.walletBalance >= 120000)
 })
+
+test('Validasi sinkronisasi metode pengiriman & custom ongkir antara pemilik alat dan penyewa', async () => {
+  // 1. Buat alat khusus dengan hanya metode PICKUP yang aktif
+  const pickupOnlyEq = await prisma.equipment.create({
+    data: {
+      ownerId,
+      name: 'Mesin Kopi Pickup Only Test',
+      category: 'Mesin Kopi',
+      description: 'Hanya bisa diambil di toko pemilik',
+      pricePerDay: 150000,
+      deposit: 200000,
+      powerWatt: 1100,
+      deliveryMethods: ['PICKUP'],
+      deliveryFee: 0,
+      status: 'TERSEDIA'
+    }
+  })
+
+  // Penyewa mencoba sewa dengan kurir (COURIER) -> harus ditolak 400
+  const resForbiddenCourier = await fetch(`${baseUrl}/api/orders`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${renterToken}`
+    },
+    body: JSON.stringify({
+      equipmentId: pickupOnlyEq.id,
+      startDate: '2026-11-10',
+      endDate: '2026-11-12',
+      rentalDays: 3,
+      deliveryMethod: 'COURIER',
+      rentalCost: 450000,
+      depositAmount: 200000,
+      totalPaid: 650000
+    })
+  })
+  assert.equal(resForbiddenCourier.status, 400)
+  const forbiddenCourierJson = await resForbiddenCourier.json()
+  assert.equal(forbiddenCourierJson.error.code, 'DELIVERY_METHOD_NOT_ALLOWED')
+
+  // 2. Buat alat khusus dengan hanya metode COURIER dan custom ongkir Rp 65.000
+  const courierOnlyEq = await prisma.equipment.create({
+    data: {
+      ownerId,
+      name: 'Mesin Kopi Courier Only Custom Ongkir Test',
+      category: 'Mesin Kopi',
+      description: 'Hanya melayani diantar kurir dengan tarif custom',
+      pricePerDay: 200000,
+      deposit: 300000,
+      powerWatt: 1400,
+      deliveryMethods: ['COURIER'],
+      deliveryFee: 65000,
+      status: 'TERSEDIA'
+    }
+  })
+
+  // Penyewa mencoba sewa dengan ambil sendiri (PICKUP) -> harus ditolak 400
+  const resForbiddenPickup = await fetch(`${baseUrl}/api/orders`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${renterToken}`
+    },
+    body: JSON.stringify({
+      equipmentId: courierOnlyEq.id,
+      startDate: '2026-11-15',
+      endDate: '2026-11-16',
+      rentalDays: 2,
+      deliveryMethod: 'PICKUP',
+      rentalCost: 400000,
+      depositAmount: 300000,
+      totalPaid: 700000
+    })
+  })
+  assert.equal(resForbiddenPickup.status, 400)
+  const forbiddenPickupJson = await resForbiddenPickup.json()
+  assert.equal(forbiddenPickupJson.error.code, 'DELIVERY_METHOD_NOT_ALLOWED')
+
+  // Penyewa sewa dengan kurir (COURIER) -> berhasil dengan shippingCost sesuai custom ongkir pemilik (65000)
+  const resAllowedCourier = await fetch(`${baseUrl}/api/orders`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${renterToken}`
+    },
+    body: JSON.stringify({
+      equipmentId: courierOnlyEq.id,
+      startDate: '2026-11-15',
+      endDate: '2026-11-16',
+      rentalDays: 2,
+      deliveryMethod: 'COURIER',
+      rentalCost: 400000,
+      depositAmount: 300000,
+      totalPaid: 765000
+    })
+  })
+  assert.equal(resAllowedCourier.status, 201)
+  const allowedCourierJson = await resAllowedCourier.json()
+  assert.equal(allowedCourierJson.data.deliveryMethod, 'COURIER')
+  assert.equal(allowedCourierJson.data.shippingCost, 65000)
+
+  // Bersihkan data tes
+  await prisma.order.deleteMany({
+    where: { equipmentId: { in: [pickupOnlyEq.id, courierOnlyEq.id] } }
+  })
+  await prisma.equipment.deleteMany({
+    where: { id: { in: [pickupOnlyEq.id, courierOnlyEq.id] } }
+  })
+})

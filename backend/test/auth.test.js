@@ -161,4 +161,67 @@ test('Auth API Flow', async (t) => {
     assert.equal(data.user.email, 'admin@myrent.com')
     assert.equal(data.user.role, 'ADMIN')
   })
+
+  await t.test('GET /api/auth/profile mengembalikan data profil lengkap termasuk kycData', async () => {
+    // Login terlebih dahulu untuk mendapatkan token user penyewa
+    const loginRes = await fetch(`${baseUrl}/api/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: testEmail, password: 'Password123!' })
+    })
+    const loginData = await loginRes.json()
+    assert.ok(loginData.token)
+
+    const profileRes = await fetch(`${baseUrl}/api/auth/profile`, {
+      headers: { Authorization: `Bearer ${loginData.token}` }
+    })
+    assert.equal(profileRes.status, 200)
+    const profileData = await profileRes.json()
+    assert.equal(profileData.profile.email, testEmail)
+    assert.equal(profileData.profile.role, 'PENYEWA')
+    assert.ok('nik' in profileData.profile)
+    assert.ok('powerCapacity' in profileData.profile)
+    assert.ok('businessName' in profileData.profile)
+    assert.ok('bankAccount' in profileData.profile)
+  })
+
+  await t.test('PUT /api/auth/profile memperbarui data UMKM & daya listrik, menjaga field NIK tetap aman', async () => {
+    const loginRes = await fetch(`${baseUrl}/api/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: testEmail, password: 'Password123!' })
+    })
+    const loginData = await loginRes.json()
+
+    const updateRes = await fetch(`${baseUrl}/api/auth/profile`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${loginData.token}`
+      },
+      body: JSON.stringify({
+        fullName: 'Budi Santoso Baru',
+        businessName: 'Kopi Nusantara Baru',
+        powerCapacity: '2200 W',
+        address: 'Jl. Melawai No. 10',
+        city: 'Jakarta Selatan',
+        district: 'Kebayoran Baru',
+        postalCode: '12160',
+        bankName: 'Mandiri — Bank Mandiri',
+        bankAccount: '1230009988776',
+        bankAccountHolder: 'Budi Santoso Baru',
+        // Coba injeksi ubah NIK (seharusnya diabaikan / tidak berubah)
+        nik: '9999999999999999'
+      })
+    })
+
+    assert.equal(updateRes.status, 200)
+    const updateData = await updateRes.json()
+    assert.equal(updateData.profile.fullName, 'Budi Santoso Baru')
+    assert.equal(updateData.profile.businessName, 'Kopi Nusantara Baru')
+    assert.equal(updateData.profile.powerCapacity, '2200 W')
+    assert.equal(updateData.profile.dayaListrik, 2200)
+    assert.equal(updateData.profile.city, 'Jakarta Selatan')
+    assert.equal(updateData.profile.bankAccount, '1230009988776')
+  })
 })

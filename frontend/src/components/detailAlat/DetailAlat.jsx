@@ -86,6 +86,7 @@ export default function DetailAlat({
   const [equipment, setEquipment] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const [avatarLoadFailed, setAvatarLoadFailed] = useState(false)
 
   // ── Seleksi tanggal sewa (dikendalikan dari AvailabilityCalendar) ──────
   const [selectionStart, setSelectionStart] = useState(() => getValidatedInitialRange(null).start)
@@ -171,17 +172,14 @@ export default function DetailAlat({
     setDateWarning(false)
   }
 
-  // Badge & info turunan dari baris database.
-  const badges = useMemo(() => {
-    if (!equipment) return []
-    return [
-      `Jeda rawat ${equipment.maintenanceBufferDays} hari`,
-      'Ambil sendiri',
-      'Kurir toko',
-      'BAST digital'
-    ]
-  }, [equipment])
+  const ownerDisplayName =
+    equipment?.owner?.displayName ||
+    equipment?.owner?.businessName ||
+    equipment?.owner?.fullName ||
+    equipment?.owner?.name ||
+    'Pemilik Alat'
 
+  const ownerPhoto = !avatarLoadFailed && equipment?.owner?.photo ? equipment.owner.photo : null
   const ownerInitials = equipment?.owner ? getUserInitials(equipment.owner) : '?'
 
   const handleChatOwner = () => {
@@ -191,7 +189,7 @@ export default function DetailAlat({
     navigate('/pesan', {
       state: {
         partnerId: ownerId,
-        partnerName: equipment.owner?.fullName || equipment.owner?.name || 'Pemilik Alat',
+        partnerName: ownerDisplayName,
         contextType: 'EQUIPMENT',
         contextData: {
           id: equipment.id,
@@ -374,28 +372,14 @@ export default function DetailAlat({
             onSelectionChange={handleSelectionChange}
           />
 
-          {/* About / Description Card */}
-          <div className="box-border w-full h-fit shrink-0 flex flex-col gap-3 p-5 justify-start items-start bg-white ring-1 ring-slate-200 rounded-[14px]">
+          {/* Deskripsi Alat Card */}
+          <div className="box-border w-full h-fit shrink-0 flex flex-col gap-2.5 p-5 justify-start items-start bg-white ring-1 ring-slate-200 rounded-[14px]">
             <h2 className="text-sm text-slate-900 font-bold text-left whitespace-nowrap m-0">
-              Tentang alat ini
+              Deskripsi Alat
             </h2>
-            <p className="text-xs leading-5 w-full text-slate-600 font-normal text-left m-0">
+            <p className="text-xs leading-5 w-full text-slate-600 font-normal text-left m-0 whitespace-pre-line">
               {equipment.description}
             </p>
-
-            {/* Badges */}
-            <div className="box-border w-full h-fit shrink-0 flex flex-wrap gap-2 justify-start items-start pt-1">
-              {badges.map((badge) => (
-                <div
-                  key={badge}
-                  className="box-border w-fit shrink-0 h-fit flex flex-row py-1.25 px-2.5 justify-start items-center bg-slate-50 ring-1 ring-slate-200 rounded-full"
-                >
-                  <span className="text-[11px] text-slate-600 font-semibold whitespace-nowrap">
-                    {badge}
-                  </span>
-                </div>
-              ))}
-            </div>
           </div>
 
           {/* Kelengkapan Aksesoris Unit */}
@@ -436,7 +420,9 @@ export default function DetailAlat({
                       key={i}
                       className="text-[10px] font-semibold px-2 py-0.5 bg-slate-100 text-slate-700 rounded-md"
                     >
-                      {method === 'PICKUP' ? 'Ambil Sendiri' : 'Kurir Toko'}
+                      {method === 'PICKUP'
+                        ? 'Ambil Sendiri'
+                        : `Kurir Toko (Rp ${(equipment.deliveryFee ?? 45000).toLocaleString('id-ID')})`}
                     </span>
                   ))}
                 </div>
@@ -512,13 +498,11 @@ export default function DetailAlat({
           </div>
         </section>
 
-        {/* Right Column: Checkout Panel + Owner Card
-            `self-stretch` memberi ruang gulir pada kolom kanan supaya wrapper
-            sticky di bawah benar-benar bisa bergerak (bukan terkunci statis). */}
-        <section className="box-border w-full lg:w-105 shrink-0 self-stretch flex flex-col justify-start items-start">
-          {/* Wrapper sticky tunggal: CheckoutPanel + Profil Toko digabung agar
-              keduanya menggulir bersamaan dan tidak saling menimpa. */}
-          <div className="box-border sticky top-24 w-full h-fit flex flex-col gap-4 justify-start items-start">
+        {/* Right Column: 1 Frame Card (Checkout + Profil Pemilik)
+            Tampil dalam 1 frame terpadu tanpa ruang kosong berlebih di bawahnya,
+            dan sticky secara dinamis di desktop agar scrolling mengalir alami. */}
+        <section className="box-border w-full lg:w-105 shrink-0 flex flex-col justify-start items-start">
+          <div className="box-border lg:sticky lg:top-24 w-full h-fit flex flex-col gap-3 justify-start items-start">
             {/* Peringatan: rentang tanggal belum lengkap */}
             {dateWarning && (
               <div className="box-border w-full flex flex-row gap-2 p-3 justify-start items-start bg-amber-50 ring-1 ring-amber-200 rounded-[10px]">
@@ -529,7 +513,7 @@ export default function DetailAlat({
               </div>
             )}
 
-            {/* Checkout & Rental Calculation Panel */}
+            {/* 1 Frame: Panel Checkout & Profil Pemilik Terpadu */}
             <CheckoutPanel
               dailyPrice={equipment.pricePerDay}
               depositAmount={equipment.deposit}
@@ -537,6 +521,13 @@ export default function DetailAlat({
               startDateText={startDateFormatted}
               endDateText={endDateFormatted}
               ownerAddress={`${equipment.location} (${Number(equipment.distance).toLocaleString('id-ID')} km)`}
+              deliveryMethods={equipment.deliveryMethods}
+              courierFee={equipment.deliveryFee ?? 45000}
+              owner={equipment.owner}
+              ownerPhoto={ownerPhoto}
+              ownerDisplayName={ownerDisplayName}
+              ownerInitials={ownerInitials}
+              onChatOwner={handleChatOwner}
               onAjukanSewa={(checkoutData) => {
                 // Tanggal belum lengkap → jangan lanjutkan.
                 const isReady = (selectionStart && selectionEnd) || isSingleDayValid
@@ -552,57 +543,19 @@ export default function DetailAlat({
                 }
 
                 // Navigasi ke Checkout Wizard (Step 1) dengan membawa state pilihan
+                const isCourier = checkoutData?.selectedDelivery === 'courier'
+                const customFee = equipment.deliveryFee ?? 45000
                 navigate(`/checkout/${equipment.id}`, {
                   state: {
                     equipmentId: equipment.id,
                     selectionStart: selectionStart?.toISOString().slice(0, 10),
                     selectionEnd: (selectionEnd || selectionStart)?.toISOString().slice(0, 10),
-                    deliveryMethod: checkoutData?.selectedDelivery === 'courier' ? 'COURIER' : 'PICKUP'
+                    deliveryMethod: isCourier ? 'COURIER' : 'PICKUP',
+                    shippingCost: isCourier ? customFee : 0
                   }
                 })
               }}
             />
-
-            {/* Owner Profile Card */}
-            <div className="box-border w-full h-fit shrink-0 flex flex-col gap-3 p-4 bg-white ring-1 ring-slate-200 rounded-[14px]">
-              <div className="flex flex-row gap-3 justify-start items-center">
-                {/* Owner Initials Avatar */}
-                <div className="box-border w-10 shrink-0 h-10 flex flex-row justify-center items-center bg-blue-50 rounded-full">
-                  <span className="text-[13px] text-blue-700 font-bold whitespace-nowrap">
-                    {ownerInitials}
-                  </span>
-                </div>
-
-                {/* Owner Meta */}
-                <div className="box-border flex-1 h-fit flex flex-col gap-0.5 justify-start items-start">
-                  <div className="text-xs text-slate-900 font-bold text-left whitespace-nowrap">
-                    {equipment.owner?.fullName || 'Pemilik Alat'}
-                  </div>
-                  <div className="text-[10px] text-slate-400 font-normal text-left whitespace-nowrap">
-                    {equipment.owner?.email || '-'}
-                  </div>
-                </div>
-
-                {/* Verified Badge */}
-                {equipment.owner?.verificationStatus === 'DISETUJUI' && (
-                  <div className="box-border w-fit shrink-0 h-fit flex flex-row py-1.25 px-2.5 justify-start items-center bg-green-50 rounded-full">
-                    <span className="text-[11px] text-green-700 font-semibold whitespace-nowrap">
-                      Terverifikasi
-                    </span>
-                  </div>
-                )}
-              </div>
-
-              {/* Tombol Hubungi Pemilik / Tanya Alat */}
-              <button
-                type="button"
-                onClick={handleChatOwner}
-                className="w-full py-2.5 px-3 bg-white hover:bg-slate-50 text-blue-600 ring-1 ring-blue-300 rounded-xl text-xs font-semibold flex items-center justify-center gap-2 transition-all cursor-pointer shadow-2xs"
-              >
-                <MessageSquare className="w-4 h-4 text-blue-600" />
-                <span>Hubungi Pemilik / Tanya Alat</span>
-              </button>
-            </div>
           </div>
         </section>
       </main>

@@ -264,7 +264,9 @@ async function main() {
         startYear: '2019',
         powerCapacity: '> 3500 W',
         customPower: '5000',
-        dayaListrik: 5000
+        dayaListrik: 5000,
+        profilePhoto: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80',
+        frontPhoto: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80'
       }
     },
     create: {
@@ -285,7 +287,9 @@ async function main() {
         startYear: '2019',
         powerCapacity: '> 3500 W',
         customPower: '5000',
-        dayaListrik: 5000
+        dayaListrik: 5000,
+        profilePhoto: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80',
+        frontPhoto: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80'
       }
     }
   })
@@ -307,7 +311,9 @@ async function main() {
         district: 'Kec. Cilandak',
         address: 'Jl. TB Simatupang No. 15, Jakarta Selatan',
         startYear: '2020',
-        dayaListrik: 5500
+        dayaListrik: 5500,
+        profilePhoto: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=400&q=80',
+        frontPhoto: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=400&q=80'
       }
     },
     create: {
@@ -326,7 +332,9 @@ async function main() {
         district: 'Kec. Cilandak',
         address: 'Jl. TB Simatupang No. 15, Jakarta Selatan',
         startYear: '2020',
-        dayaListrik: 5500
+        dayaListrik: 5500,
+        profilePhoto: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=400&q=80',
+        frontPhoto: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=400&q=80'
       }
     }
   })

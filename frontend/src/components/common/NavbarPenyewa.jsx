@@ -10,7 +10,8 @@ import {
   ArrowDownLeft,
   ArrowUpRight,
   Rocket,
-  ShoppingBag
+  ShoppingBag,
+  UserCog
 } from 'lucide-react'
 import ModalDompet from '../pesananSaya/ModalDompet'
 import { getUnreadCount } from '../../lib/chatsApi'
@@ -48,6 +49,8 @@ export default function NavbarPenyewa({
       ? 'pesanan'
       : location.pathname.startsWith('/dompet')
       ? 'dompet'
+      : location.pathname.startsWith('/profil')
+      ? 'profil'
       : (location.pathname === '/beranda-sewa' || location.pathname === '/')
       ? 'jelajahi'
       : ''
@@ -119,8 +122,21 @@ export default function NavbarPenyewa({
     }
   }, [activeTab])
 
-  // Data pengguna dibaca dari localStorage (sesi login penyewa).
-  const user = getSessionUser()
+  // Data pengguna dibaca dari localStorage & disinkronkan saat profil diperbarui
+  const [user, setUser] = useState(() => getSessionUser())
+
+  useEffect(() => {
+    const handleUserUpdated = (e) => {
+      if (e.detail?.user) {
+        setUser(e.detail.user)
+      } else {
+        setUser(getSessionUser())
+      }
+    }
+    window.addEventListener('myrent:user-updated', handleUserUpdated)
+    return () => window.removeEventListener('myrent:user-updated', handleUserUpdated)
+  }, [])
+
   const userInitials = getUserInitials(user)
   const powerLimit = getUserPowerLimit(user)
   const userPower = powerLimit ? `${powerLimit} W` : 'Daya belum diisi'
@@ -267,15 +283,21 @@ export default function NavbarPenyewa({
 
           {isMenuOpen && (
             <div className="absolute right-0 top-[46px] z-50 w-[270px] box-border flex flex-col gap-2 p-3 bg-white ring-1 ring-slate-200 rounded-[14px] shadow-xl animate-in fade-in zoom-in-95 duration-100">
-              {/* User Info Header */}
-              <div className="box-border flex flex-col gap-0.5 p-1 justify-start items-start">
-                <span className="text-xs text-slate-900 font-bold truncate w-full">
-                  {user?.fullName || user?.name || 'Penyewa UMKM'}
+              {/* User Info Header (Clickable ke Profil) */}
+              <Link
+                to="/profil"
+                onClick={() => setIsMenuOpen(false)}
+                className="box-border flex flex-col gap-0.5 p-1.5 rounded-lg hover:bg-slate-50 transition-colors justify-start items-start no-underline cursor-pointer group"
+                title="Buka Pengaturan Profil"
+              >
+                <span className="text-xs text-slate-900 group-hover:text-blue-600 font-bold truncate w-full transition-colors flex items-center justify-between">
+                  <span>{user?.fullName || user?.name || 'Penyewa UMKM'}</span>
+                  <ChevronRight className="w-3 h-3 text-slate-400 group-hover:text-blue-600 transition-colors shrink-0" />
                 </span>
                 <span className="text-[10px] text-slate-500 truncate w-full">
                   {user?.email || '-'}
                 </span>
-              </div>
+              </Link>
 
               <div className="box-border w-full h-px bg-slate-100"></div>
 
@@ -298,6 +320,19 @@ export default function NavbarPenyewa({
                   <span>Pesanan</span>
                 </Link>
               </div>
+
+              {/* Link ke Halaman Penyesuaian Profil */}
+              <Link
+                to="/profil"
+                onClick={() => setIsMenuOpen(false)}
+                className="w-full py-1.5 px-2.5 bg-blue-50/70 hover:bg-blue-100/80 border border-blue-100 text-blue-800 font-bold rounded-xl flex items-center justify-between text-[11px] no-underline transition-colors"
+              >
+                <div className="flex items-center gap-2">
+                  <UserCog className="w-3.5 h-3.5 text-blue-600 shrink-0" />
+                  <span>Edit Profil &amp; Usaha</span>
+                </div>
+                <ChevronRight className="w-3.5 h-3.5 text-blue-500 shrink-0" />
+              </Link>
 
               {/* Dompet Card Trigger */}
               <button

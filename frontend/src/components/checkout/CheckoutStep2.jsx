@@ -249,7 +249,7 @@ export default function CheckoutStep2({ wizardData, updateWizard, onBack, onNext
     <div className="min-h-screen bg-[#F8FAFC] flex flex-col">
       {/* Top Bar */}
       <header className="w-full bg-white border-b border-slate-200 sticky top-0 z-40">
-        <div className="w-full max-w-[1600px] mx-auto px-4 md:px-12 lg:px-20 h-[68px] flex items-center justify-between">
+        <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-6 md:px-8 lg:px-12 h-[68px] flex items-center justify-between">
           <div className="flex items-center gap-3.5">
             <button onClick={() => navigate('/beranda-sewa')} className="text-[18px] text-blue-600 font-extrabold tracking-[-0.3px] cursor-pointer">
               SewaAlat
@@ -261,7 +261,7 @@ export default function CheckoutStep2({ wizardData, updateWizard, onBack, onNext
         </div>
       </header>
 
-      <main className="w-full max-w-[1600px] mx-auto px-4 md:px-12 lg:px-20 flex flex-col gap-5 py-7 pb-12">
+      <main className="w-full max-w-[1600px] mx-auto px-4 sm:px-6 md:px-8 lg:px-12 flex flex-col gap-5 py-7 pb-12">
         <WizardSteps current={2} />
 
         {/* Tombol Kembali */}
@@ -272,12 +272,12 @@ export default function CheckoutStep2({ wizardData, updateWizard, onBack, onNext
           <ChevronLeft className="w-4 h-4" /> Ubah rincian sewa (Step 1)
         </button>
 
-        <div className="flex flex-col lg:flex-row gap-5 items-start">
+        <div className="w-full flex flex-col lg:flex-row gap-5 items-stretch lg:items-start">
           {/* ── Left Column ────────────────────────────────────────────────── */}
-          <div className="flex-1 min-w-0 flex flex-col gap-4.5">
+          <div className="w-full flex-1 min-w-0 flex flex-col gap-4.5">
 
             {/* Ringkasan Alat & Jadwal */}
-            <div className="bg-white ring-1 ring-slate-200 rounded-[14px] p-5 flex flex-col gap-4">
+            <div className="box-border w-full bg-white ring-1 ring-slate-200 rounded-[14px] p-4 sm:p-5 flex flex-col gap-4">
               <h2 className="text-[14px] font-bold text-slate-900">Ringkasan pesanan</h2>
               <div className="flex gap-3.5 items-center p-3.5 bg-slate-50 rounded-xl">
                 {equipment.images?.[0] && (

@@ -41,14 +41,25 @@ before(async () => {
 
   const owner = await prisma.user.upsert({
     where: { email: TEST_OWNER_EMAIL },
-    update: {},
+    update: {
+      kycData: {
+        businessName: 'Pemilik Review Test',
+        profilePhoto: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80',
+        frontPhoto: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80'
+      }
+    },
     create: {
       email: TEST_OWNER_EMAIL,
       password: 'Password123!',
       role: 'PEMILIK',
       fullName: 'Pemilik Review Test',
       phone: '081299990004',
-      verificationStatus: 'DISETUJUI'
+      verificationStatus: 'DISETUJUI',
+      kycData: {
+        businessName: 'Pemilik Review Test',
+        profilePhoto: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80',
+        frontPhoto: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80'
+      }
     }
   })
   ownerId = owner.id

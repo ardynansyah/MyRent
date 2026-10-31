@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { ChevronLeft, ChevronRight, Info } from 'lucide-react'
+import { ChevronLeft, ChevronRight, TriangleAlert, X } from 'lucide-react'
 import {
   DEFAULT_DAYS_STATUS,
   diffDays,
@@ -291,11 +291,32 @@ export default function AvailabilityCalendar({
         </div>
 
         {notice && (
-          <div className="box-border w-full flex flex-row gap-2 px-3 py-2 justify-start items-start bg-amber-50 ring-1 ring-amber-200 rounded-lg">
-            <Info className="w-3.5 h-3.5 shrink-0 mt-0.5 text-amber-600" />
-            <p className="text-[11px] leading-4 text-amber-700 font-normal text-left m-0">
-              {notice}
-            </p>
+          <div
+            role="alert"
+            className="box-border w-full flex flex-row gap-3 p-3.5 sm:p-4 justify-between items-start bg-amber-50/95 border border-amber-300 border-l-4 border-l-amber-500 rounded-xl shadow-xs transition-all animate-in fade-in slide-in-from-top-1 duration-200"
+          >
+            <div className="flex flex-row gap-3 items-start flex-1 min-w-0">
+              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-amber-100/90 text-amber-700 flex items-center justify-center shrink-0 mt-0.5">
+                <TriangleAlert className="w-4 h-4 sm:w-4.5 sm:h-4.5" />
+              </div>
+              <div className="flex flex-col gap-0.5 justify-start items-start flex-1 min-w-0 text-left">
+                <span className="text-xs sm:text-[13px] font-bold text-amber-950">
+                  Perhatian Pilihan Tanggal
+                </span>
+                <p className="text-xs sm:text-[13px] leading-relaxed text-amber-900 font-medium m-0">
+                  {notice}
+                </p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => setNotice(null)}
+              className="p-1 rounded-lg text-amber-600 hover:text-amber-900 hover:bg-amber-100/80 transition-colors shrink-0 -mr-1 -mt-1 cursor-pointer"
+              title="Tutup pemberitahuan"
+              aria-label="Tutup pemberitahuan"
+            >
+              <X className="w-4 h-4" />
+            </button>
           </div>
         )}
       </div>

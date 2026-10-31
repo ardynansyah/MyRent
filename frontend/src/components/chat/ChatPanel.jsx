@@ -347,11 +347,19 @@ export default function ChatPanel({
                       : 'bg-white hover:bg-slate-50'
                   }`}
                 >
-                  {/* Avatar Initials */}
+                  {/* Avatar Initials / Photo */}
                   <div className="relative shrink-0">
-                    <div className="w-11 h-11 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-xs ring-2 ring-white shadow-xs">
-                      {initials}
-                    </div>
+                    {partner?.photo ? (
+                      <img
+                        src={partner.photo}
+                        alt={partner?.businessName || partner?.fullName || 'Mitra'}
+                        className="w-11 h-11 rounded-full object-cover ring-2 ring-white shadow-xs"
+                      />
+                    ) : (
+                      <div className="w-11 h-11 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-xs ring-2 ring-white shadow-xs">
+                        {initials}
+                      </div>
+                    )}
                     {unread > 0 && (
                       <span className="absolute -top-1 -right-1 w-3 h-3 bg-blue-600 rounded-full ring-2 ring-white" />
                     )}
@@ -420,9 +428,17 @@ export default function ChatPanel({
                   <ArrowLeft className="w-4 h-4" />
                 </button>
 
-                <div className="w-10 h-10 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-xs shrink-0 ring-1 ring-slate-200">
-                  {getUserInitials(selectedChat.partner)}
-                </div>
+                {selectedChat.partner?.photo ? (
+                  <img
+                    src={selectedChat.partner.photo}
+                    alt={selectedChat.partner?.businessName || selectedChat.partner?.fullName || 'Mitra'}
+                    className="w-10 h-10 rounded-full object-cover shrink-0 ring-1 ring-slate-200"
+                  />
+                ) : (
+                  <div className="w-10 h-10 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-xs shrink-0 ring-1 ring-slate-200">
+                    {getUserInitials(selectedChat.partner)}
+                  </div>
+                )}
 
                 <div className="min-w-0">
                   <div className="flex items-center gap-2">
