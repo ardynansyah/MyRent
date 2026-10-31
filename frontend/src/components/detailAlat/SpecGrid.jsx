@@ -6,7 +6,7 @@ export default function SpecGrid({
   rawPower = 2200,
   userPowerLimit = 1300,
   weight = '34 kg',
-  dimensions = '40 × 53 × 35 cm',
+  dimensions = '40 x 53 x 35 cm',
   maintenanceBuffer = '1 Hari'
 }) {
   const isPowerExceeded = rawPower > userPowerLimit
@@ -16,8 +16,8 @@ export default function SpecGrid({
       {/* 1. Daya Listrik */}
       <div
         className={`box-border flex-1 h-fit flex flex-col gap-1.5 p-3.5 justify-start items-start rounded-xl transition-all ${isPowerExceeded
-            ? 'bg-amber-50 ring-1 ring-amber-200'
-            : 'bg-white ring-1 ring-slate-200'
+          ? 'bg-amber-50 ring-1 ring-amber-200'
+          : 'bg-white ring-1 ring-slate-200'
           }`}
       >
         <Zap

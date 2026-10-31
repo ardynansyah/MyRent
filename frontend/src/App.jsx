@@ -255,7 +255,7 @@ export default function App() {
           element={
             <UserProtectedRoute>
               <DetailAlat
-                onBack={() => navigate('/beranda-sewa')}
+                onBack={() => (window.history.length > 1 ? navigate(-1) : navigate('/beranda-sewa'))}
                 onNavigateHome={() => navigate('/')}
               />
             </UserProtectedRoute>
@@ -266,7 +266,7 @@ export default function App() {
           element={
             <UserProtectedRoute>
               <DetailAlat
-                onBack={() => navigate('/beranda-sewa')}
+                onBack={() => (window.history.length > 1 ? navigate(-1) : navigate('/beranda-sewa'))}
                 onNavigateHome={() => navigate('/')}
               />
             </UserProtectedRoute>

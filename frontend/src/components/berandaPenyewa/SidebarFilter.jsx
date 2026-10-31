@@ -27,17 +27,29 @@ export default function SidebarFilter({
   onFiltersChange,
   powerMatch = true,
   onPowerMatchChange,
-  powerLimit = null,
-  maxPrice = 500000,
+  powerLimit = 1300,
+  maxPrice = 10000000,
+  minPrice = 0,
+  maxPriceLimit = 10000000,
+  priceStep = 100000,
   onMaxPriceChange,
-  deliveryMethods = { selfPickup: true, courier: true },
+  deliveryMethods = { selfPickup: false, courier: false },
   onDeliveryMethodChange,
   onReset,
   onApply,
   className = ''
 }) {
-  // Metode pengiriman belum dipakai untuk menyaring katalog, jadi masih lokal.
   const [internalDelivery, setInternalDelivery] = useState(deliveryMethods)
+
+  // Sinkronkan state internal jika props deliveryMethods dari parent berubah (mis. saat reset)
+  useEffect(() => {
+    if (deliveryMethods) {
+      setInternalDelivery({
+        selfPickup: Boolean(deliveryMethods.selfPickup),
+        courier: Boolean(deliveryMethods.courier)
+      })
+    }
+  }, [deliveryMethods])
 
   const dateRange = filters.dateRange ?? { start: null, end: null }
   const maxDeposit = filters.maxDeposit ?? 'semua'
@@ -173,7 +185,9 @@ export default function SidebarFilter({
   }
 
   const handleReset = () => {
-    setInternalDelivery({ selfPickup: true, courier: true })
+    const defaultDelivery = { selfPickup: false, courier: false }
+    setInternalDelivery(defaultDelivery)
+    if (onDeliveryMethodChange) onDeliveryMethodChange(defaultDelivery)
     setActivePicker(null)
 
     if (onFiltersChange) {
@@ -487,9 +501,7 @@ export default function SidebarFilter({
             Sesuai listrik usaha saya
           </div>
           <div className="text-[11px] leading-[15px] w-full text-slate-500 font-normal text-left tabular-nums">
-            {powerLimit
-              ? `Maks. ${powerLimit} W · hanya alat yang aman`
-              : 'Daya listrik usaha belum diisi'}
+            {`Maks. ${powerLimit || 1300} W · hanya alat yang aman`}
           </div>
         </div>
         <button
@@ -520,9 +532,9 @@ export default function SidebarFilter({
         <div className="w-full py-1">
           <input
             type="range"
-            min={50000}
-            max={500000}
-            step={25000}
+            min={minPrice}
+            max={maxPriceLimit}
+            step={priceStep}
             value={maxPrice}
             onChange={handlePriceChange}
             className="w-full accent-blue-600 cursor-pointer h-1 bg-slate-200 rounded-lg appearance-none"
@@ -530,7 +542,7 @@ export default function SidebarFilter({
         </div>
 
         <div className="text-[11px] text-slate-500 font-normal tabular-nums text-left whitespace-nowrap">
-          Rp 0 — Rp 500.000
+          {`${formatRupiah(minPrice)} — ${formatRupiah(maxPriceLimit)}`}
         </div>
       </div>
 
@@ -578,6 +590,15 @@ export default function SidebarFilter({
 
         {/* Option 1: Ambil sendiri di gudang */}
         <label
+          role="checkbox"
+          aria-checked={Boolean(internalDelivery.selfPickup)}
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === ' ' || e.key === 'Enter') {
+              e.preventDefault()
+              handleDeliveryToggle('selfPickup')
+            }
+          }}
           onClick={() => handleDeliveryToggle('selfPickup')}
           className="box-border w-fit h-fit shrink-0 flex flex-row gap-2 justify-start items-center cursor-pointer select-none"
         >
@@ -599,6 +620,15 @@ export default function SidebarFilter({
 
         {/* Option 2: Diantar kurir toko */}
         <label
+          role="checkbox"
+          aria-checked={Boolean(internalDelivery.courier)}
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === ' ' || e.key === 'Enter') {
+              e.preventDefault()
+              handleDeliveryToggle('courier')
+            }
+          }}
           onClick={() => handleDeliveryToggle('courier')}
           className="box-border w-fit h-fit shrink-0 flex flex-row gap-2 justify-start items-center cursor-pointer select-none"
         >

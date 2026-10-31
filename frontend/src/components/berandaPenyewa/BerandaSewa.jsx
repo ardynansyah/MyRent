@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { Check, ChevronDown, Loader2, MapPin, TriangleAlert } from 'lucide-react'
 import NavbarPenyewa from '../common/NavbarPenyewa'
 import SidebarFilter from './SidebarFilter'
@@ -19,9 +20,30 @@ const SORT_OPTIONS = [
 
 // Filter sidebar: rentang tanggal + batas security deposit.
 const FILTER_STORAGE_KEY = 'myrent_beranda_filters'
+const POWER_STORAGE_KEY = 'filter_sesuai_listrik'
+const MAX_PRICE_STORAGE_KEY = 'myrent_filter_max_price'
+const DELIVERY_STORAGE_KEY = 'myrent_filter_delivery_methods'
+const DEFAULT_MAX_PRICE = 10000000
+const DEFAULT_DELIVERY_METHODS = { selfPickup: false, courier: false }
+
 const DEFAULT_FILTERS = {
   dateRange: { start: null, end: null },
   maxDeposit: 'semua'
+}
+
+const parseDeliveryQuery = (val) => {
+  if (!val) return null
+  const tokens = String(val).toLowerCase().split(',').map((t) => t.trim())
+  const selfPickup = tokens.includes('gudang') || tokens.includes('pickup') || tokens.includes('self_pickup')
+  const courier = tokens.includes('kurir') || tokens.includes('courier')
+  return { selfPickup, courier }
+}
+
+const formatDeliveryQuery = (delivery) => {
+  const parts = []
+  if (delivery?.selfPickup) parts.push('gudang')
+  if (delivery?.courier) parts.push('kurir')
+  return parts.join(',')
 }
 
 const createInitialFilters = () => {
@@ -46,17 +68,113 @@ const createInitialFilters = () => {
   return DEFAULT_FILTERS
 }
 
+const createInitialPowerMatch = () => {
+  // 1. Cek query parameter URL (?powerFilter=true/false)
+  try {
+    const params = new URLSearchParams(window.location.search)
+    const urlVal = params.get('powerFilter')
+    if (urlVal !== null) {
+      return urlVal === 'true' || urlVal === '1'
+    }
+  } catch {
+    // Abaikan jika tidak tersedia window / URLSearchParams
+  }
+
+  // 2. Cek localStorage ('filter_sesuai_listrik')
+  try {
+    const saved = localStorage.getItem(POWER_STORAGE_KEY)
+    if (saved !== null) {
+      return saved === 'true'
+    }
+  } catch {
+    // Abaikan jika localStorage diblokir/gagal
+  }
+
+  // 3. Nilai default awal: aktif (true)
+  return true
+}
+
+const createInitialMaxPrice = () => {
+  // 1. Cek query parameter URL (?maxPrice=...)
+  try {
+    const params = new URLSearchParams(window.location.search)
+    const urlVal = params.get('maxPrice')
+    if (urlVal !== null) {
+      const parsed = Number(urlVal)
+      if (Number.isFinite(parsed) && parsed >= 0) {
+        return Math.min(parsed, DEFAULT_MAX_PRICE)
+      }
+    }
+  } catch {
+    // Abaikan jika tidak tersedia window / URLSearchParams
+  }
+
+  // 2. Cek localStorage ('myrent_filter_max_price')
+  try {
+    const saved = localStorage.getItem(MAX_PRICE_STORAGE_KEY)
+    if (saved !== null) {
+      const parsed = Number(saved)
+      if (Number.isFinite(parsed) && parsed >= 0) {
+        return Math.min(parsed, DEFAULT_MAX_PRICE)
+      }
+    }
+  } catch {
+    // Abaikan jika localStorage diblokir/gagal
+  }
+
+  // 3. Nilai default awal: Rp 10.000.000 (10 juta)
+  return DEFAULT_MAX_PRICE
+}
+
+const createInitialDeliveryMethods = () => {
+  // 1. Cek query parameter URL (?delivery=gudang,kurir)
+  try {
+    const params = new URLSearchParams(window.location.search)
+    const urlVal = params.get('delivery')
+    if (urlVal !== null) {
+      const parsed = parseDeliveryQuery(urlVal)
+      if (parsed) return parsed
+    }
+  } catch {}
+
+  // 2. Cek localStorage ('myrent_filter_delivery_methods')
+  try {
+    const saved = localStorage.getItem(DELIVERY_STORAGE_KEY)
+    if (saved !== null) {
+      try {
+        const parsedObj = JSON.parse(saved)
+        if (parsedObj && typeof parsedObj === 'object') {
+          return {
+            selfPickup: Boolean(parsedObj.selfPickup),
+            courier: Boolean(parsedObj.courier)
+          }
+        }
+      } catch {
+        const parsed = parseDeliveryQuery(saved)
+        if (parsed) return parsed
+      }
+    }
+  } catch {}
+
+  // 3. Default: keduanya tidak dicentang (false, false)
+  return DEFAULT_DELIVERY_METHODS
+}
+
 export default function BerandaSewa({
   onSelectProduct,
   onNavigateHome
 }) {
+  const [searchParams, setSearchParams] = useSearchParams()
+
   const [equipments, setEquipments] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
   const [searchQuery, setSearchQuery] = useState('')
-  const [maxPrice, setMaxPrice] = useState(500000)
-  const [powerMatch, setPowerMatch] = useState(true)
+  const [maxPrice, setMaxPrice] = useState(createInitialMaxPrice)
+  const [powerMatch, setPowerMatch] = useState(createInitialPowerMatch)
+  // State metode pengiriman persisten (dibaca dari URL / localStorage / default false)
+  const [deliveryMethods, setDeliveryMethods] = useState(createInitialDeliveryMethods)
 
   // ── Urutkan & Kategori (dropdown) ───────────────────────────────────────
   const [sortBy, setSortBy] = useState('terdekat')
@@ -77,17 +195,128 @@ export default function BerandaSewa({
     }
   }, [filters])
 
+  // Simpan state toggle daya ke localStorage setiap kali berubah
+  useEffect(() => {
+    try {
+      localStorage.setItem(POWER_STORAGE_KEY, String(powerMatch))
+    } catch {
+      // Abaikan bila storage penuh atau diblokir
+    }
+  }, [powerMatch])
+
+  const handlePowerMatchChange = (nextValue) => {
+    setPowerMatch(nextValue)
+    try {
+      localStorage.setItem(POWER_STORAGE_KEY, String(nextValue))
+    } catch {
+      // Abaikan jika storage gagal
+    }
+  }
+
+  // Simpan state harga maksimal ke localStorage setiap kali berubah
+  useEffect(() => {
+    try {
+      localStorage.setItem(MAX_PRICE_STORAGE_KEY, String(maxPrice))
+    } catch {
+      // Abaikan bila storage penuh atau diblokir
+    }
+  }, [maxPrice])
+
+  const handleMaxPriceChange = (nextValue) => {
+    const numericVal = Number(nextValue)
+    const validVal = Number.isFinite(numericVal) ? numericVal : DEFAULT_MAX_PRICE
+    setMaxPrice(validVal)
+
+    try {
+      localStorage.setItem(MAX_PRICE_STORAGE_KEY, String(validVal))
+    } catch {
+      // Abaikan jika storage gagal
+    }
+
+    try {
+      const url = new URL(window.location.href)
+      if (validVal < DEFAULT_MAX_PRICE) {
+        url.searchParams.set('maxPrice', String(validVal))
+      } else {
+        url.searchParams.delete('maxPrice')
+      }
+      window.history.replaceState({}, '', url.toString())
+    } catch {
+      // Abaikan jika browser tidak mendukung
+    }
+  }
+
+  // Handler perubahan metode pengiriman dengan persistensi URL & localStorage
+  const handleDeliveryMethodChange = (nextValue) => {
+    const nextDelivery = {
+      selfPickup: Boolean(nextValue?.selfPickup),
+      courier: Boolean(nextValue?.courier)
+    }
+    setDeliveryMethods(nextDelivery)
+
+    // 1. Simpan ke localStorage
+    try {
+      if (nextDelivery.selfPickup || nextDelivery.courier) {
+        localStorage.setItem(DELIVERY_STORAGE_KEY, JSON.stringify(nextDelivery))
+      } else {
+        localStorage.removeItem(DELIVERY_STORAGE_KEY)
+      }
+    } catch {
+      // Abaikan jika storage gagal
+    }
+
+    // 2. Sinkronkan ke URL search params (?delivery=gudang,kurir)
+    try {
+      const url = new URL(window.location.href)
+      const queryVal = formatDeliveryQuery(nextDelivery)
+      if (queryVal) {
+        url.searchParams.set('delivery', queryVal)
+      } else {
+        url.searchParams.delete('delivery')
+      }
+      window.history.replaceState({}, '', url.toString())
+    } catch {
+      // Abaikan
+    }
+  }
+
+  // Sinkronkan state deliveryMethods jika searchParams URL berubah (mis. tombol Back / Forward browser)
+  useEffect(() => {
+    const deliveryParam = searchParams.get('delivery')
+    if (deliveryParam !== null) {
+      const parsed = parseDeliveryQuery(deliveryParam)
+      if (parsed) {
+        setDeliveryMethods((prev) => {
+          if (prev.selfPickup === parsed.selfPickup && prev.courier === parsed.courier) {
+            return prev
+          }
+          return parsed
+        })
+      }
+    } else {
+      // Jika URL tidak memiliki parameter delivery
+      const saved = localStorage.getItem(DELIVERY_STORAGE_KEY)
+      if (!saved) {
+        setDeliveryMethods((prev) => {
+          if (!prev.selfPickup && !prev.courier) return prev
+          return DEFAULT_DELIVERY_METHODS
+        })
+      }
+    }
+  }, [searchParams])
+
   // Kapasitas daya listrik usaha penyewa (dari sesi login).
+  // Menggunakan data KYC pengguna jika ada, atau fallback ke kapasitas standar 1300 W.
   const user = getSessionUser()
-  const powerLimit = getUserPowerLimit(user)
-  const powerMatchLabel = powerLimit ? `Sesuai Listrik Saya (${powerLimit}W)` : ALL_CATEGORY
+  const rawPowerLimit = getUserPowerLimit(user)
+  const powerLimit = rawPowerLimit || 1300
   const userLocation =
     user?.kycData?.district ||
     user?.kycData?.city ||
     (user?.kycData?.address ? user.kycData.address.split(',')[0].trim() : '') ||
     'Lokasi Anda'
 
-  const [selectedCategory, setSelectedCategory] = useState(powerMatchLabel)
+  const [selectedCategory, setSelectedCategory] = useState(ALL_CATEGORY)
 
   // Tutup dropdown Urutkan / Kategori saat klik di luar atau tekan Escape.
   useEffect(() => {
@@ -153,11 +382,10 @@ export default function BerandaSewa({
 
     return [
       ALL_CATEGORY,
-      ...(powerLimit ? [powerMatchLabel] : []),
       ...fromData,
       NEAREST_CATEGORY
     ]
-  }, [equipments, powerLimit, powerMatchLabel])
+  }, [equipments])
 
   // Batas deposit aktif ('semua' = tanpa batas).
   const maxDeposit = filters.maxDeposit === 'semua' ? Infinity : Number(filters.maxDeposit)
@@ -175,21 +403,24 @@ export default function BerandaSewa({
       }
 
       // Category filter
-      if (selectedCategory === powerMatchLabel && powerLimit) {
-        if (item.powerWatt > powerLimit) return false
-      } else if (selectedCategory === ALL_CATEGORY || selectedCategory === NEAREST_CATEGORY) {
-        // keep
-      } else if (item.category !== selectedCategory) {
-        return false
+      if (selectedCategory !== ALL_CATEGORY && selectedCategory !== NEAREST_CATEGORY) {
+        if (item.category !== selectedCategory) {
+          return false
+        }
       }
 
-      // Power toggle filter from sidebar
-      if (powerMatch && powerLimit && item.powerWatt > powerLimit) {
-        return false
+      // Power toggle filter from sidebar:
+      // - Saat AKTIF: Hanya tampilkan alat dengan daya <= kapasitas daya usaha (maks. 1300 W).
+      // - Saat MATI: Tampilkan SEMUA alat tanpa batasan daya listrik (termasuk alat industri > 1300 W).
+      if (powerMatch) {
+        const itemWatt = Number(item.powerWatt ?? item.power ?? 0)
+        if (itemWatt > powerLimit) {
+          return false
+        }
       }
 
       // Max price
-      if (item.pricePerDay > maxPrice) {
+      if (Number(item.pricePerDay) > maxPrice) {
         return false
       }
 
@@ -212,6 +443,29 @@ export default function BerandaSewa({
         }
       }
 
+      // Filter Metode Pengiriman:
+      // - Saat kondisi default (kedua checkbox tidak dicentang) ATAU keduanya dicentang: tampilkan semua alat.
+      // - Jika hanya "Ambil sendiri di gudang" yang dicentang: hanya tampilkan alat yang mendukung opsi self-pickup.
+      // - Jika hanya "Diantar kurir toko" yang dicentang: hanya tampilkan alat yang mendukung pengiriman kurir.
+      const isPickupSelected = Boolean(deliveryMethods?.selfPickup)
+      const isCourierSelected = Boolean(deliveryMethods?.courier)
+
+      if (isPickupSelected !== isCourierSelected) {
+        const itemMethods = Array.isArray(item.deliveryMethods) && item.deliveryMethods.length > 0
+          ? item.deliveryMethods.map((m) => String(m).toUpperCase())
+          : ['PICKUP', 'COURIER']
+
+        const supportsPickup = itemMethods.some((m) => m === 'PICKUP' || m.includes('PICKUP') || m.includes('GUDANG') || m.includes('AMBIL'))
+        const supportsCourier = itemMethods.some((m) => m === 'COURIER' || m.includes('COURIER') || m.includes('KURIR') || m.includes('ANTAR'))
+
+        if (isPickupSelected && !supportsPickup) {
+          return false
+        }
+        if (isCourierSelected && !supportsCourier) {
+          return false
+        }
+      }
+
       return true
     })
   }, [
@@ -220,10 +474,10 @@ export default function BerandaSewa({
     selectedCategory,
     powerMatch,
     powerLimit,
-    powerMatchLabel,
     maxPrice,
     maxDeposit,
-    filters.dateRange
+    filters.dateRange,
+    deliveryMethods
   ])
 
   // Sorting hasil filter sesuai pilihan dropdown "Urutkan".
@@ -259,10 +513,20 @@ export default function BerandaSewa({
   const resetFilters = () => {
     setSelectedCategory(ALL_CATEGORY)
     setSearchQuery('')
-    setMaxPrice(500000)
-    setPowerMatch(false)
+    handleMaxPriceChange(DEFAULT_MAX_PRICE)
+    handlePowerMatchChange(true)
+    handleDeliveryMethodChange(DEFAULT_DELIVERY_METHODS)
     try {
       sessionStorage.removeItem(FILTER_STORAGE_KEY)
+      localStorage.removeItem(POWER_STORAGE_KEY)
+      localStorage.removeItem(MAX_PRICE_STORAGE_KEY)
+      localStorage.removeItem(DELIVERY_STORAGE_KEY)
+
+      const url = new URL(window.location.href)
+      url.searchParams.delete('maxPrice')
+      url.searchParams.delete('powerFilter')
+      url.searchParams.delete('delivery')
+      window.history.replaceState({}, '', url.toString())
     } catch {
       // Abaikan jika gagal
     }
@@ -291,7 +555,7 @@ export default function BerandaSewa({
             </h1>
             <div className="text-xs sm:text-sm text-slate-600 font-normal text-left tabular-nums flex items-center gap-1.5 flex-wrap">
               <span>{loading ? 'Memuat katalog…' : `${sortedProducts.length} alat · `}</span>
-              <span>{powerMatch && powerLimit ? `semua sesuai daya ${powerLimit} W` : 'semua kapasitas daya'}</span>
+              <span>{powerMatch ? `semua sesuai daya ${powerLimit} W` : 'semua kapasitas daya'}</span>
               {userLocation && (
                 <>
                   <span className="text-slate-300">•</span>
@@ -424,14 +688,22 @@ export default function BerandaSewa({
               filters={filters}
               onFiltersChange={setFilters}
               powerMatch={powerMatch}
-              onPowerMatchChange={setPowerMatch}
+              onPowerMatchChange={handlePowerMatchChange}
               powerLimit={powerLimit}
               maxPrice={maxPrice}
-              onMaxPriceChange={setMaxPrice}
+              minPrice={0}
+              maxPriceLimit={DEFAULT_MAX_PRICE}
+              priceStep={100000}
+              onMaxPriceChange={handleMaxPriceChange}
+              deliveryMethods={deliveryMethods}
+              onDeliveryMethodChange={handleDeliveryMethodChange}
               onReset={resetFilters}
               onApply={(next) => {
-                setPowerMatch(next.powerMatch)
-                setMaxPrice(next.maxPrice)
+                handlePowerMatchChange(next.powerMatch)
+                handleMaxPriceChange(next.maxPrice)
+                if (next.deliveryMethods) {
+                  handleDeliveryMethodChange(next.deliveryMethods)
+                }
                 setFilters((prev) => ({
                   ...prev,
                   maxDeposit: next.maxDeposit,
